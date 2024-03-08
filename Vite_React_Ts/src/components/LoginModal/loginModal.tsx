@@ -56,13 +56,14 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
         const response = await staffLogin(data);
         const responseData = response?.data;
         const user = {
+          id: responseData?.id,
           accountName: responseData?.accountName,
           email: responseData?.email,
           roleId: responseData?.roleId,
           username: responseData?.username,
         } as loginUser;
         if (responseData?.token) {
-          login(user, responseData?.token);
+          login(user, responseData?.token, responseData?.id);
         }
       };
       loginStaff();

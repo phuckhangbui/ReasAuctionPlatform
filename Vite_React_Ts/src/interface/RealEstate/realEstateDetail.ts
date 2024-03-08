@@ -8,7 +8,7 @@ interface realEstateDetail {
   reasStatus: number;
   reasTypeName: string;
   dateStart: Date;
-  dateEnd: Date;
+  dateEnd: any;
   accountOwnerId: number;
   accountOwnerName: string;
   type_REAS_Name: string;

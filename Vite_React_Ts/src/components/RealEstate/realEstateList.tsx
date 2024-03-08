@@ -11,15 +11,19 @@ const RealEstateList = ({ realEstatesList }: RealEstateListProps) => {
   const [showModal, setShowModal] = useState(false);
   const [realEstateId, setRealEstateId] = useState<number>(0);
 
-  const toggleModal = (realEstateId: number) => {
+  const toggleModal = (realEstate: realEstate) => {
     setShowModal((prevShowModal) => !prevShowModal);
-    setRealEstateId(realEstateId);
+    setRealEstateId(realEstate.reasId);
+
+
   };
   useEffect(() => {
     if (realEstatesList) {
       setRealEstates(realEstatesList);
     }
   }, [realEstatesList]);
+
+
 
   useEffect(() => {
     // Disable scroll on body when modal is open
@@ -54,7 +58,7 @@ const RealEstateList = ({ realEstatesList }: RealEstateListProps) => {
             realEstates.map((realEstate) => (
               <div
                 key={realEstate.reasId}
-                onClick={() => toggleModal(realEstate.reasId)}
+                onClick={() => toggleModal(realEstate)}
               >
                 <RealEstateCard realEstate={realEstate} />
               </div>
