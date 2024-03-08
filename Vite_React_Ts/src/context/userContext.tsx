@@ -7,7 +7,7 @@ interface UserProviderProps {
 interface UserContextType {
   userRole: number | undefined;
   token: string | undefined;
-  login: (user: loginUser, token: string) => void;
+  login: (user: loginUser, token: string, userId: number) => void;
   logout: () => void;
   isAuth: () => boolean;
 }
@@ -24,10 +24,11 @@ const UserProvider = ({ children }: UserProviderProps) => {
   const [userRole, setUserRole] = useState<number | undefined>(undefined);
   const [token, setToken] = useState<string | undefined>(undefined);
 
-  const login = (user: loginUser, token: string) => {
+  const login = (user: loginUser, token: string, userId: number) => {
     const stringUser = JSON.stringify(user);
-    localStorage.setItem("user", stringUser);
+    localStorage.setItem("userLogin", stringUser);
     localStorage.setItem("token", token);
+    localStorage.setItem("userId", userId.toString());
     setUserRole(user?.roleId);
     setToken(token);
   };

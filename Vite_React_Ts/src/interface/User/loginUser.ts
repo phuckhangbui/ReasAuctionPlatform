@@ -1,4 +1,5 @@
 interface loginUser {
+    id: number,
     accountName: string,
     email: string,
     roleId: number,

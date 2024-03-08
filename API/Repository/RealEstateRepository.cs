@@ -178,8 +178,7 @@ namespace API.Repository
         {
             var statusName = new GetStatusName();
             var page = new PaginationParams();
-            var query = _context.RealEstate.AsQueryable();
-            query = (IQueryable<RealEstate>)query.Where(x =>
+            var query = _context.RealEstate.Where(x =>
                 ((new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning, (int)RealEstateStatus.ReUp }.Contains(x.ReasStatus) && searchRealEstateDto.ReasStatus == -1)
                 || searchRealEstateDto.ReasStatus == x.ReasStatus) &&
                 (searchRealEstateDto.ReasName == null || x.ReasName.Contains(searchRealEstateDto.ReasName)) &&
