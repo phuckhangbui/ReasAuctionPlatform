@@ -60,11 +60,40 @@ namespace API.Services
                     realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.Sold;
                     await _realEstateRepository.UpdateAsync(realEstateToBeUpdated);
                     _logger.LogInformation($"Real estate id: {realEstateToBeUpdated.ReasId} status updated to 'Sold' successfully at {DateTime.Now}.");
+
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while updating auction status to");
+            }
+        }
+
+        public async Task ScheduleAuctionEndTime(int auctionId)
+        {
+            try
+            {
+                var currentDateTime = DateTime.Now;
+
+                var auctionsToBeScheduled = await _auctionRepository.GetAuctionByAuctionId(auctionId);
+
+                if (auctionsToBeScheduled != null)
+                {
+                    auctionsToBeScheduled.DateEnd = DateTime.Now.AddSeconds(30);
+
+                    await _auctionRepository.UpdateAsync(auctionsToBeScheduled);
+
+                    TimeSpan delayToEnd = auctionsToBeScheduled.DateEnd - currentDateTime;
+
+                    BackgroundJob.Schedule(() => ChangeAuctionStatusToFinish(auctionId), delayToEnd);
+
+                    _logger.LogInformation($"Auction id: {auctionId} scheduled for status change: " +
+                        $"'Finish' at {auctionsToBeScheduled.DateEnd}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while scheduling auction status change.");
             }
         }
 

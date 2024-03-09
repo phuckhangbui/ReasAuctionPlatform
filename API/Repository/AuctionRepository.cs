@@ -262,5 +262,10 @@ namespace API.Repository
 
             return _mapper.Map<AuctionDto>(auction);
         }
+
+        public async Task<Auction> GetAuctionByAuctionId(int auctionId)
+        {
+            return await _context.Auction.FindAsync(auctionId);
+        }
     }
 }
