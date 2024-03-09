@@ -1,7 +1,5 @@
 ﻿using API.Errors;
-using API.Extension;
 using API.Helper;
-using API.Interface.Repository;
 using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
@@ -103,7 +101,7 @@ namespace API.Controllers
             {
                 return BadRequest(new ApiResponse(401));
             }
-        }      
+        }
 
         [HttpGet(BaseUri + "real-estate/pending")]
         public async Task<IActionResult> GetRealEstateOnGoingByAdmin([FromQuery] PaginationParams paginationParams)

@@ -1,14 +1,11 @@
 ﻿using API.DTOs;
-using API.Entity;
 using API.Helper;
 using API.Interface.Repository;
-using API.MessageResponse;
 using API.Param;
-using Microsoft.AspNetCore.Mvc;
 
 namespace API.Interface.Service
 {
-    public interface IMemberRealEstateService : IBaseService<RealEstate>
+    public interface IMemberRealEstateService
     {
         IAccountRepository AccountRepository { get; }
         Task<PageList<RealEstateDto>> GetOnwerRealEstate(int userMember);

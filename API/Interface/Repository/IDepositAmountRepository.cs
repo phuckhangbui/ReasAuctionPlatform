@@ -9,9 +9,11 @@ namespace API.Interface.Repository
     {
         Task<PageList<DepositAmountDto>> GetDepositAmoutForMember(int id);
         Task<PageList<DepositAmountDto>> GetDepositAmoutForMemberBySearch(SearchDepositAmountParam searchDepositAmountDto, int id);
-        Task<PageList<DepositAmountDto>> GetDepositAmountsAsync(DepositAmountParam depositAmountParam);
-
+        Task<PageList<DepositDto>> GetDepositAmountsAsync(DepositAmountParam depositAmountParam);
         List<DepositAmount> GetDepositAmounts(int accountSignId, int reasId);
         DepositAmount GetDepositAmount(int accountSignId, int reasId);
+        DepositAmount GetDepositAmount(int depositId);
+        DepositDetailDto GetDepositDetailAsync(int depositId);
+        Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId);
     }
 }

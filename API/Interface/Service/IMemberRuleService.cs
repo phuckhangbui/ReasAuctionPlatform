@@ -3,7 +3,7 @@ using API.Interface.Repository;
 
 namespace API.Interface.Service
 {
-    public interface IMemberRuleService : IBaseService<Rule>
+    public interface IMemberRuleService
     {
         IAccountRepository AccountRepository { get; }
         Task<Rule> GetRuleContractWhenUserSignInAuction();

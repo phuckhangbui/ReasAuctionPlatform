@@ -26,8 +26,8 @@ public class Account
     public List<Task> TasksAssigned { get; set; }
     public List<Log> LogWrote { get; set; }
     public List<Auction> Auctions { get; set; }
-    public List<MoneyTransaction> MoneyTransactions { get; set; }
-    public List<MoneyTransactionDetail> MoneyTransactionDetails { get; set; }
+    public List<MoneyTransaction> MoneyTransactionsSent { get; set; }
+    public List<MoneyTransaction> MoneyTransactionsReceived { get; set; }
     public List<Message> MessagesSent { get; set; }
     public List<Message> MessagesReceived { get; set; }
     public List<News> NewsCreated { get; set; }

@@ -3,6 +3,7 @@ using API.Exceptions;
 using API.Extension;
 using API.Helper;
 using API.Interface.Service;
+using API.Param;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,13 +21,13 @@ namespace API.Controllers
         private const string BaseUri = "/api/transactions";
         private const string DetailUri = BaseUri + "/{transactionId}";
 
-        [HttpGet(BaseUri)]
+        [HttpPost(BaseUri)]
         [Authorize(policy: "AdminAndStaff")]
-        public async Task<IActionResult> GetTransactionHistory([FromQuery] MoneyTransactionParam moneyTransactionParam)
+        public async Task<IActionResult> GetTransactionHistory([FromBody] MoneyTransactionRequest moneyTransactionRequest)
         {
             try
             {
-                var transactionsHistory = await _moneyTransactionService.GetMoneyTransactions(moneyTransactionParam);
+                var transactionsHistory = await _moneyTransactionService.GetMoneyTransactions(moneyTransactionRequest);
 
                 Response.AddPaginationHeader(new PaginationHeader(transactionsHistory.CurrentPage, transactionsHistory.PageSize,
                 transactionsHistory.TotalCount, transactionsHistory.TotalPages));

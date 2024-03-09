@@ -1,7 +1,5 @@
 ﻿using API.Errors;
-using API.Extension;
 using API.Helper;
-using API.Interface.Repository;
 using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
@@ -29,10 +27,10 @@ namespace API.Controllers
                 if (reals != null)
                 {
                     if (!ModelState.IsValid)
+                    {
                         return BadRequest(ModelState);
-                    return Ok(reals);
-                    var apiResponseMessage = new ApiResponseMessage("MSG01");
-                    return Ok(new List<ApiResponseMessage> { apiResponseMessage });
+                    }
+                    return Ok();
                 }
                 else
                 {
@@ -40,10 +38,9 @@ namespace API.Controllers
                     return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
             }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
+
+            return BadRequest(new ApiResponse(401));
+
         }
 
         [HttpPost(BaseUri + "real-estate/pending/search")]
@@ -58,8 +55,8 @@ namespace API.Controllers
                     if (!ModelState.IsValid)
                         return BadRequest(ModelState);
                     return Ok(reals);
-                    var apiResponseMessage = new ApiResponseMessage("MSG01");
-                    return Ok(new List<ApiResponseMessage> { apiResponseMessage });
+                    //var apiResponseMessage = new ApiResponseMessage("MSG01");
+                    //return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
                 else
                 {
@@ -79,7 +76,7 @@ namespace API.Controllers
             int idStaff = GetIdStaff(_staffRealEstateService.AccountRepository);
             if (idStaff != 0)
             {
-                var real_estate_detail = _staffRealEstateService.GetRealEstateOnGoingDetailByStaff(id);
+                var real_estate_detail = await _staffRealEstateService.GetRealEstateOnGoingDetailByStaff(id);
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
                 return Ok(real_estate_detail);
@@ -87,7 +84,7 @@ namespace API.Controllers
             else
             {
                 return BadRequest(new ApiResponse(401));
-            } 
+            }
         }
 
         [HttpGet(BaseUri + "real-estate/all")]
@@ -103,8 +100,8 @@ namespace API.Controllers
                     if (!ModelState.IsValid)
                         return BadRequest(ModelState);
                     return Ok(reals);
-                    var apiResponseMessage = new ApiResponseMessage("MSG01");
-                    return Ok(new List<ApiResponseMessage> { apiResponseMessage });
+                    //var apiResponseMessage = new ApiResponseMessage("MSG01");
+                    //return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
                 else
                 {
@@ -130,8 +127,8 @@ namespace API.Controllers
                     if (!ModelState.IsValid)
                         return BadRequest(ModelState);
                     return Ok(reals);
-                    var apiResponseMessage = new ApiResponseMessage("MSG01");
-                    return Ok(new List<ApiResponseMessage> { apiResponseMessage });
+                    //var apiResponseMessage = new ApiResponseMessage("MSG01");
+                    //return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
                 else
                 {

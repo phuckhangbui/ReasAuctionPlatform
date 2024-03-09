@@ -1,12 +1,11 @@
 ﻿using API.DTOs;
-using API.Entity;
 using API.Helper;
 using API.Interface.Repository;
 using API.Param;
 
 namespace API.Interface.Service
 {
-    public interface IAdminNewsService : IBaseService<News>
+    public interface IAdminNewsService
     {
         IAccountRepository AccountRepository { get; }
         Task<IEnumerable<NewsAdminDto>> GetAllNewsByAdmin();

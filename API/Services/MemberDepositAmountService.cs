@@ -1,22 +1,20 @@
 ﻿using API.DTOs;
-using API.Entity;
 using API.Helper;
 using API.Interface.Repository;
 using API.Interface.Service;
-using API.Interfaces;
 using API.Param;
-using AutoMapper;
 
 namespace API.Services
 {
-    public class MemberDepositAmountService : BaseService<DepositAmount>, IMemberDepositAmountService
+    public class MemberDepositAmountService : IMemberDepositAmountService
     {
         private readonly IDepositAmountRepository _depositAmountRepository;
         private readonly IAccountRepository _accountRepository;
-        public MemberDepositAmountService(IAccountRepository accountRepository, IRealEstateRepository realEstateRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstatePhotoRepository realEstatePhotoRepository, INewsRepository newsRepository, IMoneyTransactionRepository moneyTransactionRepository, IMoneyTransactionDetailRepository moneyTransactionDetailRepository, IRuleRepository ruleRepository, ITypeReasRepository typeReasRepository, IAuctionRepository auctionRepository, IDepositAmountRepository depositAmountRepository, IMapper mapper, IPhotoService photoService, ITokenService tokenService) : base(accountRepository, realEstateRepository, realEstateDetailRepository, realEstatePhotoRepository, newsRepository, moneyTransactionRepository, moneyTransactionDetailRepository, ruleRepository, typeReasRepository, auctionRepository, depositAmountRepository, mapper, photoService, tokenService)
+
+        public MemberDepositAmountService(IDepositAmountRepository depositAmountRepository, IAccountRepository accountRepository)
         {
-            _accountRepository = accountRepository;
             _depositAmountRepository = depositAmountRepository;
+            _accountRepository = accountRepository;
         }
 
         public IAccountRepository AccountRepository => _accountRepository;

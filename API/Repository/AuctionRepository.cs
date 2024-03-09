@@ -98,6 +98,50 @@ namespace API.Repository
             return _context.Auction.Find(auctionId);
         }
 
+        public async Task<PageList<AuctionDto>> GetAuctionHistoryForOwnerAsync(AuctionHistoryParam auctionAccountingParam)
+        {
+            var query = _context.AuctionsAccounting
+                .Where(aa => aa.AccountOwnerId == auctionAccountingParam.AccountId 
+                        && aa.Auction.Status == (int)AuctionStatus.Finish 
+                        || aa.Auction.Status == (int)AuctionStatus.Cancel)
+                .Select(aa => aa.Auction)
+                .AsQueryable();
+
+            var pageList = await PageList<Auction>.CreateAsync(query, auctionAccountingParam.PageNumber, auctionAccountingParam.PageSize);
+
+            var auctionDtos = _mapper.Map<List<AuctionDto>>(pageList);
+
+            return new PageList<AuctionDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
+        }
+
+        public async Task<PageList<AuctionDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam)
+        {
+            var query = _context.DepositAmount
+                .Where(d => d.AccountSignId == auctionAccountingParam.AccountId)
+                .Join(
+                    _context.RealEstate,
+                    deposit => deposit.ReasId,
+                    realEstate => realEstate.ReasId,
+                    (deposit, realEstate) => new { Deposit = deposit, RealEstate = realEstate }
+                )
+                .Join(
+                    _context.Auction,
+                    depositRealEstate => depositRealEstate.RealEstate.ReasId,
+                    auction => auction.ReasId,
+                    (depositRealEstate, auction) => auction
+                )
+                .Where(a => a.Status == (int)AuctionStatus.Finish)
+                .Distinct()
+                .AsQueryable();
+
+            var pageList = await PageList<Auction>.CreateAsync(query, auctionAccountingParam.PageNumber, auctionAccountingParam.PageSize);
+
+            var auctionDtos = _mapper.Map<List<AuctionDto>>(pageList);
+
+            return new PageList<AuctionDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
+
+        }
+
         public async Task<AuctionDetailOnGoing> GetAuctionDetailOnGoing(int id)
         {
             var getName = new GetStatusName();
@@ -177,7 +221,7 @@ namespace API.Repository
                 accountEmail = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.AccountEmail).FirstOrDefault(),
                 accountPhone = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.PhoneNumber).FirstOrDefault(),
                 amount = x.Amount,
-                depositDate = x.DepositDate,
+                depositDate = (DateTime)x.DepositDate,
                 status = getName.GetStatusDepositName(x.Status),
             });
             return await deposit.ToListAsync();
@@ -192,7 +236,7 @@ namespace API.Repository
                 auction.AccountCreateId = auctionCreateParam.AccountCreateId;
                 auction.AccountCreateName = _context.Account.Where(x => x.AccountId == auctionCreateParam.AccountCreateId).Select(x => x.AccountName).FirstOrDefault();
                 auction.DateStart = auctionCreateParam.DateStart;
-                auction.FloorBid = auctionCreateParam.FloorBid;
+                auction.FloorBid = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasPrice).FirstOrDefault();
                 auction.Status = 0;
                 bool check = await CreateAsync(auction);
                 if (check)

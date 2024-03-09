@@ -54,9 +54,6 @@ namespace API.Data.Migrations
                 name: "NewsSumary",
                 table: "News");
 
-            migrationBuilder.DropColumn(
-                name: "Thumbnail",
-                table: "News");
 
             migrationBuilder.AlterColumn<string>(
                 name: "MaxAmount",

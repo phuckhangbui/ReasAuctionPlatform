@@ -23,7 +23,6 @@ namespace API.Extensions
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IAuctionRepository, AuctionRepository>();
             services.AddScoped<INewsRepository, NewsRepository>();
-            services.AddScoped<IMoneyTransactionDetailRepository, MoneyTransactionDetailRepository>();
             services.AddScoped<IMoneyTransactionRepository, MoneyTransactionRepository>();
             services.AddScoped<IDepositAmountRepository, DepositAmountRepository>();
             services.AddScoped<ITypeReasRepository, TypeReasRepository>();
@@ -44,6 +43,7 @@ namespace API.Extensions
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IMoneyTransactionService, MoneyTransactionService>();
             services.AddScoped<IDepositAmountService, DepositAmountService>();
+            services.AddScoped<IVnPayService, VnPayService>();
 
             services.AddScoped<IAuctionAccountingService, AuctionAccountingService>();
 
@@ -83,6 +83,7 @@ namespace API.Extensions
                     policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
+
 
             return services;
         }

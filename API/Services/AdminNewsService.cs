@@ -1,18 +1,17 @@
 ﻿using API.DTOs;
-using API.Entity;
 using API.Interface.Repository;
 using API.Interface.Service;
 using API.Interfaces;
-using AutoMapper;
 
 namespace API.Services
 {
-    public class AdminNewsService : BaseService<News>, IAdminNewsService
+    public class AdminNewsService : IAdminNewsService
     {
         private readonly IAccountRepository _accountRepository;
         private readonly INewsRepository _newsRepository;
         private readonly IPhotoService _photoService;
-        public AdminNewsService(IAccountRepository accountRepository, IRealEstateRepository realEstateRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstatePhotoRepository realEstatePhotoRepository, INewsRepository newsRepository, IMoneyTransactionRepository moneyTransactionRepository, IMoneyTransactionDetailRepository moneyTransactionDetailRepository, IRuleRepository ruleRepository, ITypeReasRepository typeReasRepository, IAuctionRepository auctionRepository, IDepositAmountRepository depositAmountRepository, IMapper mapper, IPhotoService photoService, ITokenService tokenService) : base(accountRepository, realEstateRepository, realEstateDetailRepository, realEstatePhotoRepository, newsRepository, moneyTransactionRepository, moneyTransactionDetailRepository, ruleRepository, typeReasRepository, auctionRepository, depositAmountRepository, mapper, photoService, tokenService)
+
+        public AdminNewsService(IAccountRepository accountRepository, INewsRepository newsRepository, IPhotoService photoService)
         {
             _accountRepository = accountRepository;
             _newsRepository = newsRepository;
@@ -34,7 +33,7 @@ namespace API.Services
             //newCreate.ThumbnailUri = result.SecureUrl.AbsoluteUri;
             string name = await _accountRepository.GetNameAccountByAccountIdAsync(idAdmin);
             bool news = await _newsRepository.CreateNewNewsByAdmin(newCreate, idAdmin, name);
-            if(news)
+            if (news)
             {
                 return true;
             }

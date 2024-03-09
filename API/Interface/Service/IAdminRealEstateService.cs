@@ -1,12 +1,10 @@
 ﻿using API.DTOs;
-using API.Helper;
 using API.Interface.Repository;
 using API.Param;
-using API.Repository;
 
 namespace API.Interface.Service
 {
-    public interface IAdminRealEstateService : IBaseService<RealEstateRepository>
+    public interface IAdminRealEstateService
     {
         IAccountRepository AccountRepository { get; }
         Task<IEnumerable<ManageRealEstateDto>> GetAllRealEstatesBySearch(SearchRealEsateAdminParam searchRealEstateParam);

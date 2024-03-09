@@ -2,20 +2,29 @@
 using API.Errors;
 using API.Extension;
 using API.Helper;
+using API.Helper.VnPay;
 using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
+using API.Param.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace API.Controllers
 {
+    [Authorize(policy: "member")]
     public class MemberRealEstateController : BaseApiController
     {
         private readonly IMemberRealEstateService _memberRealEstateService;
+        private readonly VnPayProperties _vnPayProperties;
+        private readonly IVnPayService _vnPayService;
         private const string BaseUri = "/api/home/";
-        public MemberRealEstateController(IMemberRealEstateService memberRealEstateService)
+        public MemberRealEstateController(IMemberRealEstateService memberRealEstateService, IVnPayService vnPayService, IOptions<VnPayProperties> vnPayProperties)
         {
             _memberRealEstateService = memberRealEstateService;
+            _vnPayService = vnPayService;
+            _vnPayProperties = vnPayProperties.Value;
         }
 
         [HttpGet(BaseUri + "my_real_estate")]
@@ -71,7 +80,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet(BaseUri + "my_real_estate/create")]
+        [HttpGet(BaseUri + "my_real_estate/view")]
         public async Task<ActionResult<CreateNewRealEstatePage>> ViewCreateNewRealEstatePage()
         {
             int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
@@ -99,7 +108,7 @@ namespace API.Controllers
                     return new ApiResponseMessage("MSG16");
                 else
                 {
-                    return BadRequest(new ApiResponse(400,"Have any error when excute operation."));
+                    return BadRequest(new ApiResponse(400, "Have any error when excute operation."));
                 }
             }
             else
@@ -125,13 +134,41 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet(BaseUri + "my_real_estate/detail/{reasId}/createPaymentLink")]
+        public async Task<ActionResult> CreatePaymentLink(int reasId, string returnUrl)
+        {
+            int customerId = GetLoginAccountId();
+
+            if (customerId == 0)
+            {
+                return BadRequest(new ApiResponse(401));
+            }
+
+            var realEstateDetail = await _memberRealEstateService.ViewOwnerRealEstateDetail(reasId);
+            if (realEstateDetail.AccountOwnerId != customerId)
+            {
+                return BadRequest(new ApiResponse(401, "Not match real estate with userId"));
+            }
+
+            if (realEstateDetail.ReasStatus != (int)RealEstateStatus.Approved)
+            {
+                return BadRequest(new ApiResponse(401, "Not in the payment state"));
+
+            }
+
+            string paymentUrl = _vnPayService.CreatePostRealEstatePaymentURL(HttpContext, _vnPayProperties, returnUrl);
+
+            return Ok(paymentUrl);
+        }
+
+
         [HttpPost(BaseUri + "my_real_estate/payment")]
         public async Task<ActionResult<ApiResponseMessage>> PaymentAmountToUpRealEstaeAfterApprove(TransactionMoneyCreateParam transactionMoneyCreateParam)
         {
             int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
             if (userMember != 0)
             {
-                if(transactionMoneyCreateParam.Money != transactionMoneyCreateParam.MoneyPaid)
+                if (transactionMoneyCreateParam.Money != transactionMoneyCreateParam.MoneyPaid)
                 {
                     return new ApiResponseMessage("MSG20");
                 }

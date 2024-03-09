@@ -1,28 +1,40 @@
 ﻿using API.DTOs;
-using API.Entity;
-using API.Helper;
 using API.Interface.Repository;
 using API.Interface.Service;
-using API.Interfaces;
 using API.Param;
 using API.Param.Enums;
-using AutoMapper;
 
 namespace API.Services
 {
-    public class AdminRealEstateService : BaseService<RealEstate>, IAdminRealEstateService
+    public class AdminRealEstateService : IAdminRealEstateService
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IRealEstateDetailRepository _realEstateDetailRepository;
         private readonly IRealEstateRepository _realEstateRepository;
-        public AdminRealEstateService(IAccountRepository accountRepository, IRealEstateRepository realEstateRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstatePhotoRepository realEstatePhotoRepository, INewsRepository newsRepository, IMoneyTransactionRepository moneyTransactionRepository, IMoneyTransactionDetailRepository moneyTransactionDetailRepository, IRuleRepository ruleRepository, ITypeReasRepository typeReasRepository, IAuctionRepository auctionRepository, IDepositAmountRepository depositAmountRepository, IMapper mapper, IPhotoService photoService, ITokenService tokenService) : base(accountRepository, realEstateRepository, realEstateDetailRepository, realEstatePhotoRepository, newsRepository, moneyTransactionRepository, moneyTransactionDetailRepository, ruleRepository, typeReasRepository, auctionRepository, depositAmountRepository, mapper, photoService, tokenService)
+
+        public AdminRealEstateService(IAccountRepository accountRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstateRepository realEstateRepository)
         {
             _accountRepository = accountRepository;
-            _realEstateRepository = realEstateRepository;
             _realEstateDetailRepository = realEstateDetailRepository;
+            _realEstateRepository = realEstateRepository;
         }
 
         public IAccountRepository AccountRepository => _accountRepository;
+
+        public async Task<bool> BlockRealEstate(int reasId)
+        {
+            ReasStatusParam reasStatus = new ReasStatusParam();
+            reasStatus.reasId = reasId;
+            reasStatus.reasStatus = (int)RealEstateStatus.Block;
+            reasStatus.messageString = "";
+
+            bool check = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatus);
+            if (check)
+            {
+                return true;
+            }
+            else { return false; }
+        }
 
         public async Task<IEnumerable<ManageRealEstateDto>> GetAllRealEstateExceptOnGoingByAdmin()
         {
@@ -54,10 +66,25 @@ namespace API.Services
             return reals;
         }
 
-        public  async Task<RealEstateDetailDto> GetRealEstatePendingDetail(int reasId)
+        public async Task<RealEstateDetailDto> GetRealEstatePendingDetail(int reasId)
         {
             var realEstateDetailDto = await _realEstateDetailRepository.GetRealEstateDetailByAdminOrStaff(reasId);
             return realEstateDetailDto;
+        }
+
+        public async Task<bool> UnblockRealEstate(int reasId)
+        {
+            ReasStatusParam reasStatus = new ReasStatusParam();
+            reasStatus.reasId = reasId;
+            reasStatus.reasStatus = (int)RealEstateStatus.Selling;
+            reasStatus.messageString = "";
+
+            bool check = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatus);
+            if (check)
+            {
+                return true;
+            }
+            else { return false; }
         }
 
         public async Task<bool> UpdateStatusRealEstateByAdmin(ReasStatusParam reasStatusParam)

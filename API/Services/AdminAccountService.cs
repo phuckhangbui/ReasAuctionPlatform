@@ -1,19 +1,17 @@
 ﻿using API.DTOs;
 using API.Interface.Repository;
 using API.Interface.Service;
-using API.Interfaces;
 using API.Param;
-using AutoMapper;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace API.Services
 {
-    public class AdminAccountService : BaseService<Entity.Account>, IAdminAccountService
+    public class AdminAccountService : IAdminAccountService
     {
         private readonly IAccountRepository _accountRepository;
 
-        public AdminAccountService(IAccountRepository accountRepository, IRealEstateRepository realEstateRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstatePhotoRepository realEstatePhotoRepository, INewsRepository newsRepository, IMoneyTransactionRepository moneyTransactionRepository, IMoneyTransactionDetailRepository moneyTransactionDetailRepository, IRuleRepository ruleRepository, ITypeReasRepository typeReasRepository, IAuctionRepository auctionRepository, IDepositAmountRepository depositAmountRepository, IMapper mapper, IPhotoService photoService, ITokenService tokenService) : base(accountRepository, realEstateRepository, realEstateDetailRepository, realEstatePhotoRepository, newsRepository, moneyTransactionRepository, moneyTransactionDetailRepository, ruleRepository, typeReasRepository, auctionRepository, depositAmountRepository, mapper, photoService, tokenService)
+        public AdminAccountService(IAccountRepository accountRepository)
         {
             _accountRepository = accountRepository;
         }
@@ -59,7 +57,7 @@ namespace API.Services
                 newaccount.Date_End = DateTime.MaxValue;
                 newaccount.Account_Status = 1;
                 bool flag = await _accountRepository.CreateAsync(newaccount);
-                if(flag)
+                if (flag)
                 {
                     SendMailNewStaff.SendEmailWhenCreateNewStaff(accountParam.AccountEmail, accountParam.Username, accountParam.PasswordHash, accountParam.AccountName);
                     return true;
@@ -68,7 +66,8 @@ namespace API.Services
                 {
                     return false;
                 }
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return false;
             }

@@ -1,12 +1,10 @@
 ﻿using API.DTOs;
-using API.Entity;
-using API.Helper;
 using API.Interface.Repository;
 using API.Param;
 
 namespace API.Interface.Service
 {
-    public interface IAdminAccountService : IBaseService<Account>
+    public interface IAdminAccountService
     {
         IAccountRepository AccountRepository { get; }
         Task<IEnumerable<AccountStaffDto>> GetStaffAccountBySearch(AccountParams accountParams);

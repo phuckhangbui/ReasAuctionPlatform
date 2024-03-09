@@ -49,46 +49,73 @@ namespace API.Repository
             return await _dataContext.MoneyTransaction.MaxAsync(x => x.TransactionId);
         }
 
-        public async Task<PageList<MoneyTransactionDto>> GetMoneyTransactionsAsync(MoneyTransactionParam moneyTransactionParam)
+        public async Task<MoneyTransactionDetailDto> GetMoneyTransactionDetailAsync(int transactionId)
         {
+            var moneyTransaction = await _dataContext.MoneyTransaction
+                .Include(m => m.AccountReceive)
+                .Include(m => m.AccountSend)
+                .Include(m => m.RealEstate)
+                .Include(m => m.Type)
+                .FirstAsync(m => m.TransactionId == transactionId);
+
+            return _mapper.Map<MoneyTransactionDetailDto>(moneyTransaction);
+        }
+
+        public async Task<PageList<MoneyTransactionDto>> GetMoneyTransactionsAsync(MoneyTransactionRequest moneyTransactionRequest)
+        {
+            PaginationParams paginationParams = new PaginationParams();
             var query = _dataContext.MoneyTransaction.AsQueryable();
 
-            if (moneyTransactionParam.TransactionStatus != 0)
-            {
-                query = query.Where(m => m.TransactionStatus == moneyTransactionParam.TransactionStatus);
-            }
+            query = query.Include(m => m.Type);
+            DateTime dateExecutionFrom;
+            DateTime dateExecutionTo;
 
-            if (moneyTransactionParam.TypeId != 0)
+            if (!string.IsNullOrEmpty(moneyTransactionRequest.DateExecutionFrom))
             {
-                query = query.Where(m => m.TypeId == moneyTransactionParam.TypeId);
+                dateExecutionFrom = DateTime.Parse(moneyTransactionRequest.DateExecutionFrom);
+                query = query.Where(m => m.DateExecution >= dateExecutionFrom);
+            }
+            else if (!string.IsNullOrEmpty(moneyTransactionRequest.DateExecutionTo))
+            {
+                dateExecutionTo = DateTime.Parse(moneyTransactionRequest.DateExecutionTo);
+                query = query.Where(m => m.DateExecution <= dateExecutionTo);
+            }
+            else if (!string.IsNullOrEmpty(moneyTransactionRequest.DateExecutionFrom) &&
+                    !string.IsNullOrEmpty(moneyTransactionRequest.DateExecutionTo))
+            {
+                dateExecutionFrom = DateTime.Parse(moneyTransactionRequest.DateExecutionFrom);
+                dateExecutionTo = DateTime.Parse(moneyTransactionRequest.DateExecutionTo);
+
+                query = query.Where(m => m.DateExecution >= dateExecutionFrom 
+                    && m.DateExecution <= dateExecutionTo);
             }
 
             query = query.OrderByDescending(r => r.DateExecution);
 
             return await PageList<MoneyTransactionDto>.CreateAsync(
-            query.AsNoTracking().ProjectTo<MoneyTransactionDto>(_mapper.ConfigurationProvider),
-            moneyTransactionParam.PageNumber,
-            moneyTransactionParam.PageSize);
+                query.AsNoTracking().ProjectTo<MoneyTransactionDto>(_mapper.ConfigurationProvider),
+                paginationParams.PageNumber,
+                paginationParams.PageSize);
         }
 
-        public async System.Threading.Tasks.Task CreateMoneyTransactionAndMoneyTransactionDetail(MoneyTransaction moneyTransaction, MoneyTransactionDetail moneyTransactionDetail)
-        {
-            try
-            {
-                //_dataContext.MoneyTransaction.Add(moneyTransaction);
-                //_dataContext.SaveChanges();
-                moneyTransactionDetail.MoneyTransaction = moneyTransaction;
+        //public async System.Threading.Tasks.Task CreateMoneyTransactionAndMoneyTransactionDetail(MoneyTransaction moneyTransaction, MoneyTransactionDetail moneyTransactionDetail)
+        //{
+        //    try
+        //    {
+        //        //_dataContext.MoneyTransaction.Add(moneyTransaction);
+        //        //_dataContext.SaveChanges();
+        //        moneyTransactionDetail.MoneyTransaction = moneyTransaction;
 
 
-                _dataContext.MoneyTransactionDetail.Add(moneyTransactionDetail);
-                _dataContext.SaveChanges();
+        //        _dataContext.MoneyTransactionDetail.Add(moneyTransactionDetail);
+        //        _dataContext.SaveChanges();
 
 
-            }
-            catch (Exception ex)
-            {
+        //    }
+        //    catch (Exception ex)
+        //    {
 
-            }
-        }
+        //    }
+        //}
     }
 }

@@ -1,7 +1,11 @@
-using API.Extensions;
-using Microsoft.OpenApi.Models;
 using API.Data;
+using API.Extensions;
+using API.Helper.VnPay;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
+using API.Interface.Service;
+using API.Services;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +22,16 @@ builder.Services.AddDbContext<DataContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+// Hangfire client
+//builder.Services.AddHangfire(configuration => configuration
+//    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+//    .UseSimpleAssemblyNameTypeSerializer()
+//    .UseRecommendedSerializerSettings()
+//    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Hangfire server
+//builder.Services.AddHangfireServer();
+//builder.Services.AddScoped<IBackgroundTaskService, BackgroundTaskService>();
 
 builder.Services.AddSwaggerGen(option =>
 {
@@ -46,6 +60,9 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+
+builder.Services.Configure<VnPayProperties>(builder.Configuration.GetSection("VnPay"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -55,6 +72,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseCors("CorsPolicy");
@@ -63,5 +85,16 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+//app.UseHangfireDashboard();
+//app.MapHangfireDashboard("/hangfire");
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var serviceProvider = scope.ServiceProvider;
+//    var backgroundTaskService = serviceProvider.GetRequiredService<IBackgroundTaskService>();
+
+//    RecurringJob.AddOrUpdate("ChangeAuctionStatusToOnGoing", () => backgroundTaskService.ScheduleAuctionStatus(), Cron.MinuteInterval(1));
+//}
 
 app.Run();

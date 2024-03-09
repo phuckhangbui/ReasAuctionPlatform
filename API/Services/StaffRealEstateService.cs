@@ -1,25 +1,21 @@
 ﻿using API.DTOs;
-using API.Entity;
-using API.Helper;
 using API.Interface.Repository;
 using API.Interface.Service;
-using API.Interfaces;
 using API.Param;
-using AutoMapper;
 
 namespace API.Services
 {
-    public class StaffRealEstateService : BaseService<RealEstate>, IStaffRealEstateService
+    public class StaffRealEstateService : IStaffRealEstateService
     {
         private readonly IRealEstateRepository _realEstateRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly IRealEstateDetailRepository _realEstateDetailRepository;
 
-        public StaffRealEstateService(IAccountRepository accountRepository, IRealEstateRepository realEstateRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstatePhotoRepository realEstatePhotoRepository, INewsRepository newsRepository, IMoneyTransactionRepository moneyTransactionRepository, IMoneyTransactionDetailRepository moneyTransactionDetailRepository, IRuleRepository ruleRepository, ITypeReasRepository typeReasRepository, IAuctionRepository auctionRepository, IDepositAmountRepository depositAmountRepository, IMapper mapper, IPhotoService photoService, ITokenService tokenService) : base(accountRepository, realEstateRepository, realEstateDetailRepository, realEstatePhotoRepository, newsRepository, moneyTransactionRepository, moneyTransactionDetailRepository, ruleRepository, typeReasRepository, auctionRepository, depositAmountRepository, mapper, photoService, tokenService)
+        public StaffRealEstateService(IRealEstateRepository realEstateRepository, IAccountRepository accountRepository, IRealEstateDetailRepository realEstateDetailRepository)
         {
+            _realEstateRepository = realEstateRepository;
             _accountRepository = accountRepository;
             _realEstateDetailRepository = realEstateDetailRepository;
-            _realEstateRepository = realEstateRepository;
         }
 
         public IAccountRepository AccountRepository => _accountRepository;

@@ -1,4 +1,6 @@
-﻿namespace API.Helper
+﻿using API.Helper;
+
+namespace API.Param
 {
     public class TaskParam : PaginationParams
     {

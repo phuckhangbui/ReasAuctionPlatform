@@ -19,7 +19,6 @@ public class DataContext : DbContext
     public DbSet<Major> Major { get; set; }
     public DbSet<Message> Message { get; set; }
     public DbSet<MoneyTransaction> MoneyTransaction { get; set; }
-    public DbSet<MoneyTransactionDetail> MoneyTransactionDetail { get; set; }
     public DbSet<MoneyTransactionType> MoneyTransactionType { get; set; }
     public DbSet<News> News { get; set; }
     public DbSet<RealEstate> RealEstate { get; set; }
@@ -95,15 +94,6 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<MoneyTransaction>()
             .Property(a => a.TransactionId)
-            .ValueGeneratedOnAdd()
-            .UseIdentityColumn();
-
-        modelBuilder.Entity<MoneyTransactionDetail>()
-            .HasKey(k => k.MoneyTransactionDetailId);
-
-        modelBuilder.Entity<MoneyTransactionDetail>()
-            .Property(a => a.MoneyTransactionDetailId)
-            .ValueGeneratedOnAdd()
             .UseIdentityColumn();
 
         modelBuilder.Entity<MoneyTransactionType>()
@@ -213,11 +203,16 @@ public class DataContext : DbContext
             .HasForeignKey<Account>(y => y.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        //one account has many money transactions
         modelBuilder.Entity<MoneyTransaction>()
-            .HasOne(mt => mt.AccountSend)
-            .WithMany(a => a.MoneyTransactions)
-            .HasForeignKey(mt => mt.AccountSendId)
+        .HasOne(mt => mt.AccountSend)
+        .WithMany(a => a.MoneyTransactionsSent)
+        .HasForeignKey(mt => mt.AccountSendId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MoneyTransaction>()
+            .HasOne(mt => mt.AccountReceive)
+            .WithMany(a => a.MoneyTransactionsReceived)
+            .HasForeignKey(mt => mt.AccountReceiveId)
             .OnDelete(DeleteBehavior.Restrict);
 
         //one money transaction has one type
@@ -225,6 +220,21 @@ public class DataContext : DbContext
             .HasOne(mt => mt.Type)
             .WithOne()
             .HasForeignKey<MoneyTransaction>(mtt => mtt.TypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+
+        ////one money transaction detail has one deposit
+        modelBuilder.Entity<MoneyTransaction>()
+            .HasOne(mtt => mtt.DepositAmount)
+            .WithOne()
+            .HasForeignKey<MoneyTransaction>(mtt => mtt.DepositId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        ////one money transaction has one real estate
+        modelBuilder.Entity<MoneyTransaction>()
+            .HasOne(mtd => mtd.RealEstate)
+            .WithOne()
+            .HasForeignKey<MoneyTransaction>(mtd => mtd.ReasId)
             .OnDelete(DeleteBehavior.Restrict);
 
         //one account can create many auctions
@@ -239,34 +249,6 @@ public class DataContext : DbContext
             .HasOne(a => a.RealEstate)
             .WithOne()
             .HasForeignKey<Auction>(re => re.ReasId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //one account has many money transaction details
-        modelBuilder.Entity<MoneyTransactionDetail>()
-            .HasOne(mtt => mtt.AccountReceive)
-            .WithMany(a => a.MoneyTransactionDetails)
-            .HasForeignKey(mtt => mtt.AccountReceiveId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //one money transaction has one money transaction detail
-        modelBuilder.Entity<MoneyTransactionDetail>()
-            .HasOne(mtd => mtd.MoneyTransaction)
-            .WithOne(mt => mt.MoneyTransactionDetail)
-            .HasForeignKey<MoneyTransactionDetail>(mtd => mtd.MoneyTransactionId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //one money transaction detail has one auction
-        modelBuilder.Entity<MoneyTransactionDetail>()
-            .HasOne(mtt => mtt.Auction)
-            .WithOne()
-            .HasForeignKey<MoneyTransactionDetail>(mtt => mtt.AuctionId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //one money transaction detail has one real estate
-        modelBuilder.Entity<MoneyTransactionDetail>()
-            .HasOne(mtd => mtd.RealEstate)
-            .WithOne()
-            .HasForeignKey<MoneyTransactionDetail>(mtd => mtd.ReasId)
             .OnDelete(DeleteBehavior.Restrict);
 
         //one account can sent many messages

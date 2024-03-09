@@ -20,6 +20,7 @@ namespace API.Interface.Repository
         Task<bool> EditAuctionStatus(string autionId, string statusCode);
         Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam);
         Auction GetAuction(int auctionId);
+        Task<PageList<AuctionDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam);
+        Task<PageList<AuctionDto>> GetAuctionHistoryForOwnerAsync(AuctionHistoryParam auctionAccountingParam);
     }
-
 }

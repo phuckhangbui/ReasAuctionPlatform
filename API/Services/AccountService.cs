@@ -42,6 +42,7 @@ namespace API.Services
 
                 return new UserDto
                 {
+                    Id = account.AccountId,
                     Email = account.AccountEmail,
                     Token = _tokenService.CreateToken(account),
                     RoleId = account.RoleId,
@@ -64,6 +65,7 @@ namespace API.Services
                 Account account = await _accountRepository.GetAccountByEmailAsync(userEmail);
                 return new UserDto
                 {
+                    Id = account.AccountId,
                     Email = account.AccountEmail,
                     Token = _tokenService.CreateToken(account),
                     RoleId = account.RoleId,
@@ -88,6 +90,7 @@ namespace API.Services
 
                 return new UserDto
                 {
+                    Id = account.AccountId,
                     Email = account.AccountEmail,
                     Token = _tokenService.CreateToken(account),
                     RoleId = account.RoleId,

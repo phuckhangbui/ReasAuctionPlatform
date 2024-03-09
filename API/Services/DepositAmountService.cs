@@ -1,6 +1,6 @@
 ﻿using API.DTOs;
 using API.Entity;
-using API.Enums;
+using API.Exceptions;
 using API.Helper;
 using API.Interface.Repository;
 using API.Interface.Service;
@@ -25,7 +25,7 @@ namespace API.Services
 
         readonly float DEPOSIT_PERCENT = 0.05f;
 
-        public async Task<PageList<DepositAmountDto>> GetDepositAmounts(DepositAmountParam depositAmountParam)
+        public async Task<PageList<DepositDto>> GetDepositAmounts(DepositAmountParam depositAmountParam)
         {
             return await _depositAmountRepository.GetDepositAmountsAsync(depositAmountParam);
         }
@@ -55,6 +55,7 @@ namespace API.Services
             depositAmount.ReasId = reasId;
             depositAmount.Amount = ((Int64)(realEstate.ReasPrice * DEPOSIT_PERCENT));
             depositAmount.Status = (int)UserDepositEnum.Pending;
+            depositAmount.CreateDepositDate = DateTime.Now;
 
 
             await _depositAmountRepository.CreateAsync(depositAmount);
@@ -64,10 +65,10 @@ namespace API.Services
             return depositAmountDto;
         }
 
-        public async Task<DepositAmountDto> UpdateStatusToDeposited(int customerId, int reasId, DateTime paymentTime)
+        public async Task<DepositAmountDto> UpdateStatusToDeposited(int depositId, DateTime paymentTime)
         {
             DepositAmountDto depositAmountDto = new DepositAmountDto();
-            DepositAmount depositAmount = _depositAmountRepository.GetDepositAmount(customerId, reasId);
+            DepositAmount depositAmount = _depositAmountRepository.GetDepositAmount(depositId);
             if (depositAmount == null)
             {
                 return null;
@@ -83,9 +84,40 @@ namespace API.Services
             return depositAmountDto;
         }
 
-        public DepositAmount GetDepositAmount(int customerId, int reasId)
+        public DepositAmountDto GetDepositAmount(int customerId, int reasId)
         {
-            return _depositAmountRepository.GetDepositAmount(customerId, reasId);
+            var depositAmount = _depositAmountRepository.GetDepositAmount(customerId, reasId);
+            var depositAmountDto = _mapper.Map<DepositAmount, DepositAmountDto>(depositAmount);
+            return depositAmountDto;
+        }
+
+        public DepositAmount GetDepositAmount(int depositId)
+        {
+            return _depositAmountRepository.GetDepositAmount(depositId);
+        }
+
+        public DepositDetailDto GetDepositDetail(int depositId)
+        {
+            var depositDetail = _depositAmountRepository.GetDepositDetailAsync(depositId);
+
+            if (depositDetail == null)
+            {
+                throw new BaseNotFoundException($"Depisit detail with ID {depositId} not found.");
+            }
+
+            return depositDetail;
+        }
+
+        public async Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId)
+        {
+            var realEstate = _realEstateRepository.GetRealEstate(reasId);
+
+            if (realEstate == null)
+            {
+                throw new BaseNotFoundException($"Real estate with ID {reasId} not found.");
+            }
+
+            return await _depositAmountRepository.GetAccountsHadDeposited(paginationParams, reasId);
         }
     }
 }

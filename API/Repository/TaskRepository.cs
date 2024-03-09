@@ -2,6 +2,7 @@
 using API.DTOs;
 using API.Helper;
 using API.Interface.Repository;
+using API.Param;
 using API.Param.Enums;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;

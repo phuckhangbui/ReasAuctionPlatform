@@ -3,6 +3,7 @@ using API.Exceptions;
 using API.Helper;
 using API.Interface.Repository;
 using API.Interface.Service;
+using API.Param;
 using API.Param.Enums;
 
 namespace API.Services

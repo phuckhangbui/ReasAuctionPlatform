@@ -1,11 +1,10 @@
 ﻿using API.DTOs;
-using API.Entity;
 using API.Interface.Repository;
 using API.Param;
 
 namespace API.Interface.Service
 {
-    public interface IStaffRealEstateService : IBaseService<RealEstate>
+    public interface IStaffRealEstateService
     {
         IAccountRepository AccountRepository { get; }
         Task<IEnumerable<ManageRealEstateDto>> GetRealEstateOnGoingByStaff();

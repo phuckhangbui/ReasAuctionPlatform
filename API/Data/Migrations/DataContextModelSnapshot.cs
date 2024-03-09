@@ -141,23 +141,23 @@ namespace API.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<float>("AmountOwnerReceived")
-                        .HasColumnType("real");
+                    b.Property<double>("AmountOwnerReceived")
+                        .HasColumnType("float");
 
                     b.Property<int>("AuctionId")
                         .HasColumnType("int");
 
-                    b.Property<float>("CommissionAmount")
-                        .HasColumnType("real");
+                    b.Property<double>("CommissionAmount")
+                        .HasColumnType("float");
 
-                    b.Property<float>("DepositAmount")
-                        .HasColumnType("real");
+                    b.Property<double>("DepositAmount")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("EstimatedPaymentDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<float>("MaxAmount")
-                        .HasColumnType("real");
+                    b.Property<double>("MaxAmount")
+                        .HasColumnType("float");
 
                     b.Property<int>("ReasId")
                         .HasColumnType("int");
@@ -188,11 +188,13 @@ namespace API.Data.Migrations
                     b.Property<int>("AccountSignId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Amount")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Amount")
+                        .HasColumnType("float");
 
-                    b.Property<DateTime>("DepositDate")
+                    b.Property<DateTime>("CreateDepositDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DepositDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("ReasId")
@@ -308,83 +310,55 @@ namespace API.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
 
-                    b.Property<int>("AccountSendId")
+                    b.Property<int?>("AccountReceiveId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AccountSendId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateExecution")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Money")
-                        .IsRequired()
+                    b.Property<int?>("DepositId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Money")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ReasId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TransactionNo")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TransactionStatus")
                         .HasColumnType("int");
+
+                    b.Property<string>("TxnRef")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TypeId")
                         .HasColumnType("int");
 
                     b.HasKey("TransactionId");
 
+                    b.HasIndex("AccountReceiveId");
+
                     b.HasIndex("AccountSendId");
+
+                    b.HasIndex("DepositId")
+                        .IsUnique()
+                        .HasFilter("[DepositId] IS NOT NULL");
+
+                    b.HasIndex("ReasId")
+                        .IsUnique()
+                        .HasFilter("[ReasId] IS NOT NULL");
 
                     b.HasIndex("TypeId")
                         .IsUnique();
 
                     b.ToTable("MoneyTransaction");
-                });
-
-            modelBuilder.Entity("API.Entity.MoneyTransactionDetail", b =>
-                {
-                    b.Property<int>("MoneyTransactionDetailId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MoneyTransactionDetailId"));
-
-                    b.Property<int?>("AccountReceiveId")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AuctionId")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DateExecution")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("MoneyTransactionId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PaidAmount")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ReasId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RemainingAmount")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TotalAmmount")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("MoneyTransactionDetailId");
-
-                    b.HasIndex("AccountReceiveId");
-
-                    b.HasIndex("AuctionId")
-                        .IsUnique();
-
-                    b.HasIndex("MoneyTransactionId")
-                        .IsUnique();
-
-                    b.HasIndex("ReasId")
-                        .IsUnique();
-
-                    b.ToTable("MoneyTransactionDetail");
                 });
 
             modelBuilder.Entity("API.Entity.MoneyTransactionType", b =>
@@ -431,6 +405,10 @@ namespace API.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NewsTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Thumbnail")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -484,9 +462,8 @@ namespace API.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ReasPrice")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("ReasPrice")
+                        .HasColumnType("float");
 
                     b.Property<int>("ReasStatus")
                         .HasColumnType("int");
@@ -815,11 +792,25 @@ namespace API.Data.Migrations
 
             modelBuilder.Entity("API.Entity.MoneyTransaction", b =>
                 {
+                    b.HasOne("API.Entity.Account", "AccountReceive")
+                        .WithMany("MoneyTransactionsReceived")
+                        .HasForeignKey("AccountReceiveId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("API.Entity.Account", "AccountSend")
-                        .WithMany("MoneyTransactions")
+                        .WithMany("MoneyTransactionsSent")
                         .HasForeignKey("AccountSendId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("API.Entity.DepositAmount", "DepositAmount")
+                        .WithOne()
+                        .HasForeignKey("API.Entity.MoneyTransaction", "DepositId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("API.Entity.RealEstate", "RealEstate")
+                        .WithOne()
+                        .HasForeignKey("API.Entity.MoneyTransaction", "ReasId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("API.Entity.MoneyTransactionType", "Type")
                         .WithOne()
@@ -827,44 +818,15 @@ namespace API.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AccountSend");
-
-                    b.Navigation("Type");
-                });
-
-            modelBuilder.Entity("API.Entity.MoneyTransactionDetail", b =>
-                {
-                    b.HasOne("API.Entity.Account", "AccountReceive")
-                        .WithMany("MoneyTransactionDetails")
-                        .HasForeignKey("AccountReceiveId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("API.Entity.Auction", "Auction")
-                        .WithOne()
-                        .HasForeignKey("API.Entity.MoneyTransactionDetail", "AuctionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("API.Entity.MoneyTransaction", "MoneyTransaction")
-                        .WithOne("MoneyTransactionDetail")
-                        .HasForeignKey("API.Entity.MoneyTransactionDetail", "MoneyTransactionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("API.Entity.RealEstate", "RealEstate")
-                        .WithOne()
-                        .HasForeignKey("API.Entity.MoneyTransactionDetail", "ReasId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("AccountReceive");
 
-                    b.Navigation("Auction");
+                    b.Navigation("AccountSend");
 
-                    b.Navigation("MoneyTransaction");
+                    b.Navigation("DepositAmount");
 
                     b.Navigation("RealEstate");
+
+                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("API.Entity.News", b =>
@@ -950,9 +912,9 @@ namespace API.Data.Migrations
 
                     b.Navigation("MessagesSent");
 
-                    b.Navigation("MoneyTransactionDetails");
+                    b.Navigation("MoneyTransactionsReceived");
 
-                    b.Navigation("MoneyTransactions");
+                    b.Navigation("MoneyTransactionsSent");
 
                     b.Navigation("NewsCreated");
 
@@ -970,12 +932,6 @@ namespace API.Data.Migrations
             modelBuilder.Entity("API.Entity.Auction", b =>
                 {
                     b.Navigation("AuctionAccounting")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("API.Entity.MoneyTransaction", b =>
-                {
-                    b.Navigation("MoneyTransactionDetail")
                         .IsRequired();
                 });
 

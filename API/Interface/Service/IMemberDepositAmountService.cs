@@ -1,13 +1,11 @@
 ﻿using API.DTOs;
-using API.Entity;
 using API.Helper;
 using API.Interface.Repository;
 using API.Param;
-using Microsoft.AspNetCore.Mvc;
 
 namespace API.Interface.Service
 {
-    public interface IMemberDepositAmountService : IBaseService<DepositAmount>
+    public interface IMemberDepositAmountService
     {
         IAccountRepository AccountRepository { get; }
         Task<PageList<DepositAmountDto>> ListDepositAmoutByMember(int userMember);
