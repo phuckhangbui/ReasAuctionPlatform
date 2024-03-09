@@ -154,9 +154,8 @@ const AuctionAllList: React.FC = () => {
       },
       {
         key: "6",
-        label: "Floor Bid",
-        children: auctionDetailData?.floorBid || "",
-        render: (floorBid: string | number) => typeof floorBid === 'number' ? NumberFormat(floorBid) : floorBid
+        label: "Foor Bid",
+        children: auctionDetailData?.floorBid || 0,
       },
       {
         key: "7",
