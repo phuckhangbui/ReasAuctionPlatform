@@ -106,17 +106,13 @@ export const getAuctionCompleteAdminById = async (id: Number | undefined, token 
 export const addAuction = async ({
     AccountCreateId,
     ReasId,
-    DateStart,
-    DateEnd,
-    FloorBid
+    DateStart
 }:AuctionCreate, token: string) => {
     try {
         const param ={
           AccountCreateId,
           ReasId,
           DateStart,
-          DateEnd,
-          FloorBid
         }
       const fetchData = await axios.post<Message>(
         `${baseUrl}/api/Auction/deposit/create`,
