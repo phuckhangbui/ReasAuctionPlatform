@@ -1,17 +1,13 @@
-interface createRealEstate {
+interface validateRealEstate {
   reasName: string;
   reasAddress: string;
-  reasPrice: number;
-  reasArea: number;
+  reasPrice: string;
+  reasArea: string;
   reasDescription: string;
-  dateStart: Date;
-  dateEnd: Date;
-  type_Reas: number;
-  photos: [
-    {
-      reasPhotoUrl: string;
-    }
-  ];
+  dateStart: string;
+  dateEnd: string;
+  type_Reas: string;
+  photo: { reasPhotoUrl: string }[];
   detail: {
     reas_Cert_Of_Land_Img_Front: string;
     reas_Cert_Of_Land_Img_After: string;

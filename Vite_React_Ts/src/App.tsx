@@ -3,6 +3,9 @@ import {
   BrowserRouter as Router,
   Route,
   Routes,
+  useNavigate,
+  useLocation,
+  Navigate,
 } from "react-router-dom";
 import PageNotFound from "./Pages/PageNotFound";
 import { AdminLayout } from "./Pages/Admin/AdminLayout";
@@ -26,9 +29,15 @@ import HelpPage from "./Pages/Member/HelpPage/helpPage";
 import MemberLayout from "./Pages/Member/memberLayout";
 import AuctionPage from "./Pages/Member/AuctionPage/auctionPage";
 import NewsPage from "./Pages/Member/NewsPage/newsPage";
-import { useContext } from "react";
-import { UserContext } from "./context/userContext";
 import RequiredAuth from "./components/RequiredAuth/requiredAuth";
+import SellPage from "./Pages/Member/SellPage/sellPage";
+import AuctionCreate from "./Pages/Admin/AdminAuctionCreate";
+import AllRule from "./Pages/Admin/AdminRule";
+import CreateRule from "./Pages/Admin/AdminRuleCreate";
+import AllTransaction from "./Pages/Admin/AdminTransaction";
+import AllDeposit from "./Pages/Admin/AdminDeposit";
+import Task from "./Pages/Admin/AdminTask";
+import TaskCreate from "./Pages/Admin/AdminTaskCreate";
 
 const roles = {
   Admin: 1,
@@ -37,8 +46,6 @@ const roles = {
 };
 
 function App() {
-  const { userRole } = useContext(UserContext);
-
   return (
     <div className="App">
       <Router>
@@ -49,9 +56,9 @@ function App() {
             <Route path="/auction" element={<AuctionPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/news" element={<NewsPage />} />
-            {/* {user && user.roleId === 3 && (
+            <Route element={<RequiredAuth allowedRoles={[roles.Member]} />}>
               <Route path="/sell" element={<SellPage />} />
-            </Route>*/}
+            </Route>
           </Route>
 
           <Route
@@ -59,19 +66,30 @@ function App() {
           >
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
+
+              <Route element={<RequiredAuth allowedRoles={[roles.Admin]} />}>
+                <Route path="rule" element={<AllRule />} />
+                <Route path="rule/create" element={<CreateRule />} />
+
+                <Route path="task" element={<Task />} />
+                <Route path="task/create" element={<TaskCreate />} />
+              </Route>
+
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
               <Route path="auction/complete" element={<AuctionComplete />} />
-              <Route path= "auction/create" element ={<DepositList/>}/>
+              <Route path="auction/create" element={<AuctionCreate />} />
+              <Route path="auction/detail/:key" element={<AuctionDetail />} />
+
               <Route path="user/staff" element={<AdminStaffList />} />
               <Route path="user/member" element={<AdminMemberList />} />
-              <Route path="user/create" element={<AdminAddStaff/>}/>
-              <Route path="real-estate/pending" element={<PendingList/>}/>
-              <Route path="real-estate/all" element={<AllList/>}/>
-              <Route path="news" element={<NewsList/>}/>
-              <Route path="news/create" element={<AdminCreateNews/>}/>
-              <Route path="term" element={<AdminRule/>}/>
-              <Route path="term/create" element={<AddRule/>}/>
-              <Route path="*" element={<PageNotFound />} />
+              <Route path="user/create" element={<AdminAddStaff />} />
+
+              <Route path="real-estate/pending" element={<PendingList />} />
+              <Route path="real-estate/all" element={<AllList />} />
+
+              <Route path="transaction" element={<AllTransaction />} />
+
+              <Route path="deposit" element={<AllDeposit />} />
             </Route>
           </Route>
 
