@@ -18,6 +18,7 @@ const GoogleLogIn = ({ closeModal }: GoogleLogInProps) => {
       const response = await googleLogIn(idTokenString);
       const responseData = response?.data;
       const user = {
+        id: responseData?.id,
         accountName: responseData.accountName,
         email: responseData.email,
         roleId: responseData.roleId,
