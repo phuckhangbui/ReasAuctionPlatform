@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using API.Entity;
 using API.Helper;
 using API.Param;
 
@@ -20,5 +21,6 @@ namespace API.Interface.Service
         Task<PageList<AuctionDto>> GetNotyetAndOnGoingAuction(AuctionParam auctionParam);
         Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam);
         Task<AuctionDto> GetAuctionDetailByReasId(int reasId);
+        Task<Auction> UpdateAuctionWhenStart(int auctionId);
     }
 }

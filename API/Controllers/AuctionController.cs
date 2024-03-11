@@ -191,6 +191,19 @@ namespace API.Controllers
             return Ok(auctionAccountingDto);
         }
 
+        [Authorize(policy: "Member")]
+        [HttpGet("start")]
+        public async Task<ActionResult> AuctionStart(int auctionId)
+        {
+            var result = await _auctionService.UpdateAuctionWhenStart(auctionId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(new ApiResponse(404));
+        }
+
         [Authorize]
         [HttpGet("owner/auction-history")]
         public async Task<IActionResult> GetOwnerAuctionHistory([FromQuery] AuctionHistoryParam auctionHisotoryParam)
@@ -314,7 +327,6 @@ namespace API.Controllers
 
 
         // sample get request https://localhost:44383/api/auction/pay/deposit/returnUrl/4?vnp_Amount=2500000&vnp_BankCode=NCB&vnp_BankTranNo=VNP14313776&vnp_CardType=ATM&vnp_OrderInfo=Auction+Deposit+Fee&vnp_PayDate=20240305102408&vnp_ResponseCode=00&vnp_TmnCode=6EMYCUD2&vnp_TransactionNo=14313776&vnp_TransactionStatus=00&vnp_TxnRef=638452310013886970&vnp_SecureHash=c85ad2998d07545289cce3c8085f78174cfdfdc5cf6a218945254f0161cedb166c25b89e08006b6d7dc59879a12594ca3be283cd62eae2741eb0dbb695846ddd
-        [Authorize(policy: "Member")]
         [HttpGet("pay/deposit/returnUrl/{depositId}")]
         public async Task<ActionResult> PayAuctionDeposit([FromQuery] Dictionary<string, string> vnpayData, int depositId)
         {
