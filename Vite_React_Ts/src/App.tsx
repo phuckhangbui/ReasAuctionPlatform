@@ -22,7 +22,6 @@ import AdminRule from "../src/Pages/Admin/AdminRule"
 import AddRule from "../src/Pages/Admin/AdminAddRule"
 import AdminCreateNews from "../src/Pages/Admin/AdminCreateNews"
 import AuctionComplete from "../src/Pages/Admin/AdminAuctionComplete";
-import AuctionDetail from "./Pages/Admin/AdminAuctionDetail";
 import HomePage from "./Pages/Member/HomePage/homePage";
 import RealEstatePage from "./Pages/Member/RealEstatePage/realEstatePage";
 import HelpPage from "./Pages/Member/HelpPage/helpPage";
@@ -78,7 +77,6 @@ function App() {
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
               <Route path="auction/complete" element={<AuctionComplete />} />
               <Route path="auction/create" element={<AuctionCreate />} />
-              <Route path="auction/detail/:key" element={<AuctionDetail />} />
 
               <Route path="user/staff" element={<AdminStaffList />} />
               <Route path="user/member" element={<AdminMemberList />} />

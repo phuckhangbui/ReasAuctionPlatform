@@ -236,6 +236,7 @@ namespace API.Repository
                 auction.AccountCreateId = auctionCreateParam.AccountCreateId;
                 auction.AccountCreateName = _context.Account.Where(x => x.AccountId == auctionCreateParam.AccountCreateId).Select(x => x.AccountName).FirstOrDefault();
                 auction.DateStart = auctionCreateParam.DateStart;
+                auction.DateEnd = auctionCreateParam.DateStart.AddHours(1);
                 auction.FloorBid = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasPrice).FirstOrDefault();
                 auction.Status = 0;
                 bool check = await CreateAsync(auction);
