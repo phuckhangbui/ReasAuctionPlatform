@@ -2,7 +2,8 @@
 {
     public interface IBackgroundTaskService
     {
-        Task ScheduleAuctionStatus();
+        Task ScheduleAuctionPending();
         Task ScheduleAuctionEndTime(int auctionId);
+        Task SendEmailNoticeAttenders();
     }
 }

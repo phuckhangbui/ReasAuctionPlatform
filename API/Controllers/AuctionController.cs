@@ -55,6 +55,21 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("/auctions/{auctionId}/attenders")]
+        public async Task<IActionResult> GetAuctionAttenders(int auctionId)
+        {
+            try
+            {
+                var attenderIds = await _auctionService.GetAuctionAttenders(auctionId);
+
+                return Ok(attenderIds);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse(500, ex.Message));
+            }
+        }
+
         [HttpGet("auctions")]
         public async Task<IActionResult> GetAuctionsForMember([FromQuery] AuctionParam auctionParam)
         {

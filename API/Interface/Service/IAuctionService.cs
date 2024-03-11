@@ -20,5 +20,6 @@ namespace API.Interface.Service
         Task<PageList<AuctionDto>> GetNotyetAndOnGoingAuction(AuctionParam auctionParam);
         Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam);
         Task<AuctionDto> GetAuctionDetailByReasId(int reasId);
+        Task<List<int>> GetAuctionAttenders(int auctionId);
     }
 }

@@ -126,5 +126,10 @@ namespace API.Services
 
             return auctionDetail;
         }
+
+        public async Task<List<int>> GetAuctionAttenders(int auctionId)
+        {
+            return await _auctionRepository.GetAuctionAttenders(auctionId);
+        }
     }
 }

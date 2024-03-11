@@ -9,17 +9,20 @@ namespace API.Controllers
     {
         private readonly IBackgroundTaskService _backgroundTaskService;
         private readonly IDepositAmountRepository _depositAmountRepository;
+        private readonly IAuctionRepository _auctionRepository;
         private readonly ILogger<BackgroundTaskController> _logger;
 
         private const string BaseUri = "/api/backgroundService";
 
         public BackgroundTaskController(IBackgroundTaskService backgroundTaskService, 
             ILogger<BackgroundTaskController> logger,
-            IDepositAmountRepository depositAmountRepository)
+            IDepositAmountRepository depositAmountRepository,
+            IAuctionRepository auctionRepository)
         {
             _backgroundTaskService = backgroundTaskService;
             _logger = logger;
             _depositAmountRepository = depositAmountRepository;
+            _auctionRepository = auctionRepository;
         }
 
         [HttpGet(BaseUri + "/trigger/{auctionId}")]
@@ -49,6 +52,21 @@ namespace API.Controllers
                 await _depositAmountRepository.UpdateDepositStatusToWaitingForRefund(reasId);
 
                 return Ok("Update successfully");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse(500, ex.Message));
+            }
+        }
+
+        [HttpGet(BaseUri + "/auctionId")]
+        public async Task<IActionResult> GetAuctionAttendersEmail(int auctionId)
+        {
+            try
+            {
+                var emails = await _auctionRepository.GetAuctionAttendersEmail(auctionId);
+
+                return Ok(emails);
             }
             catch (Exception ex)
             {

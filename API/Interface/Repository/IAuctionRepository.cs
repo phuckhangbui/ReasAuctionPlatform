@@ -24,5 +24,7 @@ namespace API.Interface.Repository
         Task<PageList<AuctionDto>> GetAuctionHistoryForOwnerAsync(AuctionHistoryParam auctionAccountingParam);
         Task<AuctionDto> GetAuctionDetailByReasIdAsync(int reasId);
         Task<Auction> GetAuctionByAuctionId(int auctionId);
+        Task<List<int>> GetAuctionAttenders(int auctionId);
+        Task<List<string>> GetAuctionAttendersEmail(int auctionId);
     }
 }

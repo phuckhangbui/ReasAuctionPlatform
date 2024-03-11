@@ -1,6 +1,7 @@
 ﻿using API.Interface.Repository;
 using API.Interface.Service;
 using API.Param.Enums;
+using API.ThirdServices;
 using Hangfire;
 
 namespace API.Services
@@ -20,7 +21,7 @@ namespace API.Services
             _realEstateRepository = realEstateRepository;
         }
 
-        public async Task ChangeAuctionStatusToOnGoing(int auctionId)
+        public async Task ChangeAuctionStatusToPending(int auctionId)
         {
             try
             {
@@ -28,9 +29,9 @@ namespace API.Services
 
                 if (auctionToBeUpdated != null)
                 {
-                    auctionToBeUpdated.Status = (int)AuctionStatus.OnGoing;
+                    auctionToBeUpdated.Status = (int)AuctionStatus.Pending;
                     await _auctionRepository.UpdateAsync(auctionToBeUpdated);
-                    _logger.LogInformation($"Auction id: {auctionId} status updated to 'OnGoing' successfully at {DateTime.Now}.");
+                    _logger.LogInformation($"Auction id: {auctionId} status updated to 'Pending' successfully at {DateTime.Now}.");
 
                     var realEstateToBeUpdated = _realEstateRepository.GetRealEstate(auctionToBeUpdated.ReasId);
                     realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.Auctioning;
@@ -44,7 +45,7 @@ namespace API.Services
             }
         }
 
-        public async Task ChangeAuctionStatusToFinish(int auctionId)
+        public async Task ChangeAuctionStatusOnSuccess(int auctionId)
         {
             try
             {
@@ -85,7 +86,7 @@ namespace API.Services
 
                     TimeSpan delayToEnd = auctionsToBeScheduled.DateEnd - currentDateTime;
 
-                    BackgroundJob.Schedule(() => ChangeAuctionStatusToFinish(auctionId), delayToEnd);
+                    BackgroundJob.Schedule(() => ChangeAuctionStatusOnSuccess(auctionId), delayToEnd);
 
                     _logger.LogInformation($"Auction id: {auctionId} scheduled for status change: " +
                         $"'Finish' at {auctionsToBeScheduled.DateEnd}.");
@@ -97,7 +98,7 @@ namespace API.Services
             }
         }
 
-        public async Task ScheduleAuctionStatus()
+        public async Task ScheduleAuctionPending()
         {
             try
             {
@@ -113,17 +114,50 @@ namespace API.Services
                     TimeSpan delayToStart = auction.DateStart - currentDateTime;
                     TimeSpan delayToEnd = auction.DateEnd - currentDateTime;
 
-                    BackgroundJob.Schedule(() => ChangeAuctionStatusToOnGoing(auction.AuctionId), delayToStart);
-                    BackgroundJob.Schedule(() => ChangeAuctionStatusToFinish(auction.AuctionId), delayToEnd);
+                    BackgroundJob.Schedule(() => ChangeAuctionStatusToPending(auction.AuctionId), delayToStart);
+                    //BackgroundJob.Schedule(() => ChangeAuctionStatusOnSuccess(auction.AuctionId), delayToEnd);
 
                     _logger.LogInformation($"Auction id: {auction.AuctionId} scheduled for status change: " +
-                        $"'OnGoing' at {auction.DateStart} and " +
-                        $"'Finish' at {auction.DateEnd}.");
+                        $"'Pending' at {auction.DateStart}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while scheduling auction status change.");
+            }
+        }
+
+        public async Task SendEmailNoticeAttenders()
+        {
+            try
+            {
+                var currentDateTime = DateTime.Now;
+
+                var auctionsToBeScheduled = await _auctionRepository.GetAllAsync();
+
+                auctionsToBeScheduled = auctionsToBeScheduled
+                    .Where(a => a.Status == (int)AuctionStatus.NotYet && a.DateStart > currentDateTime).ToList();
+
+                foreach (var auction in auctionsToBeScheduled)
+                {
+                    DateTime emailSendingTime = auction.DateStart.AddMinutes(-5);
+
+                    var attenderMails = await _auctionRepository.GetAuctionAttendersEmail(auction.AuctionId);
+                    var realEstate = _realEstateRepository.GetRealEstate(auction.ReasId);
+
+                    foreach (var mail in attenderMails)
+                    {
+                        BackgroundJob.Schedule(() =>
+                        SendMailAnnounceAuction.SendMailToAnnounceAuctionStartTime(mail, realEstate.ReasName, auction.DateStart), emailSendingTime);
+
+                        _logger.LogInformation($"Attender register auction id {auction.AuctionId}, " +
+                            $"with mail {mail}: had sent at {DateTime.Now}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while sending mail to announce auction attenders");
             }
         }
     }

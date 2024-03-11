@@ -267,5 +267,47 @@ namespace API.Repository
         {
             return await _context.Auction.FindAsync(auctionId);
         }
+
+        public async Task<List<int>> GetAuctionAttenders(int auctionId)
+        {
+            var accountSignIds = await _context.DepositAmount
+                .Join(
+                    _context.Auction,
+                    deposit => deposit.ReasId,
+                    auction => auction.ReasId,
+                    (deposit, auction) => new { Deposit = deposit, Auction = auction }
+                )
+                .Where(joinResult => joinResult.Auction.AuctionId == auctionId && 
+                        joinResult.Deposit.Status == (int)UserDepositEnum.Deposited && 
+                        (joinResult.Auction.Status == (int)AuctionStatus.NotYet || joinResult.Auction.Status == (int)AuctionStatus.Pending))
+                .Select(joinResult => joinResult.Deposit.AccountSignId)
+                .ToListAsync();
+
+            return accountSignIds;
+        }
+
+        public async Task<List<string>> GetAuctionAttendersEmail(int auctionId)
+        {
+            var attendersEmails = await _context.DepositAmount
+                .Join(
+                    _context.Auction,
+                    deposit => deposit.ReasId,
+                    auction => auction.ReasId,
+                    (deposit, auction) => new { Deposit = deposit, Auction = auction }
+                )
+                .Join(
+                    _context.Account,
+                    joinResult => joinResult.Deposit.AccountSignId,
+                    account => account.AccountId,
+                    (joinResult, account) => new { JoinResult = joinResult, Account = account }
+                )
+                .Where(joinResult => joinResult.JoinResult.Auction.AuctionId == auctionId &&
+                        joinResult.JoinResult.Deposit.Status == (int)UserDepositEnum.Deposited &&
+                        (joinResult.JoinResult.Auction.Status == (int)AuctionStatus.NotYet || joinResult.JoinResult.Auction.Status == (int)AuctionStatus.Pending))
+                .Select(joinResult => joinResult.Account.AccountEmail)
+                .ToListAsync();
+
+            return attendersEmails;
+        }
     }
 }
