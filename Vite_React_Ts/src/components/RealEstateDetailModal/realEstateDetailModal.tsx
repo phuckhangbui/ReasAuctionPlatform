@@ -6,6 +6,10 @@ import { InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import { UserContext } from "../../context/userContext";
+import dayjs from "dayjs";
+import { set, ref, get, child, update, onValue } from "firebase/database";
+import { db } from "../../Config/firebase-config";
+import { getAuctionHome } from "../../api/memberAuction";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -29,16 +33,15 @@ const RealEstateDetailModal = ({
   const [checked, setChecked] = useState(false);
   const [isInputValid, setIsInputValid] = useState(false);
   const { isAuth } = useContext(UserContext);
+  const [dateEnd, setDateEnd] = useState<any>();
+  const [auction, setAuction] = useState<memberAuction | undefined>();
 
   // Use the isAuth function to determine if the user is authenticated
   const isAuthenticated = isAuth();
 
-  const deadline = Date.now() + 1000 * 60 * 60 * 24 * 2 + 1000 * 30; // Dayjs is also OK
-
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
-  const [formattedDateEnd, setFormattedDateEnd] = useState<string>("");
 
   useEffect(() => {
     try {
@@ -54,15 +57,54 @@ const RealEstateDetailModal = ({
 
   useEffect(() => {
     try {
+      const fetchCurrentBid = async () => {
+        const currentBidRef = ref(db, `auctions/${realEstateId}/currentBid`);
+        const snapshot = await get(currentBidRef);
+        if (snapshot.exists()) {
+          const currentBidValue = snapshot.val();
+          setCurrentBid(currentBidValue);
+        } else {
+          console.log("Current bid not found in Firebase");
+        }
+      };
+      fetchCurrentBid();
+    } catch (error) {}
+  });
+
+  useEffect(() => {
+    try {
+      const fetchRealEstates = async () => {
+        try {
+          const auctionRef = ref(db, `auctions/${realEstateId}`);
+          const snapshot = await get(auctionRef);
+          if (snapshot.exists()) {
+            setAuction(snapshot.val().auction);
+          } else {
+            console.log("Auction not found in Firebase");
+            if (realEstateId) {
+              const response = await getAuctionHome(realEstateId);
+              setAuction(response);
+            } else {
+              console.log("not found id");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching auction data:", error);
+        }
+      };
+      fetchRealEstates();
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  const dateEndFormat = (dateEnd: any) => {
+    setDateEnd(dayjs(dateEnd).format("DD/MM/YYYY HH:mm:ss"));
+  };
+  useEffect(() => {
+    try {
       if (realEstateDetail?.dateEnd) {
-        const dateObject = new Date(realEstateDetail.dateEnd);
-        const formattedDate = dateObject
-          .toDateString()
-          .split(" ")
-          .slice(1)
-          .join(" ");
-        setFormattedDateEnd(formattedDate);
-        console.log(formattedDate);
+        dateEndFormat(realEstateDetail?.dateEnd);
       }
     } catch (error) {
       console.log(error);
@@ -74,6 +116,77 @@ const RealEstateDetailModal = ({
     setTabStatus(index);
   };
 
+  const toggleAuction = (index: string, auction: memberAuction | undefined) => {
+    setTabStatus(index);
+    if (auction) {
+      const auctionRef = ref(db, `auctions/${auction.reasId}`);
+      const userId = localStorage.getItem("userId");
+      get(child(auctionRef, "auction"))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            // Auction already exists
+            console.log("Auction already exists:", auction.reasId);
+            // Check if user exists in the auction
+            const usersRef = ref(db, `auctions/${auction.reasId}/users`);
+            get(usersRef)
+              .then((usersSnapshot) => {
+                if (!userId) {
+                  console.error(
+                    "User ID not found in local storage or is null"
+                  );
+                  return;
+                }
+                if (!usersSnapshot.hasChild(userId)) {
+                  // User doesn't exist, add the new user
+                  console.log("Adding new user to the auction:", userId);
+                  update(ref(db, `auctions/${auction.reasId}/users`), {
+                    [userId]: {
+                      userId: userId,
+                      currentUserBid: 0,
+                    },
+                  });
+                  // Notify all users in the userList
+                  usersSnapshot.forEach((childSnapshot) => {
+                    const userKey = childSnapshot.key;
+                    console.log(
+                      `New user ${userId} has been added to the auction by ${userKey}`
+                    );
+                  });
+                } else {
+                  console.log("UserId already exists in the auction:", userId);
+                }
+              })
+              .catch((error) => {
+                console.error(
+                  "Error checking user existence in the auction:",
+                  error
+                );
+              });
+          } else {
+            // Auction doesn't exist, add it to Firebase
+            console.log(
+              "Auction doesn't exist. Adding it to Firebase:",
+              auction.reasId
+            );
+            set(ref(db, `auctions/${auction.reasId}`), {
+              auction,
+              users: {
+                [localStorage.getItem("userId") || ""]: {
+                  userId: userId,
+                  currentUserBid: 0,
+                },
+              },
+              currentBid: auction.floorBid,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error checking auction existence:", error);
+        });
+    } else {
+      console.log("not found");
+    }
+  };
   // Tab button status
   const getActiveTab = (index: string) => {
     return `${
@@ -87,16 +200,6 @@ const RealEstateDetailModal = ({
   const getActiveTabDetail = (index: string) => {
     return `${index === tabStatus ? "" : "hidden"} mt-2 space-y-4 `;
   };
-
-  const formattedDeadline = new Date(deadline).toLocaleString("en-US", {
-    weekday: "long", // Display full weekday name
-    year: "numeric", // Display full year
-    month: "long", // Display full month name
-    day: "numeric", // Display day of the month
-    hour: "numeric", // Display hour
-    minute: "numeric", // Display minute
-    second: "numeric", // Display second
-  });
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -117,6 +220,37 @@ const RealEstateDetailModal = ({
   const handleIncrease = () => {
     setCurrentAutoBidValue(currentAutoBidValue + 1000); // Increase currentBid by 1
   };
+
+  const handleBid = async () => {
+    try {
+      // Update the currentBid attribute in Firebase
+      const auctionRef = ref(db, `auctions/${auction?.reasId}`);
+      await update(auctionRef, {
+        currentBid: currentInputBid,
+      });
+
+      // Optionally, you can also update the currentInputBid state locally if needed
+      setCurrentBid(currentInputBid);
+
+      // Optionally, you can perform any other actions after the bid is successfully updated in Firebase
+    } catch (error) {
+      console.error("Error updating bid in Firebase:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Set up listener for changes to currentBid attribute in Firebase
+    const auctionRef = ref(db, `auctions/${realEstateId}/currentBid`);
+    const unsubscribe = onValue(auctionRef, (snapshot) => {
+      const newBid = snapshot.val();
+      setCurrentBid(newBid);
+    });
+
+    // Clean up the listener when component unmounts
+    return () => {
+      unsubscribe(); // Unsubscribe from updates to prevent memory leaks
+    };
+  }, [realEstateId]);
 
   const toggleChecked = () => {
     if (checked == true) {
@@ -192,7 +326,7 @@ const RealEstateDetailModal = ({
                 <li>
                   <button
                     className={getActiveTab("auction")}
-                    onClick={() => toggleTab("auction")}
+                    onClick={() => toggleAuction("auction", auction)}
                   >
                     Auction
                   </button>
@@ -344,7 +478,7 @@ const RealEstateDetailModal = ({
                   </svg>
                 </div>
                 <div>
-                  <div className="text-xl font-bold ">{formattedDateEnd}</div>
+                  <div className="text-xl font-bold ">{dateEnd}</div>
                   <div className="text-xs text-gray-700">Due date</div>
                 </div>
               </div>
@@ -364,29 +498,11 @@ const RealEstateDetailModal = ({
               Current bid: {NumberFormat(currentBid)}
             </Typography>
             <div className="grid grid-cols-5 gap-4">
-              {isAuthenticated ? (
-                <div className="col-span-3">
-                  <Typography variant="h5">
-                    Auction ends: {formattedDeadline}
-                  </Typography>
-                  <div className="font-semibold flex items-center">
-                    <ButtonAnt
-                      type="default"
-                      shape="circle"
-                      icon={<EyeOutlined />}
-                    ></ButtonAnt>
-                    Add to watch list
-                  </div>
-                  <Countdown
-                    value={deadline}
-                    format="D [days] H [hours] m [minutes] s [secs]"
-                  />
-                </div>
-              ) : null}
               {!isAuthenticated ? (
                 <div className="col-span-3">
                   <Typography variant="h5">
-                    Auction ends: {formattedDeadline}
+                    Auction ends:{" "}
+                    {dayjs(auction?.dateEnd).format("DD/MM/YYYY HH:mm:ss")}
                   </Typography>
                   <div className="font-semibold flex items-center">
                     <ButtonAnt
@@ -397,7 +513,7 @@ const RealEstateDetailModal = ({
                     Add to watch list
                   </div>
                   <Countdown
-                    value={deadline}
+                    value={auction?.dateEnd}
                     format="D [days] H [hours] m [minutes] s [secs]"
                   />
                 </div>
@@ -405,7 +521,8 @@ const RealEstateDetailModal = ({
                 <>
                   <div className="col-span-3">
                     <Typography variant="h5">
-                      Auction ends: {formattedDeadline}
+                      Auction ends:{" "}
+                      {dayjs(auction?.dateEnd).format("DD/MM/YYYY HH:mm:ss")}
                     </Typography>
                     <div className="font-semibold flex items-center">
                       <ButtonAnt
@@ -416,7 +533,7 @@ const RealEstateDetailModal = ({
                       Add to watch list
                     </div>
                     <Countdown
-                      value={deadline}
+                      value={auction?.dateEnd}
                       format="D [days] H [hours] m [minutes] s [secs]"
                     />
                   </div>
@@ -447,13 +564,7 @@ const RealEstateDetailModal = ({
                         </Button>
                       </div>
 
-                      <Button
-                        onClick={() => {
-                          setCurrentBid(currentInputBid);
-                        }}
-                      >
-                        Bid
-                      </Button>
+                      <Button onClick={handleBid}>Bid</Button>
                     </div>
                     <div className="flex flex-row justify-center w-full items-center space-x-4">
                       <Button onClick={showModal}>Set auto bid</Button>

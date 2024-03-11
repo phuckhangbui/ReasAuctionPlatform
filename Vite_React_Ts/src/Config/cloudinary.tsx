@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, FC } from "react";
+import React, { createContext, useEffect, useState, FC } from "react";
 
 // Define types for Cloudinary configuration and the setPublicId function
 type CloudinaryConfig = {
@@ -23,88 +23,103 @@ interface CloudinaryUploadWidgetProps {
   uwConfig: CloudinaryConfig;
   setPublicId: SetPublicIdFunction;
   setUploadedUrl: (url: string) => void; // Thêm prop để truyền đường dẫn ảnh đã upload đi
+  notList: boolean;
 }
 
 const CloudinaryUploadWidget: FC<CloudinaryUploadWidgetProps> = ({
   uwConfig,
   setPublicId,
   setUploadedUrl,
+  notList,
 }) => {
   const [loaded, setLoaded] = useState(false);
-  const [initialized, setInitialized] = useState(false);
-  const [upUrl, setUrl] = useState<string>("");
-  let myWidget: any;
+  const [backgroundImage, setBackgroundImage] = useState<string>("");
 
   useEffect(() => {
-    const initializeCloudinaryWidget = () => {
-      if (!initialized) { //Dùng để check là đã init chưa, chưa mới tạo mới
-        myWidget = (window as any).cloudinary.createUploadWidget(
-          uwConfig,
-          (error: any, result: any) => {
-            if (!error && result && result.event === "success") {
-              console.log("Done! Here is the image info: ", result.info);
-              setPublicId(result.info.public_id);
-              setUrl(result.info.secure_url);
-              setUploadedUrl(result.info.secure_url);
-            }
-          }
-        );
-
-        document.getElementById("upload_widget")?.addEventListener(
-          "click",
-          () => {
-            myWidget.open();
-          },
-          false
-        );
-
-        setInitialized(true);
-      }
-    };
-
-    const scriptId = "uw";
+    const scriptId = "cloudinary-upload-widget-script";
 
     const loadScript = () => {
-      const uwScript = document.getElementById(scriptId);
-      if (!uwScript) {
+      const existingScript = document.getElementById(scriptId);
+
+      if (!existingScript) {
         const script = document.createElement("script");
-        script.setAttribute("async", "");
-        script.setAttribute("id", scriptId);
         script.src = "https://upload-widget.cloudinary.com/global/all.js";
-        script.addEventListener("load", () => {
+        script.id = scriptId;
+        script.onload = () => {
           setLoaded(true);
-          initializeCloudinaryWidget();
-        });
-        script.addEventListener("error", () => {
-          console.error("Failed to load Cloudinary script.");
-        });
+        };
         document.body.appendChild(script);
       } else {
         setLoaded(true);
-        initializeCloudinaryWidget();
       }
     };
 
     loadScript();
 
     return () => {
-      // Clean up event listener
-      document
-        .getElementById("upload_widget")
-        ?.removeEventListener("click", () => {
-          myWidget.open();
-        });
+      // Clean up script tag
+      const script = document.getElementById(scriptId);
+      if (script) {
+        document.body.removeChild(script);
+      }
     };
-  }, [uwConfig, setPublicId, initialized, setUploadedUrl]);
+  }, []);
+
+  const initializeCloudinary = () => {
+    if ((window as any).cloudinary) {
+      const myWidget = (window as any).cloudinary.createUploadWidget(
+        uwConfig,
+        (error: any, result: any) => {
+          if (!error && result && result.event === "success") {
+            console.log("Done! Here is the image info: ", result.info);
+            setPublicId(result.info.public_id);
+            setUploadedUrl(result.info.secure_url);
+            setBackgroundImage(result.info.secure_url); // Set the uploaded image as the background
+          }
+        }
+      );
+      myWidget.open();
+    } else {
+      console.error("Cloudinary script is not loaded.");
+    }
+  };
 
   return (
     <CloudinaryScriptContext.Provider value={{ loaded }}>
-      <button
-        id="upload_widget"
-        className="cloudinary-button"
-      >
-        Upload
-      </button>
+      {loaded && (
+        <div
+          className="flex items-center justify-center w-full h-64"
+          onClick={() => {
+            // Ensure cloudinary is defined before calling createUploadWidget
+            initializeCloudinary();
+          }}
+          id="upload_widget"
+          // style={{
+          //   backgroundImage: `url(${backgroundImage})`, // Set the background image dynamically
+          //   backgroundSize: "fill",
+          //   backgroundPosition: "center",
+          // }}
+        >
+          {backgroundImage && notList === true ? (
+            <img
+              className="text-transparent w-full h-full object-fill rounded-lg"
+              src={backgroundImage}
+            />
+          ) : (
+            <label
+              htmlFor="dropzone-file"
+              className="flex flex-col items-center justify-center w-full h-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 "
+            >
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <p className="mb-2 text-sm text-gray-500 ">
+                  <span className="font-semibold">Click to upload</span>
+                </p>
+                <p className="text-xs text-gray-500 ">SVG, PNG or JPG</p>
+              </div>
+            </label>
+          )}
+        </div>
+      )}
     </CloudinaryScriptContext.Provider>
   );
 };
@@ -112,4 +127,3 @@ const CloudinaryUploadWidget: FC<CloudinaryUploadWidgetProps> = ({
 export default CloudinaryUploadWidget;
 export type { CloudinaryConfig, SetPublicIdFunction };
 export { CloudinaryScriptContext };
-

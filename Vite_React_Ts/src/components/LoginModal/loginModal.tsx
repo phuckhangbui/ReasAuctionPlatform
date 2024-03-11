@@ -56,13 +56,14 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
         const response = await staffLogin(data);
         const responseData = response?.data;
         const user = {
+          id: responseData?.id,
           accountName: responseData?.accountName,
           email: responseData?.email,
           roleId: responseData?.roleId,
           username: responseData?.username,
         } as loginUser;
         if (responseData?.token) {
-          login(user, responseData?.token);
+          login(user, responseData?.token, responseData?.id);
         }
       };
       loginStaff();
@@ -137,7 +138,7 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-mainBlue focus:border-mainBlue block w-full p-2.5"
                   {...register("password")}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       handleSubmit(onSubmit)();
                     }
                   }}

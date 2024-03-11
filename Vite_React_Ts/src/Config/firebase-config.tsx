@@ -1,19 +1,20 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth"
-import { getFirestore } from "firebase/firestore";
+import { getDatabase } from "firebase/database";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDKbHnbJZiHru7lftkNJq75bxyLvy2Cj6I",
-  authDomain: "expense-tracker-e85dd.firebaseapp.com",
-  projectId: "expense-tracker-e85dd",
-  storageBucket: "expense-tracker-e85dd.appspot.com",
-  messagingSenderId: "875637994577",
-  appId: "1:875637994577:web:2a1263f634c0727b197470"
+  apiKey: "AIzaSyAM4kKUgQxULaBboGlLoknQlrG8NtbPMFo",
+  authDomain: "swd-reas.firebaseapp.com",
+  databaseURL: "https://swd-reas-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "swd-reas",
+  storageBucket: "swd-reas.appspot.com",
+  messagingSenderId: "49595114468",
+  appId: "1:49595114468:web:af172b59d8948ae36a9df1"
 };
 //sau này có dùng thì sửa lại các attribute trên
 
@@ -21,4 +22,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
-export const db = getFirestore(app)
+export const db = getDatabase(app)

@@ -3,7 +3,7 @@ const baseUrl = process.env.REACT_APP_BACK_END_URL;
 
 export const getAuctionAllAdmin = async (token : string) => {
   try {
-    const fetchData = await axios.get<AuctionAdmin[]>(`${baseUrl}/api/Auction/auctions/all`, 
+    const fetchData = await axios.get<AuctionAdmin[]>(`${baseUrl}/api/Auction/admin/auctions/all`, 
     {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -19,7 +19,7 @@ export const getAuctionAllAdmin = async (token : string) => {
 
 export const getAuctionCompleteAdmin = async (token : string) => {
     try {
-      const fetchData = await axios.get<AuctionAdmin[]>(`${baseUrl}/api/Auction/auctions/complete`, 
+      const fetchData = await axios.get<AuctionAdmin[]>(`${baseUrl}/api/Auction/admin/auctions/complete`, 
       {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -72,7 +72,7 @@ export const getAuctionCompleteAdminById = async (id: Number | undefined, token 
 
   export const getRealForDeposit = async (token : string) => {
     try {
-      const fetchData = await axios.get<RealForDeposit[]>(`${baseUrl}/api/Auction/realfordeposit`, 
+      const fetchData = await axios.get<RealForDeposit[]>(`${baseUrl}/api/Auction/admin/realfordeposit`, 
       {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,7 +88,7 @@ export const getAuctionCompleteAdminById = async (id: Number | undefined, token 
 
   export const getUserForDeposit = async (token : string, id : number) => {
     try {
-      const fetchData = await axios.get<DepositAmountUser[]>(`${baseUrl}/api/Auction/realfordeposit/${id}`, 
+      const fetchData = await axios.get<DepositAmountUser[]>(`${baseUrl}/api/Auction/admin/realfordeposit/${id}`, 
       {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -106,20 +106,16 @@ export const getAuctionCompleteAdminById = async (id: Number | undefined, token 
 export const addAuction = async ({
     AccountCreateId,
     ReasId,
-    DateStart,
-    DateEnd,
-    FloorBid
+    DateStart
 }:AuctionCreate, token: string) => {
     try {
         const param ={
           AccountCreateId,
           ReasId,
           DateStart,
-          DateEnd,
-          FloorBid
         }
       const fetchData = await axios.post<Message>(
-        `${baseUrl}/api/Auction/deposit/create`,
+        `${baseUrl}/api/Auction/admin/create`,
         param,
         {
           headers: {

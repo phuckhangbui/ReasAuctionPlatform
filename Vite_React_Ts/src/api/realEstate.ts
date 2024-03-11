@@ -12,6 +12,7 @@ export const getRealEstateHome = async () => {
     console.log("Error: " + error);
   }
 };
+
 export const searchRealEstate = async ({
   pageNumber,
   pageSize,
@@ -49,5 +50,45 @@ export const getRealEstateById = async (id: number) => {
     return response;
   } catch (error) {
     console.log("Error: " + error);
+  }
+};
+
+export const getRealEstateType = async (token: string | undefined) => {
+  try {
+    const fetchData = await axios.get<realEstateType[]>(
+      `${baseUrl}/api/home/my_real_estate/view`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
+export const createRealEstate = async (
+  token: string | undefined,
+  realEstateInfo: createRealEstate
+) => {
+  try {
+    const fetchData = await axios.post<Message>(
+      `${baseUrl}/api/home/my_real_estate/create`,
+      realEstateInfo,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
   }
 };

@@ -18,12 +18,13 @@ const GoogleLogIn = ({ closeModal }: GoogleLogInProps) => {
       const response = await googleLogIn(idTokenString);
       const responseData = response?.data;
       const user = {
+        id: responseData?.id,
         accountName: responseData.accountName,
         email: responseData.email,
         roleId: responseData.roleId,
-        username: responseData.username,
+        // username: responseData.username,
       } as loginUser;
-      login(user, responseData.token);
+      login(user, responseData.token, responseData.id);
       closeModal();
     } catch (error) {
       console.log(error);

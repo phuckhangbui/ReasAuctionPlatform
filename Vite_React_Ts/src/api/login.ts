@@ -13,7 +13,7 @@ export const googleLogIn = async (idTokenString: string) => {
         },
       }
     );
-    // console.log(response);
+    console.log(response);
     return response;
   } catch (error) {
     console.log("Error: " + error);

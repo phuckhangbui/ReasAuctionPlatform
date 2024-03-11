@@ -38,6 +38,7 @@ export function AvatarDropdown() {
   const handleClick = (path: string) => {
     if (path === "signout") {
       logout();
+      navigate("/");
     } else {
       switch (path) {
         case "history":

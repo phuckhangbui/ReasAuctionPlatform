@@ -9,13 +9,14 @@ import {
   Button,
   Modal,
   DatePicker,
-  InputNumber,
+  notification
 } from "antd";
 import {NumberFormat} from "../../../../Utils/numberFormat";
 import { useState, useEffect } from "react";
 import {
   getRealForDeposit,
   getUserForDeposit,
+  addAuction
 } from "../../../../api/adminAuction";
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
@@ -25,8 +26,10 @@ const RealDepositList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [RealData, setRealData] = useState<RealForDeposit[]>();
   const [DepositData, setDepoistData] = useState<DepositAmountUser[]>();
-  const [reasID, setRealID] = useState<number>();
+  const [reasID, setRealID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
+  let dateStart: Date = new Date();
+
 
   const formatDate = (dateString: Date): string => {
     const dateObject = new Date(dateString);
@@ -80,6 +83,18 @@ const RealDepositList: React.FC = () => {
     fetchDepositUser(reasID);
   };
 
+  const fetchCreateAuction = async (Auction: AuctionCreate) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await addAuction(Auction, token);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching add news:", error);
+    }
+  };
+
   const columns: TableProps<RealForDeposit>["columns"] = [
     {
       title: "No",
@@ -119,11 +134,36 @@ const RealDepositList: React.FC = () => {
   };
 
   const onChangeDate = (date: any, dateString: any) => {
-    console.log(date, dateString);
+    dateStart = date;
   };
 
-  const onChangeInput = (value: any) => {
-    console.log("changed", value);
+  const openNotificationWithIcon = (
+    type: "success" | "error",
+    description: string
+  ) => {
+    notification[type]({
+      message: "Notification Title",
+      description: description,
+    });
+  };
+
+  const createAuction = async () => {
+    const Auction : AuctionCreate = {
+AccountCreateId : 1,
+DateStart : dateStart,
+ReasId : reasID,
+    }
+    const response = await fetchCreateAuction(Auction);
+    if (response != undefined && response) {
+      if (response.statusCode == "MSG05") {
+        openNotificationWithIcon("success", response.message);
+      } else {
+        openNotificationWithIcon(
+          "error",
+          "Something went wrong when executing operation. Please try again!"
+        );
+      }
+    }
   };
 
   const columnUsers: TableProps<DepositAmountUser>["columns"] = [
@@ -200,20 +240,14 @@ const RealDepositList: React.FC = () => {
               onOk={handleOk}
               onCancel={handleCancel}
             >
+              <div style={{alignContent: "center"}}>
               <DatePicker
                 onChange={onChangeDate}
                 showTime
                 needConfirm={false}
               />
+              </div>
               <br />
-              <InputNumber
-                defaultValue={0}
-                formatter={(value: any) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
-                parser={(value: any) => value.replace(/\$\s?|(,*)/g, "")}
-                onChange={onChangeInput}
-              />
             </Modal>
           </div>
           <br />
