@@ -22,7 +22,7 @@ import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
 
 const RealDepositList: React.FC = () => {
-  const { token } = useContext(UserContext);
+  const { token, userId } = useContext(UserContext);
   const [search, setSearch] = useState("");
   const [RealData, setRealData] = useState<RealForDeposit[]>();
   const [DepositData, setDepoistData] = useState<DepositAmountUser[]>();
@@ -128,6 +128,8 @@ const RealDepositList: React.FC = () => {
   };
   const handleOk = () => {
     setIsModalOpen(false);
+    createAuction();
+    setShowDetail(false);
   };
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -149,7 +151,7 @@ const RealDepositList: React.FC = () => {
 
   const createAuction = async () => {
     const Auction : AuctionCreate = {
-AccountCreateId : 1,
+AccountCreateId : userId,
 DateStart : dateStart,
 ReasId : reasID,
     }
@@ -157,6 +159,7 @@ ReasId : reasID,
     if (response != undefined && response) {
       if (response.statusCode == "MSG05") {
         openNotificationWithIcon("success", response.message);
+        fetchRealList();
       } else {
         openNotificationWithIcon(
           "error",
@@ -239,6 +242,11 @@ ReasId : reasID,
               open={isModalOpen}
               onOk={handleOk}
               onCancel={handleCancel}
+              footer={[
+                <Button key="submit" onClick={handleOk}>
+                  Create
+                </Button>,
+              ]}
             >
               <div style={{alignContent: "center"}}>
               <DatePicker

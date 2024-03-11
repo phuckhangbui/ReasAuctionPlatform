@@ -1,5 +1,5 @@
 interface AuctionCreate{
 ReasId : number | undefined;
-AccountCreateId : number;
+AccountCreateId : number | undefined;
 DateStart : Date;
 }

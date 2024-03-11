@@ -46,7 +46,7 @@ namespace API.Repository
         public async Task<IEnumerable<AuctionDto>> GetAuctionsNotYetAndOnGoing()
         {
             var getName = new GetStatusName();
-            var query = _context.Auction.OrderByDescending(a => a.DateStart).Where(b => b.Status.Equals((int)AuctionStatus.NotYet) && b.Status.Equals((int)AuctionStatus.OnGoing) && b.Status.Equals((int)AuctionStatus.Cancel)).Select(x => new AuctionDto
+            var query = _context.Auction.OrderByDescending(a => a.DateStart).Where(b => b.Status.Equals((int)AuctionStatus.NotYet) || b.Status.Equals((int)AuctionStatus.OnGoing) || b.Status.Equals((int)AuctionStatus.Cancel)).Select(x => new AuctionDto
             {
                 AuctionId = x.AuctionId,
                 ReasId = x.ReasId,
@@ -201,7 +201,7 @@ namespace API.Repository
 
         public async Task<IEnumerable<ReasForAuctionDto>> GetAuctionsReasForCreate()
         {
-            var real = _context.DepositAmount.Select(x => new ReasForAuctionDto
+            var real = _context.DepositAmount.Where(x => !_context.Auction.Any(y => y.ReasId == x.ReasId)).Select(x => new ReasForAuctionDto
             {
                 reasId = x.ReasId,
                 reasName = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.ReasName).FirstOrDefault(),
