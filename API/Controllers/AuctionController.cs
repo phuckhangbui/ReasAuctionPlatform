@@ -57,12 +57,12 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("/auctions/{auctionId}/attenders")]
-        public async Task<IActionResult> GetAuctionAttenders(int auctionId)
+        [HttpGet("/auctions/{reasId}/attenders")]
+        public async Task<IActionResult> GetAuctionAttenders(int reasId)
         {
             try
             {
-                var attenderIds = await _auctionService.GetAuctionAttenders(auctionId);
+                var attenderIds = await _auctionService.GetAuctionAttenders(reasId);
 
                 return Ok(attenderIds);
             }

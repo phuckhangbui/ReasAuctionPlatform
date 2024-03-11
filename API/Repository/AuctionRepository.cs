@@ -268,7 +268,7 @@ namespace API.Repository
             return await _context.Auction.FindAsync(auctionId);
         }
 
-        public async Task<List<int>> GetAuctionAttenders(int auctionId)
+        public async Task<List<int>> GetAuctionAttenders(int reasId)
         {
             var accountSignIds = await _context.DepositAmount
                 .Join(
@@ -277,7 +277,7 @@ namespace API.Repository
                     auction => auction.ReasId,
                     (deposit, auction) => new { Deposit = deposit, Auction = auction }
                 )
-                .Where(joinResult => joinResult.Auction.AuctionId == auctionId && 
+                .Where(joinResult => joinResult.Deposit.ReasId == reasId && 
                         joinResult.Deposit.Status == (int)UserDepositEnum.Deposited && 
                         (joinResult.Auction.Status == (int)AuctionStatus.NotYet || joinResult.Auction.Status == (int)AuctionStatus.Pending))
                 .Select(joinResult => joinResult.Deposit.AccountSignId)

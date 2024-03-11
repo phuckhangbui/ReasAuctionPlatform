@@ -128,9 +128,9 @@ namespace API.Services
             return auctionDetail;
         }
 
-        public async Task<List<int>> GetAuctionAttenders(int auctionId)
+        public async Task<List<int>> GetAuctionAttenders(int reasId)
         {
-            return await _auctionRepository.GetAuctionAttenders(auctionId);
+            return await _auctionRepository.GetAuctionAttenders(reasId);
         }
 
         public async Task<Auction> UpdateAuctionWhenStart(int auctionId)
