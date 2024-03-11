@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240311013107_accountPaymentInfomation")]
+    partial class accountPaymentInfomation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -426,32 +429,6 @@ namespace API.Data.Migrations
                     b.HasIndex("AccountCreateId");
 
                     b.ToTable("News");
-                });
-
-            modelBuilder.Entity("API.Entity.ParticipateAuctionHistory", b =>
-                {
-                    b.Property<int>("ParticipateAuctionHistoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipateAuctionHistoryId"));
-
-                    b.Property<int>("AccountBidId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AuctionAccountingId")
-                        .HasColumnType("int");
-
-                    b.Property<double>("LastBid")
-                        .HasColumnType("float");
-
-                    b.HasKey("ParticipateAuctionHistoryId");
-
-                    b.HasIndex("AccountBidId");
-
-                    b.HasIndex("AuctionAccountingId");
-
-                    b.ToTable("ParticipateAuctionHistories");
                 });
 
             modelBuilder.Entity("API.Entity.RealEstate", b =>
@@ -875,25 +852,6 @@ namespace API.Data.Migrations
                     b.Navigation("AccountCreate");
                 });
 
-            modelBuilder.Entity("API.Entity.ParticipateAuctionHistory", b =>
-                {
-                    b.HasOne("API.Entity.Account", "AccountBid")
-                        .WithMany("ParticipateAuctionHistory")
-                        .HasForeignKey("AccountBidId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("API.Entity.AuctionAccounting", "AuctionAccounting")
-                        .WithMany("ParticipateAuctionHistories")
-                        .HasForeignKey("AuctionAccountingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AccountBid");
-
-                    b.Navigation("AuctionAccounting");
-                });
-
             modelBuilder.Entity("API.Entity.RealEstate", b =>
                 {
                     b.HasOne("API.Entity.Account", "AccountOwner")
@@ -974,8 +932,6 @@ namespace API.Data.Migrations
 
                     b.Navigation("OwnedAuctionAccountings");
 
-                    b.Navigation("ParticipateAuctionHistory");
-
                     b.Navigation("RealEstate");
 
                     b.Navigation("TasksAssigned");
@@ -989,11 +945,6 @@ namespace API.Data.Migrations
                 {
                     b.Navigation("AuctionAccounting")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("API.Entity.AuctionAccounting", b =>
-                {
-                    b.Navigation("ParticipateAuctionHistories");
                 });
 
             modelBuilder.Entity("API.Entity.RealEstate", b =>

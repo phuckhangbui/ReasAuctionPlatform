@@ -19,6 +19,8 @@ public class Account
     public int Account_Status { get; set; }
     public DateTime Date_Created { get; set; } = DateTime.UtcNow;
     public DateTime Date_End { get; set; }
+    public string? BankingNumber { get; set; }
+    public string? BankingCode { get; set; } //ACB, NCB, AGR ...
 
 
     public List<RealEstate> RealEstate { get; set; }
@@ -34,4 +36,5 @@ public class Account
     public List<DepositAmount> DepositAmount { get; set; }
     public List<AuctionAccounting> WonAuctionAccountings { get; set; }
     public List<AuctionAccounting> OwnedAuctionAccountings { get; set; }
+    public List<ParticipateAuctionHistory> ParticipateAuctionHistory { get; set; }
 }
