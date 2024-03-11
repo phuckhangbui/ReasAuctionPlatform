@@ -300,7 +300,7 @@ public class DataContext : DbContext
             .HasOne(da => da.RealEstate)
             .WithOne()
             .HasForeignKey<DepositAmount>(da => da.ReasId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         //one account can has many auction win 
         modelBuilder.Entity<AuctionAccounting>()

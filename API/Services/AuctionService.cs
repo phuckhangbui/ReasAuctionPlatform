@@ -145,7 +145,11 @@ namespace API.Services
             }
 
             return null;
+        }
 
+        public async Task<List<int>> GetUserInAuction(int reasId)
+        {
+            return await _auctionRepository.GetUserIdInAuctionUsingReasId(reasId);
         }
     }
 }

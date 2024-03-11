@@ -2,9 +2,6 @@ using API.Data;
 using API.Extensions;
 using API.Helper.VnPay;
 using Microsoft.EntityFrameworkCore;
-using Hangfire;
-using API.Interface.Service;
-using API.Services;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DataContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")).EnableSensitiveDataLogging();
 });
 
 // Hangfire client

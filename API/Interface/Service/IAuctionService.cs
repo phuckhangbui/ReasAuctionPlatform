@@ -22,5 +22,6 @@ namespace API.Interface.Service
         Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam);
         Task<AuctionDto> GetAuctionDetailByReasId(int reasId);
         Task<Auction> UpdateAuctionWhenStart(int auctionId);
+        Task<List<int>> GetUserInAuction(int reasId);
     }
 }
