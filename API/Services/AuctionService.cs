@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using API.Entity;
 using API.Exceptions;
 using API.Helper;
 using API.Interface.Repository;
@@ -130,6 +131,30 @@ namespace API.Services
         public async Task<List<int>> GetAuctionAttenders(int auctionId)
         {
             return await _auctionRepository.GetAuctionAttenders(auctionId);
+        }
+
+        public async Task<Auction> UpdateAuctionWhenStart(int auctionId)
+        {
+            Auction auction = _auctionRepository.GetAuction(auctionId);
+
+            if (auction != null && auction.Status == (int)AuctionStatus.Pending)
+            {
+                auction.Status = (int)AuctionStatus.OnGoing;
+                auction.DateEnd = DateTime.Now.AddHours(1);
+
+                bool result = await _auctionRepository.UpdateAsync(auction);
+                if (result)
+                {
+                    return auction;
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<List<int>> GetUserInAuction(int reasId)
+        {
+            return await _auctionRepository.GetUserIdInAuctionUsingReasId(reasId);
         }
     }
 }

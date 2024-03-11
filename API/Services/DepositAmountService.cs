@@ -23,7 +23,7 @@ namespace API.Services
             _mapper = mapper;
         }
 
-        readonly float DEPOSIT_PERCENT = 0.05f;
+        readonly float DEPOSIT_PERCENT = 0.02f;
 
         public async Task<PageList<DepositDto>> GetDepositAmounts(DepositAmountParam depositAmountParam)
         {
@@ -84,6 +84,24 @@ namespace API.Services
             return depositAmountDto;
         }
 
+        public async Task<DepositAmountDto> UpdateStatus(int accountId, int reasId, int status)
+        {
+            DepositAmountDto depositAmountDto = new DepositAmountDto();
+            DepositAmount depositAmount = _depositAmountRepository.GetDepositAmount(accountId, reasId);
+            if (depositAmount == null)
+            {
+                throw new ArgumentException();
+            }
+
+            depositAmount.Status = status;
+
+            await _depositAmountRepository.UpdateAsync(depositAmount);
+
+            depositAmountDto = _mapper.Map<DepositAmount, DepositAmountDto>(depositAmount);
+
+            return depositAmountDto;
+        }
+
         public DepositAmountDto GetDepositAmount(int customerId, int reasId)
         {
             var depositAmount = _depositAmountRepository.GetDepositAmount(customerId, reasId);
@@ -119,5 +137,7 @@ namespace API.Services
 
             return await _depositAmountRepository.GetAccountsHadDeposited(paginationParams, reasId);
         }
+
+
     }
 }

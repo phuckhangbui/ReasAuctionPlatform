@@ -22,10 +22,11 @@ namespace API.Controllers
         private readonly IDepositAmountService _depositAmountService;
         private readonly IMoneyTransactionService _moneyTransactionService;
         private readonly IRealEstateService _realEstateService;
+        private readonly IParticipantHistoryService _participantHistoryService;
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
 
-        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService)
+        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService)
         {
             _auctionService = auctionService;
             _auctionAccountingService = auctionAccountingService;
@@ -34,6 +35,7 @@ namespace API.Controllers
             _vnPayProperties = vnPayProperties.Value;
             _vnPayService = vnPayService;
             _realEstateService = realEstateService;
+            _participantHistoryService = participantHistoryService;
         }
 
         [HttpGet("/auctions/{reasId}")]
@@ -168,28 +170,58 @@ namespace API.Controllers
 
 
 
-        [Authorize(policy: "Member")]
+        //[Authorize(policy: "Member")]
         [HttpPost("success")]
-        public async Task<ActionResult<AuctionAccountingDto>> AuctionSuccess(AuctionDetailDto auctionDetailDto)
+        public async Task<ActionResult<AuctionAccountingDto>> AuctionSuccess(AuctionSuccessDto auctionSuccessDto)
         {
             AuctionAccountingDto auctionAccountingDto = new AuctionAccountingDto();
+            if (auctionSuccessDto.AuctionHistory == null)
+            {
+                return BadRequest(new ApiResponse(404));
+            }
             try
             {
                 //update/add auction accounting
-                auctionAccountingDto = await _auctionAccountingService.UpdateAuctionAccounting(auctionDetailDto);
+                auctionAccountingDto = await _auctionAccountingService.UpdateAuctionAccounting(auctionSuccessDto.AuctionDetailDto);
 
                 if (auctionAccountingDto == null)
                 {
                     return BadRequest(new ApiResponse(400, "Real estate is not auctioning"));
                 }
 
+                //get the list of all user register in auction
+                List<int> userIdRegisterInAuction = await _auctionService.GetUserInAuction(auctionAccountingDto.ReasId);
+
+                List<int> userIdParticipateInAuction = auctionSuccessDto.AuctionHistory.Select(a => a.AccountId).ToList();  // include winner in here
+
+                List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
+
+                //update status for user participate
+                foreach (int userId in userIdParticipateInAuction)
+                {
+                    await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.Waiting_for_refund);
+                }
+
+                //update status for user who not participate
+                foreach (int userId in userIdsRegisteredNotParticipated)
+                {
+                    await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.LostDeposit);
+                }
+
+                // change the status of winner
+                await _depositAmountService.UpdateStatus(auctionSuccessDto.AuctionDetailDto.AccountWinId, auctionAccountingDto.ReasId, (int)UserDepositEnum.Winner);
+
+
+                //add to participant history
+                await _participantHistoryService.CreateParticipantHistory(auctionSuccessDto.AuctionHistory, auctionAccountingDto.AuctionAccountingId);
+
+
                 //update auction status
                 int statusFinish = (int)AuctionStatus.Finish;
-                bool result = await _auctionService.ToggleAuctionStatus(auctionDetailDto.AuctionId.ToString(), statusFinish.ToString());
+                bool result = await _auctionService.ToggleAuctionStatus(auctionSuccessDto.AuctionDetailDto.AuctionId.ToString(), statusFinish.ToString());
 
-                //update status of the remain looser user
-
-
+                //update real estate status
+                await _realEstateService.UpdateRealEstateStatus(auctionAccountingDto.ReasId, (int)RealEstateStatus.Sold);
 
                 if (result)
                 {
@@ -201,9 +233,21 @@ namespace API.Controllers
             {
                 return BadRequest(new ApiResponse(404));
             }
-            //return calculate result in auction accounting
 
             return Ok(auctionAccountingDto);
+        }
+
+        [Authorize(policy: "Member")]
+        [HttpGet("start")]
+        public async Task<ActionResult> AuctionStart(int auctionId)
+        {
+            var result = await _auctionService.UpdateAuctionWhenStart(auctionId);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(new ApiResponse(404));
         }
 
         [Authorize]
@@ -288,12 +332,12 @@ namespace API.Controllers
                 var realEstate = await _realEstateService.ViewRealEstateDetail(int.Parse(reasId));
                 if (realEstate == null)
                 {
-                    return BadRequest(new ApiResponse(400));
+                    return BadRequest(new ApiResponse(400, "Not mactching reasId"));
                 }
 
                 if (realEstate.ReasStatus != (int)RealEstateStatus.Selling)
                 {
-                    return BadRequest(new ApiResponse(400));
+                    return BadRequest(new ApiResponse(400, "Not in the state of selling"));
 
                 }
 
@@ -329,7 +373,6 @@ namespace API.Controllers
 
 
         // sample get request https://localhost:44383/api/auction/pay/deposit/returnUrl/4?vnp_Amount=2500000&vnp_BankCode=NCB&vnp_BankTranNo=VNP14313776&vnp_CardType=ATM&vnp_OrderInfo=Auction+Deposit+Fee&vnp_PayDate=20240305102408&vnp_ResponseCode=00&vnp_TmnCode=6EMYCUD2&vnp_TransactionNo=14313776&vnp_TransactionStatus=00&vnp_TxnRef=638452310013886970&vnp_SecureHash=c85ad2998d07545289cce3c8085f78174cfdfdc5cf6a218945254f0161cedb166c25b89e08006b6d7dc59879a12594ca3be283cd62eae2741eb0dbb695846ddd
-        [Authorize(policy: "Member")]
         [HttpGet("pay/deposit/returnUrl/{depositId}")]
         public async Task<ActionResult> PayAuctionDeposit([FromQuery] Dictionary<string, string> vnpayData, int depositId)
         {

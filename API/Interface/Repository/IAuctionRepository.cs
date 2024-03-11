@@ -26,5 +26,6 @@ namespace API.Interface.Repository
         Task<Auction> GetAuctionByAuctionId(int auctionId);
         Task<List<int>> GetAuctionAttenders(int auctionId);
         Task<List<string>> GetAuctionAttendersEmail(int auctionId);
+        Task<List<int>> GetUserIdInAuctionUsingReasId(int reasId);
     }
 }

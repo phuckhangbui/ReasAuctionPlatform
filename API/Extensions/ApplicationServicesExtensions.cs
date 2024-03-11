@@ -28,6 +28,8 @@ namespace API.Extensions
             services.AddScoped<ITypeReasRepository, TypeReasRepository>();
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<IAuctionAccountingRepository, AuctionAccountingRepository>();
+            services.AddScoped<IParticipantHistoryRepository, ParticipantHistoryRepository>();
+
             services.AddScoped<IRealEstateService, RealEstateService>();
             services.AddScoped<IRuleService, RuleService>();
             services.AddScoped<IAccountService, AccountService>();
@@ -43,7 +45,9 @@ namespace API.Extensions
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IMoneyTransactionService, MoneyTransactionService>();
             services.AddScoped<IDepositAmountService, DepositAmountService>();
+            services.AddScoped<IParticipantHistoryService, ParticipantHistoryService>();
             services.AddScoped<IVnPayService, VnPayService>();
+
 
             services.AddScoped<IAuctionAccountingService, AuctionAccountingService>();
 

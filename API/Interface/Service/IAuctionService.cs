@@ -1,4 +1,5 @@
 ﻿using API.DTOs;
+using API.Entity;
 using API.Helper;
 using API.Param;
 
@@ -21,5 +22,7 @@ namespace API.Interface.Service
         Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam);
         Task<AuctionDto> GetAuctionDetailByReasId(int reasId);
         Task<List<int>> GetAuctionAttenders(int auctionId);
+        Task<Auction> UpdateAuctionWhenStart(int auctionId);
+        Task<List<int>> GetUserInAuction(int reasId);
     }
 }

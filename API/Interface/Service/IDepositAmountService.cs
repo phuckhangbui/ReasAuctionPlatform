@@ -17,5 +17,6 @@ namespace API.Interface.Service
         DepositAmount GetDepositAmount(int depositId);
         DepositDetailDto GetDepositDetail(int depositId);
         Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId);
+        Task<DepositAmountDto> UpdateStatus(int accountId, int reasId, int status);
     }
 }

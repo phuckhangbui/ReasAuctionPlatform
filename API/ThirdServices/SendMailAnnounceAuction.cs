@@ -14,12 +14,12 @@ namespace API.ThirdServices
             mailSetting.Passwork = "zgtj veex szof becd";
             mailSetting.DisplayName = "REAS";
             mailContext.To = toEmail;
-            mailContext.Subject = $"Auction Reminder: <strong>{reasName}</strong> Starts Soon!";
+            mailContext.Subject = $"Auction Reminder: {reasName} Starts Soon!";
             mailContext.Body = $@"<p>Dear Participant,</p>
             <p>We would like to remind you that the auction for the real estate <strong>{reasName}</strong> is about to start in 5 minutes. Be sure to join us!</p>
             <p>This email provides the following details:</p>
             <ul>
-                <li><strong>Property Name:</strong> <span class='bold'>{reasName}</span></li>
+                <li><strong>Real Estate Name:</strong> <span class='bold'>{reasName}</span></li>
                 <li><strong>Auction Start Date:</strong> <span class='bold'>{auctionStartDate.ToString("dddd, MMMM dd, yyyy HH:mm tt")}</span></li>
             </ul>
             <p>If you have any last-minute questions or need assistance, please feel free to contact us at (+84) 123 345 2341 or by replying to this email.</p>

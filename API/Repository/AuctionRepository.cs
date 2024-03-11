@@ -213,7 +213,7 @@ namespace API.Repository
         public async Task<IEnumerable<DepositAmountUserDto>> GetAllUserForDeposit(int id)
         {
             var getName = new GetStatusName();
-            var deposit = _context.DepositAmount.Where(x => (x.Status == 1 || x.Status == 0) && x.ReasId == id).Select(x => new DepositAmountUserDto
+            var deposit = _context.DepositAmount.Where(x => (x.Status == (int)UserDepositEnum.Pending || x.Status == (int)UserDepositEnum.Deposited) && x.ReasId == id).Select(x => new DepositAmountUserDto
             {
                 reasId = x.ReasId,
                 accountSignId = x.AccountSignId,
@@ -308,6 +308,12 @@ namespace API.Repository
                 .ToListAsync();
 
             return attendersEmails;
+        }
+        public async Task<List<int>> GetUserIdInAuctionUsingReasId(int reasId)
+        {
+            var deposit = await _context.DepositAmount.Where(x => x.Status == (int)UserDepositEnum.Deposited && x.ReasId == reasId).ToListAsync();
+
+            return deposit.Select(d => d.AccountSignId).ToList();
         }
     }
 }
