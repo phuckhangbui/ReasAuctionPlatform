@@ -7,7 +7,18 @@ export const getAuctionHome = async (reasId: number) => {
       `${baseUrl}/auctions/${reasId}`
     );
     const response = fetchData.data;
-    console.log(`${baseUrl}/auctions/${reasId}`);
+    return response;
+  } catch (error) {
+    console.log("Error: " + error);
+  }
+};
+
+export const getAuctionUserList = async (reasId: number) => {
+  try {
+    const fetchData = await axios.get<number[]>(
+      `${baseUrl}/auctions/${reasId}/attenders`
+    );
+    const response = fetchData.data;
     return response;
   } catch (error) {
     console.log("Error: " + error);
