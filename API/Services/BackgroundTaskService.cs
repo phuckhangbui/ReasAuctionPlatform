@@ -10,33 +10,47 @@ namespace API.Services
     {
         private readonly IAuctionRepository _auctionRepository;
         private readonly IRealEstateRepository _realEstateRepository;
+        private readonly IDepositAmountRepository _depositAmountRepository;
         private readonly ILogger<BackgroundTaskService> _logger;
 
         public BackgroundTaskService(IAuctionRepository auctionRepository, 
             ILogger<BackgroundTaskService> logger,
-            IRealEstateRepository realEstateRepository)
+            IRealEstateRepository realEstateRepository,
+            IDepositAmountRepository depositAmountRepository)
         {
             _auctionRepository = auctionRepository;
             _logger = logger;
             _realEstateRepository = realEstateRepository;
+            _depositAmountRepository = depositAmountRepository;
         }
 
         public async Task ChangeAuctionStatusToPending(int auctionId)
         {
             try
             {
-                var auctionToBeUpdated = _auctionRepository.GetAuction(auctionId);
+                var auction = _auctionRepository.GetAuction(auctionId);
 
-                if (auctionToBeUpdated != null)
+                if (auction != null)
                 {
-                    auctionToBeUpdated.Status = (int)AuctionStatus.Pending;
-                    await _auctionRepository.UpdateAsync(auctionToBeUpdated);
-                    _logger.LogInformation($"Auction id: {auctionId} status updated to 'Pending' successfully at {DateTime.Now}.");
+                    //Update auction to Pending
+                    auction.Status = (int)AuctionStatus.Pending;
+                    await _auctionRepository.UpdateAsync(auction);
+                    _logger.LogInformation($"Auction id: {auction.AuctionId} status updated to 'Pending' successfully at {DateTime.Now}.");
 
-                    var realEstateToBeUpdated = _realEstateRepository.GetRealEstate(auctionToBeUpdated.ReasId);
+                    //Update real estate to Auctioning
+                    var realEstateToBeUpdated = _realEstateRepository.GetRealEstate(auction.ReasId);
                     realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.Auctioning;
                     await _realEstateRepository.UpdateAsync(realEstateToBeUpdated);
                     _logger.LogInformation($"Real estate id: {realEstateToBeUpdated.ReasId} status updated to 'Auctioning' successfully at {DateTime.Now}.");
+
+                    //Auction is Pending status when DateEnd
+                    var currentDateTime = DateTime.Now;
+                    TimeSpan delayToEnd = auction.DateEnd - currentDateTime;
+
+                    BackgroundJob.Schedule(() => ChangeAuctionStatusToFinishInCaseNoAttender(auction.AuctionId), delayToEnd);
+
+                    _logger.LogInformation($"Auction id: {auction.AuctionId} scheduled for status change: " +
+                        $"'Finish' at {auction.DateEnd}");
                 }
             }
             catch (Exception ex)
@@ -45,60 +59,37 @@ namespace API.Services
             }
         }
 
-        public async Task ChangeAuctionStatusOnSuccess(int auctionId)
+        public async Task ChangeAuctionStatusToFinishInCaseNoAttender(int auctionId)
         {
             try
             {
-                var auctionToBeUpdated = _auctionRepository.GetAuction(auctionId);
+                var auction = _auctionRepository.GetAuction(auctionId);
 
-                if (auctionToBeUpdated != null && auctionToBeUpdated.Status == (int)AuctionStatus.OnGoing)
+                if (auction != null && auction.Status == (int)AuctionStatus.Pending)
                 {
-                    auctionToBeUpdated.Status = (int)AuctionStatus.Finish;
-                    await _auctionRepository.UpdateAsync(auctionToBeUpdated);
-                    _logger.LogInformation($"Auction id: {auctionId} status updated to 'Finish' at {DateTime.Now}.");
+                    //Update auction to Finish
+                    auction.Status = (int)AuctionStatus.Finish;
+                    await _auctionRepository.UpdateAsync(auction);
+                    _logger.LogInformation($"Auction id: {auction.AuctionId} status updated to 'Finish' successfully at {DateTime.Now}.");
 
-                    var realEstateToBeUpdated = _realEstateRepository.GetRealEstate(auctionToBeUpdated.ReasId);
-                    realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.Sold;
+                    //Update real estate to Rollback
+                    var realEstateToBeUpdated = _realEstateRepository.GetRealEstate(auction.ReasId);
+                    realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.Rollback;
                     await _realEstateRepository.UpdateAsync(realEstateToBeUpdated);
-                    _logger.LogInformation($"Real estate id: {realEstateToBeUpdated.ReasId} status updated to 'Sold' successfully at {DateTime.Now}.");
+                    _logger.LogInformation($"Real estate id: {realEstateToBeUpdated.ReasId} status updated to 'Rollback' successfully at {DateTime.Now}.");
 
+                    //Update deposit to LostDeposit
+                    await _depositAmountRepository.UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(auction.ReasId);
+                    _logger.LogInformation($"Deposits for real estate id: {realEstateToBeUpdated.ReasId} status updated to 'LostDeposit' successfully at {DateTime.Now}.");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while updating auction status to");
+                _logger.LogError(ex, "Error occurred while updating auction status.");
             }
         }
 
-        public async Task ScheduleAuctionEndTime(int auctionId)
-        {
-            try
-            {
-                var currentDateTime = DateTime.Now;
-
-                var auctionsToBeScheduled = await _auctionRepository.GetAuctionByAuctionId(auctionId);
-
-                if (auctionsToBeScheduled != null)
-                {
-                    auctionsToBeScheduled.DateEnd = DateTime.Now.AddSeconds(30);
-
-                    await _auctionRepository.UpdateAsync(auctionsToBeScheduled);
-
-                    TimeSpan delayToEnd = auctionsToBeScheduled.DateEnd - currentDateTime;
-
-                    BackgroundJob.Schedule(() => ChangeAuctionStatusOnSuccess(auctionId), delayToEnd);
-
-                    _logger.LogInformation($"Auction id: {auctionId} scheduled for status change: " +
-                        $"'Finish' at {auctionsToBeScheduled.DateEnd}.");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while scheduling auction status change.");
-            }
-        }
-
-        public async Task ScheduleAuctionPending()
+        public async Task ScheduleAuction()
         {
             try
             {
@@ -112,11 +103,8 @@ namespace API.Services
                 foreach (var auction in auctionsToBeScheduled)
                 {
                     TimeSpan delayToStart = auction.DateStart - currentDateTime;
-                    TimeSpan delayToEnd = auction.DateEnd - currentDateTime;
 
                     BackgroundJob.Schedule(() => ChangeAuctionStatusToPending(auction.AuctionId), delayToStart);
-                    //BackgroundJob.Schedule(() => ChangeAuctionStatusOnSuccess(auction.AuctionId), delayToEnd);
-
                     _logger.LogInformation($"Auction id: {auction.AuctionId} scheduled for status change: " +
                         $"'Pending' at {auction.DateStart}");
                 }
@@ -127,7 +115,7 @@ namespace API.Services
             }
         }
 
-        public async Task SendEmailNoticeAttenders()
+        public async Task ScheduleSendEmailNoticeAttenders()
         {
             try
             {

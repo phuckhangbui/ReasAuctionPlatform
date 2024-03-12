@@ -162,5 +162,17 @@ namespace API.Repository
 
             await _context.SaveChangesAsync();
         }
+
+        public async System.Threading.Tasks.Task UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(int reasId)
+        {
+            var deposits = await _context
+                .DepositAmount
+                .Where(d => d.ReasId == reasId && d.Status == (int)UserDepositEnum.Deposited)
+                .ToListAsync();
+
+            deposits.ForEach(deposit => deposit.Status = (int)UserDepositEnum.LostDeposit);
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -30,7 +30,7 @@ namespace API.Controllers
         {
             try
             {
-                await _backgroundTaskService.ScheduleAuctionEndTime(auctionId);
+                //await _backgroundTaskService.ScheduleAuctionEndTime(auctionId);
 
                 _logger.LogInformation($"Trigger schedule auction {auctionId} end time run successfully at {DateTime.Now}.");
 
