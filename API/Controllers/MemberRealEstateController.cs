@@ -155,7 +155,7 @@ namespace API.Controllers
 
             if (realEstateDetail.ReasStatus != (int)RealEstateStatus.Approved)
             {
-                return BadRequest(new ApiResponse(401, "Not in the payment state"));
+                return BadRequest(new ApiResponse(401, "Not in the pproved state"));
             }
 
             //default fee is 100,000 VND

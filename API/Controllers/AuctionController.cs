@@ -323,7 +323,6 @@ namespace API.Controllers
                 if (realEstate.ReasStatus != (int)RealEstateStatus.Selling)
                 {
                     return BadRequest(new ApiResponse(400, "Not in the state of selling"));
-
                 }
 
                 var depositAmountDto = _depositAmountService.GetDepositAmount(createPaymentLinkDto.AccountId, createPaymentLinkDto.ReasId);
@@ -335,7 +334,7 @@ namespace API.Controllers
                         return BadRequest(new ApiResponse(400, "Real estate is not selling"));
                     }
                 }
-                if (depositAmountDto.Status.Equals(UserDepositEnum.Pending.ToString()))
+                if (depositAmountDto.Status != (int)UserDepositEnum.Pending)
                 {
                     return BadRequest(new ApiResponse(400, "Deposit is not pending"));
                 }
