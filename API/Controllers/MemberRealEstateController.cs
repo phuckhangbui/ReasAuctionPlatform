@@ -138,18 +138,17 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet(BaseUri + "my_real_estate/detail/{reasId}/createPaymentLink")]
-        public async Task<ActionResult> CreatePaymentLink(int reasId, string returnUrl)
+        [HttpPost(BaseUri + "my_real_estate/detail/{reasId}/createPaymentLink")]
+        public async Task<ActionResult> CreatePaymentLink(CreatePaymentLinkDto createPaymentLinkDto)
         {
-            int customerId = GetLoginAccountId();
-
-            if (customerId == 0)
+            if (GetLoginAccountId() != createPaymentLinkDto.AccountId)
             {
-                return BadRequest(new ApiResponse(401));
+                return BadRequest(new ApiResponse(400));
             }
 
-            var realEstateDetail = await _memberRealEstateService.ViewOwnerRealEstateDetail(reasId);
-            if (realEstateDetail.AccountOwnerId != customerId)
+
+            var realEstateDetail = await _memberRealEstateService.ViewOwnerRealEstateDetail(createPaymentLinkDto.ReasId);
+            if (realEstateDetail.AccountOwnerId != createPaymentLinkDto.AccountId)
             {
                 return BadRequest(new ApiResponse(401, "Not match real estate with userId"));
             }
@@ -160,7 +159,7 @@ namespace API.Controllers
             }
 
             //default fee is 100,000 VND
-            string paymentUrl = _vnPayService.CreatePostRealEstatePaymentURL(HttpContext, _vnPayProperties, returnUrl);
+            string paymentUrl = _vnPayService.CreatePostRealEstatePaymentURL(HttpContext, _vnPayProperties, createPaymentLinkDto.ReturnUrl);
 
             return Ok(paymentUrl);
         }

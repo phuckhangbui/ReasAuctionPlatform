@@ -155,7 +155,7 @@ namespace API.Controllers
 
 
 
-        //[Authorize(policy: "Member")]
+        [Authorize(policy: "Member")]
         [HttpPost("success")]
         public async Task<ActionResult<AuctionAccountingDto>> AuctionSuccess(AuctionSuccessDto auctionSuccessDto)
         {
@@ -302,10 +302,10 @@ namespace API.Controllers
         }
 
         [Authorize(policy: "Member")]
-        [HttpGet("register")]
-        public async Task<ActionResult<DepositAmountDtoWithPaymentUrl>> RegisterAuction([FromQuery] string customerId, string reasId, string returnUrl)
+        [HttpPost("register")]
+        public async Task<ActionResult<DepositAmountDtoWithPaymentUrl>> RegisterAuction([FromBody] CreatePaymentLinkDto createPaymentLinkDto)
         {
-            if (GetLoginAccountId() != int.Parse(customerId))
+            if (GetLoginAccountId() != createPaymentLinkDto.AccountId)
             {
                 return BadRequest(new ApiResponse(400));
             }
@@ -314,7 +314,7 @@ namespace API.Controllers
 
             try
             {
-                var realEstate = await _realEstateService.ViewRealEstateDetail(int.Parse(reasId));
+                var realEstate = await _realEstateService.ViewRealEstateDetail(createPaymentLinkDto.ReasId);
                 if (realEstate == null)
                 {
                     return BadRequest(new ApiResponse(400, "Not mactching reasId"));
@@ -326,10 +326,10 @@ namespace API.Controllers
 
                 }
 
-                var depositAmountDto = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
+                var depositAmountDto = _depositAmountService.GetDepositAmount(createPaymentLinkDto.AccountId, createPaymentLinkDto.ReasId);
                 if (depositAmountDto == null)
                 {
-                    depositAmountDto = await _depositAmountService.CreateDepositAmount(int.Parse(customerId), int.Parse(reasId));
+                    depositAmountDto = await _depositAmountService.CreateDepositAmount(createPaymentLinkDto.AccountId, createPaymentLinkDto.ReasId);
                     if (depositAmountDto == null)
                     {
                         return BadRequest(new ApiResponse(400, "Real estate is not selling"));
@@ -341,7 +341,7 @@ namespace API.Controllers
                 }
 
                 //create new vnpayment url
-                string paymentUrl = _vnPayService.CreateDepositePaymentURL(HttpContext, depositAmountDto, _vnPayProperties, returnUrl);
+                string paymentUrl = _vnPayService.CreateDepositePaymentURL(HttpContext, depositAmountDto, _vnPayProperties, createPaymentLinkDto.ReturnUrl);
 
                 DepositAmountDtoWithPaymentUrl depositAmountDtoWithPaymentUrl = new DepositAmountDtoWithPaymentUrl
                 {
