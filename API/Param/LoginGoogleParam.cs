@@ -6,5 +6,8 @@ namespace API.Param
     {
         [Required]
         public string idTokenString { get; set; }
+
+        [Required]
+        public string firebaseRegisterToken { get; set; }
     }
 }

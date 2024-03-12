@@ -21,6 +21,7 @@ public class Account
     public DateTime Date_End { get; set; }
     public string? BankingNumber { get; set; }
     public string? BankingCode { get; set; } //ACB, NCB, AGR ...
+    public string? FirebaseToken { get; set; }
 
 
     public List<RealEstate> RealEstate { get; set; }

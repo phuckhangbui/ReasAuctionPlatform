@@ -51,6 +51,13 @@ namespace API.Extensions
 
             services.AddScoped<IAuctionAccountingService, AuctionAccountingService>();
 
+            services.AddSingleton<IFirebaseMessagingService>(provider =>
+            {
+                // Assuming jsonCredentialsPath is configured elsewhere, possibly in appsettings.json
+                var jsonCredentialsPath = config["Firebase:CredentialsPath"];
+                return new FirebaseMessagingService(jsonCredentialsPath);
+            });
+
             services.AddDbContext<DataContext>(opt =>
             {
                 opt.UseSqlServer(config.GetConnectionString("DefaultConnection"));
