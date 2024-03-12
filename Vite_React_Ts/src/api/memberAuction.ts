@@ -13,3 +13,26 @@ export const getAuctionHome = async (reasId: number) => {
     console.log("Error: " + error);
   }
 };
+
+export const getAuctionStatus = async (
+  userId: number,
+  reasId: number,
+  token: string
+) => {
+  try {
+    const fetchData = await axios.get<auctionStatus>(
+      `${baseUrl}/api/home/customer/auction/status?customerId=${userId}&reasId=${reasId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};

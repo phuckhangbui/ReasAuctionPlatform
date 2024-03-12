@@ -9,6 +9,7 @@ import { DatePicker } from "antd";
 import CloudinaryUploadWidget, {
   CloudinaryConfig,
 } from "../../../Config/cloudinary";
+import toast from "react-hot-toast";
 
 const validate = (values: createRealEstate) => {
   const errors: Partial<validateRealEstate> = {};
@@ -144,7 +145,7 @@ const SellPage = () => {
           !values.detail.sales_Authorization_Contract ||
           !values.photos.length
         ) {
-          setNoPhotoMessage(true);
+          toast.error("Photos of Real Estate Are Required");
         } else {
           const response = await createRealEstate(token, values);
           formik.resetForm();
@@ -234,7 +235,7 @@ const SellPage = () => {
       !formik.values.dateEnd ||
       !formik.values.type_Reas
     ) {
-      setNoInputMessage(true);
+      toast.error("You Are Missing Some Inputs");
     } else {
       toggleTab("reasPhoto");
     }
@@ -242,116 +243,6 @@ const SellPage = () => {
 
   return (
     <div className="pt-20">
-      {noPhotoMessage && (
-        <div className={`fixed flex justify-end w-full z-40 `}>
-          <div
-            id="toast-danger"
-            className={`flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow ${
-              noPhotoMessage
-                ? "opacity-100 translate-y-0 transition-all duration-300"
-                : "opacity-0 translate-y-full"
-            }`}
-            role="alert"
-          >
-            <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" />
-              </svg>
-              <span className="sr-only">Error icon</span>
-            </div>
-            <div className="ms-3 text-sm font-normal">
-              Some of the photos are missing
-            </div>
-            <button
-              type="button"
-              className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-              data-dismiss-target="#toast-danger"
-              aria-label="Close"
-              onClick={() => {
-                setNoPhotoMessage(false);
-              }}
-            >
-              <span className="sr-only">Close</span>
-              <svg
-                className="w-3 h-3"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 14"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-      {noInputMessage && (
-        <div className={`fixed flex justify-end w-full z-40 `}>
-          <div
-            id="toast-danger"
-            className={`flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow ${
-              noInputMessage
-                ? "opacity-100 translate-y-0 transition-all duration-300"
-                : "opacity-0 translate-y-full"
-            }`}
-            role="alert"
-          >
-            <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" />
-              </svg>
-              <span className="sr-only">Error icon</span>
-            </div>
-            <div className="ms-3 text-sm font-normal">
-              You are missing some inputs
-            </div>
-            <button
-              type="button"
-              className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-              data-dismiss-target="#toast-danger"
-              aria-label="Close"
-              onClick={() => {
-                setNoInputMessage(false);
-              }}
-            >
-              <span className="sr-only">Close</span>
-              <svg
-                className="w-3 h-3"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 14"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="bg-white border border-gray-200 rounded-lg shadow mx-auto w-full px-10 py-5">
           <div className="text-center">
@@ -557,7 +448,7 @@ const SellPage = () => {
                   <RangePicker
                     id="dateRange"
                     className=" w-full p-2.5 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue "
-                    onChange={(dates, dateStrings) => {
+                    onChange={(dateStrings: any) => {
                       formik.setFieldValue("dateStart", dateStrings[0]);
                       formik.setFieldValue("dateEnd", dateStrings[1]);
                     }}
@@ -617,7 +508,7 @@ const SellPage = () => {
                   <CKEditor
                     id="reasDescription"
                     editor={ClassicEditor}
-                    onChange={(event, editor) => {
+                    onChange={(event: any, editor: any) => {
                       const data = editor.getData();
                       formik.setFieldValue("reasDescription", data);
                     }}

@@ -24,7 +24,7 @@ const GoogleLogIn = ({ closeModal }: GoogleLogInProps) => {
         roleId: responseData.roleId,
         // username: responseData.username,
       } as loginUser;
-      login(user, responseData.token, responseData.id);
+      login(user, responseData.token);
       closeModal();
     } catch (error) {
       console.log(error);

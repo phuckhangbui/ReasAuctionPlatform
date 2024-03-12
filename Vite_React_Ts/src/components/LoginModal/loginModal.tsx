@@ -63,7 +63,7 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
           username: responseData?.username,
         } as loginUser;
         if (responseData?.token) {
-          login(user, responseData?.token, responseData?.id);
+          login(user, responseData?.token);
         }
       };
       loginStaff();
