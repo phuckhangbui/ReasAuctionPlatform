@@ -53,7 +53,7 @@ namespace API.Repository
             query = query.Where(a => a.RoleId == (int)RoleEnum.Member &&
             (accountParams.KeyWord == null || a.AccountEmail.ToLower().Contains(accountParams.KeyWord.ToLower()) ||
             a.AccountName.ToLower().Contains(accountParams.KeyWord.ToLower())));
-            var result  = query.Select(x => new AccountMemberDto
+            var result = query.Select(x => new AccountMemberDto
             {
                 AccountId = x.AccountId,
                 AccountName = x.AccountName,
@@ -105,7 +105,7 @@ namespace API.Repository
                 Account_Status = getName.GetStatusAccountName(x.Account_Status),
                 Date_Created = x.Date_Created,
                 Date_End = x.Date_End,
-            }).OrderByDescending(x =>x.Date_Created);
+            }).OrderByDescending(x => x.Date_Created);
             return query.ToList();
         }
 
@@ -191,7 +191,7 @@ namespace API.Repository
             else
             {
                 return false;
-            }  
+            }
         }
 
         public async Task<string> GetNameAccountByAccountIdAsync(int accountId)
@@ -200,6 +200,13 @@ namespace API.Repository
 
         public async Task<int> GetIdAccountToReceiveMoney()
         => await _context.Account.Where(x => x.AccountName.Equals("admin")).Select(x => x.AccountId).FirstOrDefaultAsync();
+
+        public async Task<Account> FirebaseTokenExisted(string firebaseToken)
+        {
+            return await _context.Account.FirstOrDefaultAsync(x => x.FirebaseToken == firebaseToken);
+        }
+
+        //public async
 
     }
 }

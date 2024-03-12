@@ -1,6 +1,5 @@
 ﻿using API.DTOs;
 using API.Entity;
-using API.Helper;
 using API.Param;
 
 namespace API.Interface.Repository
@@ -22,5 +21,6 @@ namespace API.Interface.Repository
         Task<StaffInformationDto> GetStaffAccountDetail(int id);
         Task<MemberInformationDto> GetMemberAccountDetail(int id);
         Task<bool> UpdateStatusAccount(ChangeStatusAccountParam changeStatusAccountDto);
+        Task<Account> FirebaseTokenExisted(string firebaseToken);
     }
 }

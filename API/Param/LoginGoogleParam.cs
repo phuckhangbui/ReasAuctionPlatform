@@ -5,9 +5,8 @@ namespace API.Param
     public class LoginGoogleParam
     {
         [Required]
-        public string idTokenString { get; set; }
+        public string IdTokenString { get; set; }
 
-        [Required]
-        public string firebaseRegisterToken { get; set; }
+        public string? FirebaseRegisterToken { get; set; }
     }
 }
