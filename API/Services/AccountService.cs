@@ -5,6 +5,7 @@ using API.Interface.Service;
 using API.Interfaces;
 using API.Param;
 using Google.Apis.Auth;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -40,7 +41,7 @@ namespace API.Services
                     }
                 }
 
-                if (loginDto.FirebaseRegisterToken == null)
+                if (loginDto.FirebaseRegisterToken.IsNullOrEmpty())
                 {
 
                 }
@@ -79,7 +80,7 @@ namespace API.Services
             {
                 Account account = await _accountRepository.GetAccountByEmailAsync(userEmail);
                 //Check firebase token
-                if (loginGoogleDto.FirebaseRegisterToken == null)
+                if (loginGoogleDto.FirebaseRegisterToken.IsNullOrEmpty())
                 {
 
                 }
