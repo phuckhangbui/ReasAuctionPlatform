@@ -3,6 +3,7 @@ using API.Entity;
 using API.Errors;
 using API.Exceptions;
 using API.Extension;
+using API.Extensions;
 using API.Helper;
 using API.Helper.VnPay;
 using API.Interface.Service;
@@ -12,6 +13,8 @@ using API.Param.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Collections.Specialized;
+using System.Web;
 
 namespace API.Controllers
 {
@@ -357,12 +360,25 @@ namespace API.Controllers
 
 
         // sample get request https://localhost:44383/api/auction/pay/deposit/returnUrl/4?vnp_Amount=2500000&vnp_BankCode=NCB&vnp_BankTranNo=VNP14313776&vnp_CardType=ATM&vnp_OrderInfo=Auction+Deposit+Fee&vnp_PayDate=20240305102408&vnp_ResponseCode=00&vnp_TmnCode=6EMYCUD2&vnp_TransactionNo=14313776&vnp_TransactionStatus=00&vnp_TxnRef=638452310013886970&vnp_SecureHash=c85ad2998d07545289cce3c8085f78174cfdfdc5cf6a218945254f0161cedb166c25b89e08006b6d7dc59879a12594ca3be283cd62eae2741eb0dbb695846ddd
-        [HttpGet("pay/deposit/returnUrl/{depositId}")]
-        public async Task<ActionResult> PayAuctionDeposit([FromQuery] Dictionary<string, string> vnpayData, int depositId)
+        [Authorize(policy: "Member")]
+        [HttpPost("pay/deposit/returnUrl/{depositId}")]
+        public async Task<ActionResult> PayAuctionDeposit([FromBody] VnPayReturnUrlDto vnpayDataDto, int depositId)
         {
+            int accountId = GetLoginAccountId();
+            if (accountId == 0)
+            {
+                return BadRequest(new ApiResponse(400, "Customer has not registered to bid in this real estate"));
+            }
+
+
             DepositAmount depositAmount = _depositAmountService.GetDepositAmount(depositId);
 
             if (depositAmount == null)
+            {
+                return BadRequest(new ApiResponse(400, "DepositId is not available"));
+            }
+
+            if (depositAmount.AccountSignId != accountId)
             {
                 return BadRequest(new ApiResponse(400, "Customer has not registered to bid in this real estate"));
             }
@@ -370,14 +386,16 @@ namespace API.Controllers
             if (depositAmount.Status != (int)UserDepositEnum.Pending)
             {
                 return BadRequest(new ApiResponse(400, "Customer has already paid the deposit"));
-
             }
 
 
-            string vnp_HashSecret = _vnPayProperties.HashSecret;
 
             try
             {
+                NameValueCollection queryParams = HttpUtility.ParseQueryString(HttpUtility.UrlDecode(vnpayDataDto.url));
+
+                Dictionary<string, string> vnpayData = queryParams.AllKeys.ToDictionary(k => k, k => queryParams[k]);
+                string vnp_HashSecret = _vnPayProperties.HashSecret;
                 MoneyTransaction transaction = ReturnUrl.ProcessReturnUrl(vnpayData, vnp_HashSecret, TransactionType.Deposit_Auction_Fee);
 
                 if (transaction != null)
