@@ -12,7 +12,6 @@ interface LoginModalProps {
 const LoginModal = ({ closeModal }: LoginModalProps) => {
   const [tabStatus, setTabStatus] = useState("user");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { register, handleSubmit } = useForm<loginStaff>();
   const { login } = useContext(UserContext);
   const navigate = useNavigate();

@@ -6,11 +6,13 @@ interface DepositProviderProps {
 interface DepositContextType {
   depositId: number | undefined;
   getDeposit: (id: number) => void;
+  removeDeposit: () => void;
 }
 
 export const DepositContext = createContext<DepositContextType>({
   depositId: undefined,
   getDeposit: () => {},
+  removeDeposit: () => {},
 });
 
 const DepositProvider = ({ children }: DepositProviderProps) => {
@@ -19,7 +21,7 @@ const DepositProvider = ({ children }: DepositProviderProps) => {
   useEffect(() => {
     try {
       const getDepositId = async () => {
-        const storageId = localStorage.getItem("id");
+        const storageId = localStorage.getItem("depositId");
         if (storageId) {
           setDepositId(parseInt(storageId));
         }
@@ -35,12 +37,17 @@ const DepositProvider = ({ children }: DepositProviderProps) => {
   }, [depositId]);
 
   const getDeposit = (id: number) => {
-    localStorage.setItem("id", id.toString());
+    localStorage.setItem("depositId", id.toString());
     setDepositId(id);
   };
 
+  const removeDeposit = () => {
+    localStorage.removeItem("depositId");
+    setDepositId(undefined);
+  };
+
   return (
-    <DepositContext.Provider value={{ depositId, getDeposit }}>
+    <DepositContext.Provider value={{ depositId, getDeposit, removeDeposit }}>
       {children}
     </DepositContext.Provider>
   );

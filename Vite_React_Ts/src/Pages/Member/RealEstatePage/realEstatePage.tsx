@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import SearchBar from "../../../components/SearchBar/searchBar.tsx";
 import RealEstateList from "../../../components/RealEstate/realEstateList.tsx";
 import { searchRealEstate } from "../../../api/realEstate.ts";
+import realEstate from "../../../interface/RealEstate/realEstate.ts";
 
 const priceList = [
   5000, 6000, 7000, 8000, 10000, 11000, 12000, 15000, 20000, 50000, 100000,

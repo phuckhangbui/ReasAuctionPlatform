@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import RealEstateCard from "./realEstateCard";
 import RealEstateDetailModal from "../RealEstateDetailModal/realEstateDetailModal";
+import realEstate from "../../interface/RealEstate/realEstate";
 
 interface RealEstateListProps {
   realEstatesList?: realEstate[];

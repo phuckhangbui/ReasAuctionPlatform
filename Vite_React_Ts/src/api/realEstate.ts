@@ -1,4 +1,5 @@
 import axios from "axios";
+import realEstate from "../interface/RealEstate/realEstate";
 const baseUrl = process.env.REACT_APP_BACK_END_URL;
 
 export const getRealEstateHome = async () => {
@@ -90,5 +91,51 @@ export const createRealEstate = async (
     return response;
   } catch (error) {
     console.log("Error:", error);
+  }
+};
+
+export const registerParticipateAuction = async (
+  userId: number,
+  reasId: number,
+  token: string
+) => {
+  try {
+    const fetchData = await axios.post(
+      `${baseUrl}/api/home/my_real_etstae/detail/${reasId}/createPaymentLink`,
+      {
+        accountId: userId,
+        reasId: reasId,
+        returnUrl: "http://localhost:5173/success",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
+export const getMemberRealEstate = async (token: string) => {
+  try {
+    const fetchData = await axios.get<realEstate[]>(
+      `${baseUrl}/api/home/my_real_estate`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error: " + error);
   }
 };

@@ -1,7 +1,7 @@
-import { Button, Carousel, Input, Typography } from "@material-tailwind/react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { Button, Carousel, Typography } from "@material-tailwind/react";
+import { useContext, useEffect, useState } from "react";
 import { getRealEstateById } from "../../api/realEstate";
-import { NumberFormat } from "../../utils/numbetFormat";
+import { NumberFormat } from "../../Utils/numbetFormat";
 import { InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
@@ -15,7 +15,6 @@ import {
   registerParticipateAuction,
 } from "../../api/memberAuction";
 import LoginModal from "../LoginModal/loginModal";
-import { redirect, useNavigate } from "react-router-dom";
 import { DepositContext } from "../../context/depositContext";
 
 interface RealEstateDetailModalProps {

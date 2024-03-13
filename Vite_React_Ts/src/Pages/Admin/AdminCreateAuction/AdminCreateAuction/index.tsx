@@ -2,21 +2,12 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { Input } from "@material-tailwind/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import {
-  Table,
-  TableProps,
-  Tag,
-  Button,
-  Modal,
-  DatePicker,
-  notification
-} from "antd";
-import {NumberFormat} from "../../../../Utils/numberFormat";
+import { Table, TableProps, Tag, Button, Modal, DatePicker } from "antd";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import { useState, useEffect } from "react";
 import {
   getRealForDeposit,
   getUserForDeposit,
-  addAuction
 } from "../../../../api/adminAuction";
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
@@ -26,10 +17,8 @@ const RealDepositList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [RealData, setRealData] = useState<RealForDeposit[]>();
   const [DepositData, setDepoistData] = useState<DepositAmountUser[]>();
-  const [reasID, setRealID] = useState<number | undefined>();
+  const [_reasID, setRealID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
-  let dateStart: Date = new Date();
-
 
   const formatDate = (dateString: Date): string => {
     const dateObject = new Date(dateString);
@@ -83,23 +72,23 @@ const RealDepositList: React.FC = () => {
     fetchDepositUser(reasID);
   };
 
-  const fetchCreateAuction = async (Auction: AuctionCreate) => {
-    try {
-      if (token) {
-        let data: Message | undefined;
-        data = await addAuction(Auction, token);
-        return data;
-      }
-    } catch (error) {
-      console.error("Error fetching add news:", error);
-    }
-  };
+  // const fetchCreateAuction = async (Auction: AuctionCreate) => {
+  //   try {
+  //     if (token) {
+  //       let data: Message | undefined;
+  //       data = await addAuction(Auction, token);
+  //       return data;
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching add news:", error);
+  //   }
+  // };
 
   const columns: TableProps<RealForDeposit>["columns"] = [
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (index: number) => index + 1,
     },
     {
       title: "Reas Name",
@@ -133,44 +122,44 @@ const RealDepositList: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const onChangeDate = (date: any, dateString: any) => {
-    dateStart = date;
+  const onChangeDate = (_date: any) => {
+    // dateStart = date;
   };
 
-  const openNotificationWithIcon = (
-    type: "success" | "error",
-    description: string
-  ) => {
-    notification[type]({
-      message: "Notification Title",
-      description: description,
-    });
-  };
+  // const openNotificationWithIcon = (
+  //   type: "success" | "error",
+  //   description: string
+  // ) => {
+  //   notification[type]({
+  //     message: "Notification Title",
+  //     description: description,
+  //   });
+  // };
 
-  const createAuction = async () => {
-    const Auction : AuctionCreate = {
-AccountCreateId : 1,
-DateStart : dateStart,
-ReasId : reasID,
-    }
-    const response = await fetchCreateAuction(Auction);
-    if (response != undefined && response) {
-      if (response.statusCode == "MSG05") {
-        openNotificationWithIcon("success", response.message);
-      } else {
-        openNotificationWithIcon(
-          "error",
-          "Something went wrong when executing operation. Please try again!"
-        );
-      }
-    }
-  };
+  //   const createAuction = async () => {
+  //     const Auction : AuctionCreate = {
+  // AccountCreateId : 1,
+  // DateStart : dateStart,
+  // ReasId : reasID,
+  //     }
+  //     const response = await fetchCreateAuction(Auction);
+  //     if (response != undefined && response) {
+  //       if (response.statusCode == "MSG05") {
+  //         openNotificationWithIcon("success", response.message);
+  //       } else {
+  //         openNotificationWithIcon(
+  //           "error",
+  //           "Something went wrong when executing operation. Please try again!"
+  //         );
+  //       }
+  //     }
+  //   };
 
   const columnUsers: TableProps<DepositAmountUser>["columns"] = [
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (index: number) => index + 1,
     },
     {
       title: "Account Name",
@@ -191,7 +180,7 @@ ReasId : reasID,
       title: "Deposit Amount",
       dataIndex: "amount",
       width: "10%",
-      render: (depositAmount: number) => NumberFormat(depositAmount)
+      render: (depositAmount: number) => NumberFormat(depositAmount),
     },
     {
       title: "Deposit Date",
@@ -240,12 +229,12 @@ ReasId : reasID,
               onOk={handleOk}
               onCancel={handleCancel}
             >
-              <div style={{alignContent: "center"}}>
-              <DatePicker
-                onChange={onChangeDate}
-                showTime
-                needConfirm={false}
-              />
+              <div style={{ alignContent: "center" }}>
+                <DatePicker
+                  onChange={onChangeDate}
+                  showTime
+                  needConfirm={false}
+                />
               </div>
               <br />
             </Modal>

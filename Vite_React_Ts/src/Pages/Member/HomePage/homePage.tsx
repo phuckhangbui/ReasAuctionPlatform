@@ -1,11 +1,11 @@
 import RealEstateList from "../../../components/RealEstate/realEstateList";
-
 import NewsList from "../../../components/News/newsList.tsx";
 import AuctionList from "../../../components/Auction/auctionList.tsx";
 import Banner from "../../../components/Banner/banner.tsx";
 import { useEffect, useState } from "react";
 import { getRealEstateHome } from "../../../api/realEstate.ts";
 import { getNewsHome } from "../../../api/news.ts";
+import realEstate from "../../../interface/RealEstate/realEstate.ts";
 
 const HomePage = () => {
   const [realEstateList, setRealEstateList] = useState<realEstate[] | undefined>([]);

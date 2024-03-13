@@ -7,10 +7,8 @@ import {
   Chip,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
-import { NumberFormat } from "../../../utils/numbetFormat";
+import { NumberFormat } from "../../../Utils/numbetFormat";
 import { DatePicker, Pagination, Select } from "antd";
-import { useLocation } from "react-router-dom";
-
 
 
 const AuctionHistory: React.FC = () => {

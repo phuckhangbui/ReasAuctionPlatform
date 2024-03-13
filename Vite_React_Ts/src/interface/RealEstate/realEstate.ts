@@ -1,4 +1,4 @@
-interface realEstate {
+export default interface realEstate {
   reasId: number;
   reasName: string;
   reasPrice: string;

@@ -1,39 +1,41 @@
-import { CheckOutlined } from "@ant-design/icons";
-import React, { useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { DepositContext } from "../../../context/depositContext";
 import { UserContext } from "../../../context/userContext";
 import { payDeposit } from "../../../api/transaction";
-
-interface Params {
-  [key: string]: string;
-}
+import { ReasContext } from "../../../context/reasContext";
 
 const SuccessPage = () => {
-  const { depositId } = useContext(DepositContext);
+  const { depositId, removeDeposit } = useContext(DepositContext);
+  const { reasId, removeReas } = useContext(ReasContext);
   const { token } = useContext(UserContext);
   const navigate = useNavigate();
 
-  const goToHome = () => {
-    navigate("/");
-  };
-
   useEffect(() => {
+    let homeTimeout: NodeJS.Timeout;
     try {
       console.log(window.location.href);
       const url = window.location.href;
       const queryString = url.substring(url.indexOf("?") + 1);
-      const params: Record<string, string> = queryString.split('&').reduce((acc: Record<string, string>, param) => {
-        const [key, value] = param.split('=');
-        acc[key] = decodeURIComponent(value);
-        return acc;
-      }, {});
-      console.log(params);
+      // const params: Record<string, string> = queryString.split('&').reduce((acc: Record<string, string>, param) => {
+      //   const [key, value] = param.split('=');
+      //   acc[key] = decodeURIComponent(value);
+      //   return acc;
+      // }, {});
+      // () => navigate("/")
+      console.log(queryString);
       const postPayment = async () => {
-        if (token && depositId) {
-          const response = await payDeposit(params, depositId, token);
+        if (token) {
+          let response;
+          if (depositId && reasId == undefined) {
+            response = await payDeposit(queryString, depositId, token);
+          } else if (reasId && depositId == undefined) {
+            // response = await
+          }
           if (response) {
-            console.log("It work");
+            removeDeposit();
+            removeReas();
+            homeTimeout = setTimeout(() => navigate("/"), 2000);
           }
         }
       };
@@ -41,6 +43,7 @@ const SuccessPage = () => {
     } catch (error) {
       console.log("Error:", error);
     }
+    return () => clearTimeout(homeTimeout);
   }, []);
   return (
     <div className="flex flex-col justify-center items-center h-75vh w-full text-center pt-30">

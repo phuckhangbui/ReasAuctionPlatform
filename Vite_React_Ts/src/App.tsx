@@ -34,6 +34,7 @@ import { messaging } from "./Config/firebase-config";
 import toast from "react-hot-toast";
 import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
 import SuccessPage from "./Pages/Member/SuccessPage/successPage";
+import MemberRealEstatePage from "./Pages/Member/MemberRealEstatePage/memberRealEstatePage";
 
 const roles = {
   Admin: 1,
@@ -64,6 +65,7 @@ function App() {
             <Route element={<RequiredAuth allowedRoles={[roles.Member]} />}>
               <Route path="/sell" element={<SellPage />} />
               <Route path="/history" element={<AuctionHistory />} />
+              <Route path="/memberReas" element={<MemberRealEstatePage />} />
               <Route path="/success" element={<SuccessPage />} />
             </Route>
           </Route>

@@ -27,7 +27,7 @@ const statusDepositColorMap: { [key: string]: string } = {
 };
 
 const AllDepositsList: React.FC = () => {
-  const [search, setSearch] = useState<searchDeposit>({
+  const [search, _setSearch] = useState<searchDeposit>({
     reasName: "",
     PageNumber: 1,
     PageSize: 15,

@@ -8,7 +8,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const currentUrl = useLocation();
   const [showModal, setShowModal] = useState(false);
-  const { userRole, logout } = useContext(UserContext);
+  const { userRole } = useContext(UserContext);
 
   const getActiveLink = (url: string) => {
     return `${

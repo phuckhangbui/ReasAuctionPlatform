@@ -46,15 +46,40 @@ export const getTransactionDetail = async (token: string, id: number) => {
 };
 
 export const payDeposit = async (
-  params: Record<string, string>,
+  queryString: string,
   depositId: number,
   token: string
 ) => {
   try {
     const fetchData = await axios.post(
-      `${baseUrl}/api/Auction/pay/deposit/returnUrl/${depositId}/`,
+      `${baseUrl}/api/Auction/pay/deposit/returnUrl/${depositId}`,
       {
-        params,
+        url: queryString,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
+export const payRealEstate = async (
+  queryString: string,
+  reasId: number,
+  token: string
+) => {
+  try {
+    const fetchData = await axios.post(
+      `${baseUrl}/api/Auction/pay/fee/returnUrl/${reasId}`,
+      {
+        url: queryString,
       },
       {
         headers: {

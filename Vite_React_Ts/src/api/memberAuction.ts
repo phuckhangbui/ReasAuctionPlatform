@@ -43,8 +43,13 @@ export const registerParticipateAuction = async (
   token: string
 ) => {
   try {
-    const fetchData = await axios.get<depositRegister>(
-      `${baseUrl}/api/Auction/register?customerId=${userId}&reasId=${reasId}&returnUrl=http://localhost:5173/success`,
+    const fetchData = await axios.post<depositRegister>(
+      `${baseUrl}/api/Auction/register`,
+      {
+        accountId: userId,
+        reasId: reasId,
+        returnUrl: "http://localhost:5173/success",
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,

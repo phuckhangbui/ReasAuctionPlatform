@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import realEstate from "../../interface/RealEstate/realEstate";
 interface RealEstateProps {
   realEstate: realEstate;
 }

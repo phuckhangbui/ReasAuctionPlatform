@@ -6,6 +6,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import UserProvider from "./context/userContext.tsx";
 import { Toaster } from "react-hot-toast";
 import DepositProvider from "./context/depositContext.tsx";
+import ReasProvider from "./context/reasContext.tsx";
 
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -13,8 +14,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <GoogleOAuthProvider clientId={clientId}>
       <UserProvider>
         <DepositProvider>
-          <Toaster position="top-right" reverseOrder={true} />
-          <App />
+          <ReasProvider>
+            <Toaster position="top-right" reverseOrder={true} />
+            <App />
+          </ReasProvider>
         </DepositProvider>
       </UserProvider>
     </GoogleOAuthProvider>

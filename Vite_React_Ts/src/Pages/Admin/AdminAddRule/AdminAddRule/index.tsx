@@ -1,5 +1,5 @@
 import { Descriptions, Button, Input, notification } from "antd";
-import { useState, useEffect } from "react";
+import { useState} from "react";
 import { addRule } from "../../../../api/rule";
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
@@ -79,7 +79,7 @@ const AdminAddRule: React.FC = () => {
       children: (
         <CKEditor
           editor={ClassicEditor}
-          onChange={(event, editor) => {
+          onChange={(_event, editor) => {
             const data = editor.getData();
             handleChange("content", data);
           }}

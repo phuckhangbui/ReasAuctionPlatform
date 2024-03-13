@@ -75,7 +75,7 @@ const AuctionPage = () => {
                   placeHolder="Search for the auction you want to see"
                   inputName="autionName"
                   nameValue={searchParams?.keyword || ""}
-                  onSearchChange={function (value: string): void {
+                  onSearchChange={function (_value: string): void {
                     throw new Error("Function not implemented.");
                   }}
                 />

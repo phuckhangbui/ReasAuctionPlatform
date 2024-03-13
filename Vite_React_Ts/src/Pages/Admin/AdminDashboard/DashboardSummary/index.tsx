@@ -1,5 +1,5 @@
 import { Card, Statistic } from "antd";
-import { NumberFormat } from "../../../../utils/numbetFormat";
+import { NumberFormat } from "../../../../Utils/numbetFormat";
 import {
   DollarOutlined,
   ShoppingCartOutlined,

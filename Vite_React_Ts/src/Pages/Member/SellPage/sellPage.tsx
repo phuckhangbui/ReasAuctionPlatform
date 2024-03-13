@@ -1,4 +1,4 @@
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { UserContext } from "../../../context/userContext";
@@ -62,14 +62,13 @@ const SellPage = () => {
   const { token, userId, userAccountName } = useContext(UserContext);
   const [realEstateTypes, setRealEstateTypes] = useState<realEstateType[]>();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [lastUploadedImage, setLastUploadedImage] = useState<string>();
-  const [publicId, setPublicId] = useState<string>("");
-  const [photoFront, setPhotoFront] = useState<string>("");
-  const [photoBack, setPhotoBack] = useState<string>("");
-  const [photoOwnership, setPhotoOwnership] = useState<string>("");
-  const [photoBook, setPhotoBook] = useState<string>("");
-  const [photoDocu, setPhotoDocu] = useState<string>("");
-  const [photoContract, setPhotoContract] = useState<string>("");
+  const [_publicId, setPublicId] = useState<string>("");
+  const [_photoFront, setPhotoFront] = useState<string>("");
+  const [_photoBack, setPhotoBack] = useState<string>("");
+  const [_photoOwnership, setPhotoOwnership] = useState<string>("");
+  const [_photoBook, setPhotoBook] = useState<string>("");
+  const [_photoDocu, setPhotoDocu] = useState<string>("");
+  const [_photoContract, setPhotoContract] = useState<string>("");
   const [tabStatus, setTabStatus] = useState<string>("information");
   const [noPhotoMessage, setNoPhotoMessage] = useState<boolean>(false);
   const [noInputMessage, setNoInputMessage] = useState<boolean>(false);
@@ -148,8 +147,10 @@ const SellPage = () => {
           toast.error("Photos of Real Estate Are Required");
         } else {
           const response = await createRealEstate(token, values);
-          formik.resetForm();
-          navigate("/");
+          if (response) {
+            formik.resetForm();
+            navigate("/");
+          }
         }
       } catch (error) {
         console.log("Error: ", error);
@@ -508,7 +509,7 @@ const SellPage = () => {
                   <CKEditor
                     id="reasDescription"
                     editor={ClassicEditor}
-                    onChange={(event: any, editor: any) => {
+                    onChange={(_event: any, editor: any) => {
                       const data = editor.getData();
                       formik.setFieldValue("reasDescription", data);
                     }}
