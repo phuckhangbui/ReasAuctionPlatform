@@ -33,12 +33,6 @@ namespace API.Helper
                 .ForMember(dest => dest.AccountReceiveName, opt => opt.MapFrom(src => src.AccountReceive.AccountName))
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
-            CreateMap<DepositAmount, DepositDto>()
-                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
-                .ForMember(dest => dest.AccountSignName, opt => opt.MapFrom(src => src.AccountSign.AccountName));
-            CreateMap<DepositAmount, DepositDetailDto>()
-                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
-                .ForMember(dest => dest.AccountSignName, opt => opt.MapFrom(src => src.AccountSign.AccountName));
             CreateMap<Auction, AuctionDto>()
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
         }

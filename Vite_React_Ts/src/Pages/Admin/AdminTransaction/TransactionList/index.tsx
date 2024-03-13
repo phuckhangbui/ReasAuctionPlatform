@@ -2,6 +2,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, DatePicker, Descriptions, Table, TableProps, Tag } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import { UserContext } from "../../../../context/userContext";
 import dayjs from "dayjs";
 import {
@@ -128,7 +129,7 @@ const TransactionList: React.FC = () => {
     {
       title: "Money",
       dataIndex: "money",
-      // render: (reasArea: string) => `${reasArea} m²`,
+      render: (money: number) => NumberFormat(money),
       width: "20%",
     },
     {
@@ -217,7 +218,7 @@ const TransactionList: React.FC = () => {
       {
         key: "6",
         label: "Money",
-        children: transactionDetail?.money || "",
+        children: transactionDetail?.money ? NumberFormat(transactionDetail?.money) : "",
       },
       {
         key: "7",
@@ -234,7 +235,7 @@ const TransactionList: React.FC = () => {
     ];
     return items.map((item) => (
       <Descriptions.Item key={item.key} label={item.label}>
-        {item.render ? item.render(item.children) : item.children}
+        {item.children}
       </Descriptions.Item>
     ));
   };

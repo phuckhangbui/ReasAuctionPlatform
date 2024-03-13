@@ -1,50 +1,51 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { UserContext } from "../../../../context/userContext";
-import { Button, Input, Table, TableProps, Tag } from "antd";
+import { Button, Table, TableProps, Tag, notification } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { getDeposit, getReasDeposited } from "../../../../api/deposit";
+import {
+  getDeposit,
+  getReasDeposited,
+  getReasName,
+} from "../../../../api/deposit";
+import { CreateTransactionRefund } from "../../../../api/transaction";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import { Input } from "@material-tailwind/react";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 
 const statusStringMap: { [key: number]: string } = {
-  0: "Deposited",
-  1: "Waiting",
-  2: "Refunded",
-};
-const statusUserStringMap: { [key: number]: string } = {
-  0: "Block",
-  1: "Active",
-};
-
-const statusUserColorMap: { [key: string]: string } = {
-  Active: "green",
-  Block: "volcano",
+  2: "Selling",
+  4: "Auctioning",
+  5: "Sold",
 };
 
 const statusDepositColorMap: { [key: string]: string } = {
+  Selling: "yellow",
+  Auctioning: "green",
+  Sold: "orange",
+};
+
+const statusDepositUserColorMap: { [key: string]: string } = {
+  Pending: "yellow",
   Deposited: "green",
-  Waiting: "orange",
-  Refunded: "blue",
+  Waiting_for_refund: "orange",
+  Refunded: "red",
 };
 
 const AllDepositsList: React.FC = () => {
-  const [search, setSearch] = useState<searchDeposit>({
-    reasName: "",
-    PageNumber: 1,
-    PageSize: 15,
-  });
   const [depositsList, setDepositsList] = useState<deposit[]>(); // State để lưu trữ dữ liệu nhân viên
-  const [depositDetail, setDepositDetail] = useState<depositDetail[]>([]);
+  const [depositDetail, setDepositDetail] = useState<DepositAmountUser[]>([]);
+  const [reasName, setReasName] = useState<string>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [search, setSearch] = useState("");
   const { token } = useContext(UserContext);
 
   useEffect(() => {
     try {
       const fetchData = async () => {
         if (token) {
-          if (search) {
-            const reponse = await getDeposit(token, search.reasName);
-            setDepositsList(reponse);
-          }
+          const reponse = await getDeposit(token);
+          setDepositsList(reponse);
         }
       };
       fetchData();
@@ -81,32 +82,79 @@ const AllDepositsList: React.FC = () => {
     }
   };
 
-  const FormSearch = () => {
-    const [searchValue, setSearchValue] = useState("");
-    const handleSearch = useCallback(async () => {
-      try {
-        if (token) {
-          const response = await getDeposit(token, searchValue);
-          setDepositsList(response);
-        }
-      } catch (error) {
-        console.log(error);
+  const fetchUpdateStatus = async (newTransaction: TransactionCreateRefund) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await CreateTransactionRefund(token, newTransaction);
+        return data;
       }
-    }, [searchValue, token]);
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchValue(e.target.value);
-    };
+    } catch (error) {
+      console.error("Error fetching add transaction:", error);
+    }
+  };
 
-    return (
-      <div>
-        <Input
-          placeholder="Name"
-          value={searchValue || ""}
-          onChange={handleChange}
-        />
-        <Button onClick={handleSearch}>Search</Button>
-      </div>
-    );
+  const viewReasName = (reasId: number) => {
+    try {
+      const fetchReasName = async () => {
+        if (token && reasId) {
+          const response = await getReasName(token, reasId);
+          if (response) {
+            setReasName(response);
+          }
+          setShowDetail(true);
+        }
+      };
+      fetchReasName();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const openNotificationWithIcon = (
+    type: "success" | "error",
+    description: string
+  ) => {
+    notification[type]({
+      message: "Notification Title",
+      description: description,
+    });
+  };
+
+  const handleChangeStatus = async (
+    accountid: number,
+    reasID: number,
+    depositAmount: number,
+    depositID: number
+  ) => {
+    try {
+      const transaction: TransactionCreateRefund = {
+        accountReceiveId: accountid,
+        depositId: depositID,
+        money: depositAmount,
+        reasId: reasID,
+      };
+      const response = await fetchUpdateStatus(transaction);
+      if (response !== undefined) {
+        // Kiểm tra xem response có được trả về hay không
+        if (response.statusCode === "MSG26") {
+          openNotificationWithIcon("success", response.message);
+        } else {
+          openNotificationWithIcon(
+            "error",
+            "Something went wrong when executing operation. Please try again!"
+          );
+        }
+      }
+      setDetail(transaction.reasId);
+    } catch (error) {
+      console.error("Error handling status change:", error);
+    }
+  };
+
+  const setDetail = (id: number) => {
+    viewDepositDetail(id);
+    viewReasName(id);
   };
 
   const columns: TableProps<deposit>["columns"] = [
@@ -116,26 +164,16 @@ const AllDepositsList: React.FC = () => {
       width: "20%",
     },
     {
-      title: "Account Signed",
-      dataIndex: "accountSignName",
-      width: "20%",
-    },
-    {
-      title: "Money",
-      dataIndex: "amount",
-      width: "20%",
-    },
-    {
-      title: "Deposit Date",
-      dataIndex: "depositDate",
+      title: "Date Start",
+      dataIndex: "dateStart",
       width: "15%",
-      render: (date_Deposit: Date) => formatDate(date_Deposit),
+      render: (dateStart: Date) => formatDate(dateStart),
     },
     {
-      title: "Created Date",
-      dataIndex: "createDepositDate",
+      title: "Date End",
+      dataIndex: "dateEnd",
       width: "15%",
-      render: (date_Created: Date) => formatDate(date_Created),
+      render: (dateEnd: Date) => formatDate(dateEnd),
     },
     {
       title: "Status",
@@ -160,54 +198,84 @@ const AllDepositsList: React.FC = () => {
       title: "Actions",
       dataIndex: "operation",
       render: (_: any, deposit: deposit) => (
-        <a onClick={() => viewDepositDetail(deposit.reasId)}>View details</a>
+        <a onClick={() => setDetail(deposit.reasId)}>View details</a>
       ),
       width: "15%",
     },
   ];
 
-  const detailColumns: TableProps<depositDetail>["columns"] = [
+  const detailColumns: TableProps<DepositAmountUser>["columns"] = [
     {
-      title: "Account",
-      dataIndex: "accountName",
-      width: "20%",
+      title: "No",
+      width: "5%",
+      render: (text: any, record: any, index: number) => index + 1,
     },
     {
-      title: "Email",
+      title: "Account Name",
+      dataIndex: "accountName",
+      width: "15%",
+    },
+    {
+      title: "Account Email",
       dataIndex: "accountEmail",
-      width: "20%",
+      width: "15%",
+    },
+    {
+      title: "Account Phone",
+      dataIndex: "accountPhone",
+      width: "10%",
+    },
+    {
+      title: "Deposit Amount",
+      dataIndex: "amount",
+      width: "10%",
+      render: (depositAmount: number) => NumberFormat(depositAmount),
+    },
+    {
+      title: "Deposit Date",
+      dataIndex: "depositDate",
+      render: (depositDate: Date) => formatDate(depositDate),
+      width: "15%",
     },
     {
       title: "Status",
-      dataIndex: "account_Status",
-      width: "5%",
-      render: (status: number) => {
-        if (status !== undefined) {
-          const color = statusUserColorMap[statusUserStringMap[status]];
-
+      dataIndex: "status",
+      width: "10%",
+      render: (reas_Status: string) => {
+        const color = statusDepositUserColorMap[reas_Status] || "gray"; // Mặc định là màu xám nếu không có trong ánh xạ
+        return (
+          <Tag color={color} key={reas_Status}>
+            {reas_Status.toUpperCase()}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "",
+      dataIndex: "operation",
+      render: (_: any, record: DepositAmountUser) => {
+        if (record.status === "Waiting_for_refund") {
           return (
-            <Tag color={color} key={statusUserStringMap[status]}>
-              {statusUserStringMap[status]}
-            </Tag>
+            <Button
+              onClick={() =>
+                handleChangeStatus(
+                  record.accountSignId,
+                  record.reasId,
+                  record.amount,
+                  record.depositID
+                )
+              }
+            >
+              Refund
+            </Button>
           );
         } else {
           return null;
         }
       },
-    },
-    {
-      title: "Phone Number",
-      dataIndex: "phoneNumber",
-      width: "20%",
-    },
-    {
-      title: "Created Date",
-      dataIndex: "date_Created",
-      width: "15%",
-      render: (date_Created: Date) => formatDate(date_Created),
+      width: "10%",
     },
   ];
-
   const handleBackToList = () => {
     setShowDetail(false);
   };
@@ -223,6 +291,10 @@ const AllDepositsList: React.FC = () => {
           <div>
             <div>
               <h4 className="font-semibold py-5">Real Estate's Depositors</h4>
+              <h5>
+                <strong>Real Estate Name: {reasName}</strong>
+              </h5>
+              <br />
               <Table
                 columns={detailColumns}
                 dataSource={depositDetail}
@@ -237,10 +309,27 @@ const AllDepositsList: React.FC = () => {
           {/* Bảng danh sách */}
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="w-full md:w-72 flex flex-row justify-start">
-              <FormSearch />
+              <div>
+                <Input
+                  label="Search"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  crossOrigin={undefined}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
             </div>
           </div>
-          <Table columns={columns} dataSource={depositsList} bordered />
+          <Table
+            columns={columns}
+            dataSource={depositsList?.filter((reas: deposit) => {
+              const isMatchingSearch =
+                search.toLowerCase() === "" ||
+                reas.reasName.toLowerCase().includes(search);
+
+              return isMatchingSearch;
+            })}
+            bordered
+          />
         </div>
       )}
     </>

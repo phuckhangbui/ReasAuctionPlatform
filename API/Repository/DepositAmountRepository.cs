@@ -21,25 +21,17 @@ namespace API.Repository
             _mapper = mapper;
         }
 
-        public async Task<PageList<DepositDto>> GetDepositAmountsAsync(DepositAmountParam depositAmountParam)
+        public async Task<IEnumerable<DepositDto>> GetRealEstateForDepositAsync()
         {
-            PaginationParams paginationParams = new PaginationParams();
-            var query = _context.DepositAmount.AsQueryable();
-            query = query
-                .Include(a => a.RealEstate)
-                .Include(a => a.AccountSign);
-
-            if (!string.IsNullOrEmpty(depositAmountParam.ReasName))
+            var query = _context.RealEstate.OrderByDescending(q => q.DateStart).Where(x => x.ReasStatus.Equals((int)RealEstateStatus.Auctioning) || x.ReasStatus.Equals((int)RealEstateStatus.Selling) || x.ReasStatus.Equals((int)RealEstateStatus.Sold)).Select(x => new DepositDto
             {
-                query = query.Where(d => d.RealEstate.ReasName.ToLower().Contains(depositAmountParam.ReasName.ToLower()));
-            }
+                reasId = x.ReasId,
+                reasName = x.ReasName,
+                dateEnd = x.DateEnd,
+                status = x.ReasStatus,
+            });
 
-            query = query.OrderByDescending(q => q.DepositDate);
-
-            return await PageList<DepositDto>.CreateAsync(
-                query.AsNoTracking().ProjectTo<DepositDto>(_mapper.ConfigurationProvider),
-                paginationParams.PageNumber,
-                paginationParams.PageSize);
+            return await query.ToListAsync();
         }
 
         public async Task<PageList<DepositAmountDto>> GetDepositAmoutForMember(int id)
@@ -111,44 +103,16 @@ namespace API.Repository
             return _context.DepositAmount.FirstOrDefault(d => d.DepositId == depositId);
         }
 
-        public DepositDetailDto GetDepositDetailAsync(int depositId)
+        public async Task<bool> ChangeStatusWaiting(int id)
         {
-            var depositDetail = _context.DepositAmount
-                .Include(d => d.RealEstate)
-                .Include(d => d.AccountSign)
-                .FirstOrDefault(d => d.DepositId == depositId);
-
-            return _mapper.Map<DepositDetailDto>(depositDetail);
-        }
-
-        public async Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId)
-        {
-            var query = _context.Account
-                .Join(_context.DepositAmount,
-                    account => account.AccountId,
-                    depositAmount => depositAmount.AccountSignId,
-                    (account, depositAmount) => new { Account = account, DepositAmount = depositAmount })
-                .Join(_context.RealEstate,
-                    joinResult => joinResult.DepositAmount.ReasId,
-                    realEstate => realEstate.ReasId,
-                    (joinResult, realEstate) => new { joinResult.Account, joinResult.DepositAmount, RealEstate = realEstate })
-                .Where(joinResult => joinResult.DepositAmount.ReasId == reasId &&
-                                     joinResult.DepositAmount.Status == (int)UserDepositEnum.Deposited &&
-                                     joinResult.RealEstate.ReasStatus == (int)RealEstateStatus.Selling)
-                .Select(joinResult => new AccountDepositedDto
-                {
-                    AccountId = joinResult.Account.AccountId,
-                    AccountName = joinResult.Account.AccountName,
-                    AccountEmail = joinResult.Account.AccountEmail,
-                    PhoneNumber = joinResult.Account.PhoneNumber,
-                    Account_Status = joinResult.Account.Account_Status.ToString(),
-                    Date_Created = joinResult.Account.Date_Created
-                });
-
-            return await PageList<AccountDepositedDto>.CreateAsync(
-                query.AsNoTracking(),
-                paginationParams.PageNumber,
-                paginationParams.PageSize);
+            var deposit = _context.DepositAmount.Where(x => x.DepositId == id).FirstOrDefault();
+            deposit.Status = 3;
+            bool check = await UpdateAsync(deposit);
+            if (check)
+            {
+                return true;
+            }
+            else { return false; }
         }
     }
 }

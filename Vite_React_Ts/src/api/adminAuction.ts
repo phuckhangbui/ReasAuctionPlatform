@@ -55,7 +55,7 @@ export const getAuctionAllAdminById = async (id: Number | undefined, token : str
 export const getAuctionCompleteAdminById = async (id: Number | undefined, token : string) => {
     try {
       const fetchData = await axios.get<AuctionDetailCompleteAdmin>(
-        `${baseUrl}/api/Auction/auctions/all/complete/${id}`,
+        `${baseUrl}/api/Auction/auctions/complete/detail/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

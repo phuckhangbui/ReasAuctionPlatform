@@ -2,6 +2,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import {Input} from "@material-tailwind/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import { Table, TableProps, Tag , Button, Descriptions} from "antd";
 import { useState, useEffect , useContext} from "react";
 import {
@@ -85,6 +86,7 @@ const CompleteList: React.FC = () => {
     {
       title: "Floor Bid",
       dataIndex: "floorBid",
+      render: (floorBid: number) => NumberFormat(floorBid),
       width: "10%",
     },
     {
@@ -126,7 +128,7 @@ const CompleteList: React.FC = () => {
     const items = [
       {
         key: "1",
-        label: "Reas NAme",
+        label: "Reas Name",
         children: auctionDetailData?.reasName || "",
         span: 3,
       },
@@ -168,27 +170,27 @@ const CompleteList: React.FC = () => {
       {
         key: "9",
         label: "Foor Bid",
-        children: auctionDetailData?.floorBid || "",
+        children: auctionDetailData?.floorBid ? NumberFormat(auctionDetailData?.floorBid) : "",
       },
       {
         key: "10",
         label: "Final Amount",
-        children: auctionDetailData?.finalAmount || "",
+        children: auctionDetailData?.finalAmount ? NumberFormat(auctionDetailData?.floorBid) : "",
       },
       {
         key: "11",
         label: "Deposit Amount",
-        children: auctionDetailData?.depositAmout || "",
+        children: auctionDetailData?.depositAmout ? NumberFormat(auctionDetailData?.depositAmout) : "",
       },
       {
         key: "12",
         label: "Commision Amount",
-        children: auctionDetailData?.commisionAmount || "",
+        children: auctionDetailData?.commisionAmount ? NumberFormat(auctionDetailData?.commisionAmount) : "",
       },
       {
         key: "13",
         label: "Recieve Amount",
-        children: auctionDetailData?.ownerReceiveAmount || "",
+        children: auctionDetailData?.ownerReceiveAmount ? NumberFormat(auctionDetailData?.ownerReceiveAmount) : "",
       },
       {
         key: "14",

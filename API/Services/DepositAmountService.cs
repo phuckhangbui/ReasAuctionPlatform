@@ -6,6 +6,7 @@ using API.Interface.Repository;
 using API.Interface.Service;
 using API.Param;
 using API.Param.Enums;
+using API.ThirdServices;
 using AutoMapper;
 
 namespace API.Services
@@ -14,20 +15,26 @@ namespace API.Services
     {
         private readonly IDepositAmountRepository _depositAmountRepository;
         private readonly IRealEstateRepository _realEstateRepository;
+        private readonly IAuctionRepository _auctionRepository;
+        private readonly IMoneyTransactionRepository _moneyTransactionRepository;
+        private readonly IAccountRepository _accountRepository;
         private readonly IMapper _mapper;
 
-        public DepositAmountService(IDepositAmountRepository depositAmountRepository, IRealEstateRepository realEstateRepository, IMapper mapper)
+        public DepositAmountService(IDepositAmountRepository depositAmountRepository, IRealEstateRepository realEstateRepository, IMapper mapper, IAuctionRepository auctionRepository, IMoneyTransactionRepository moneyTransactionRepository, IAccountRepository accountRepository)
         {
             _depositAmountRepository = depositAmountRepository;
             _realEstateRepository = realEstateRepository;
+            _auctionRepository = auctionRepository;
+            _moneyTransactionRepository = moneyTransactionRepository;
+            _accountRepository = accountRepository;
             _mapper = mapper;
         }
 
         readonly float DEPOSIT_PERCENT = 0.05f;
 
-        public async Task<PageList<DepositDto>> GetDepositAmounts(DepositAmountParam depositAmountParam)
+        public async Task<IEnumerable<DepositDto>> GetRealEstateForDepositAsync()
         {
-            return await _depositAmountRepository.GetDepositAmountsAsync(depositAmountParam);
+            return await _depositAmountRepository.GetRealEstateForDepositAsync();
         }
 
         public async Task<DepositAmountDto> CreateDepositAmount(int customerId, int reasId)
@@ -96,28 +103,29 @@ namespace API.Services
             return _depositAmountRepository.GetDepositAmount(depositId);
         }
 
-        public DepositDetailDto GetDepositDetail(int depositId)
+        public async Task<IEnumerable<DepositAmountUserDto>> GetDepositDetail(int depositId)
         {
-            var depositDetail = _depositAmountRepository.GetDepositDetailAsync(depositId);
-
-            if (depositDetail == null)
-            {
-                throw new BaseNotFoundException($"Depisit detail with ID {depositId} not found.");
-            }
-
+            var depositDetail = await _auctionRepository.GetAllUserForDeposit(depositId);
             return depositDetail;
         }
 
-        public async Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId)
+        public async Task<bool> ChangeStatusWhenRefund(RefundTransactionParam refundTransactionParam)
         {
-            var realEstate = _realEstateRepository.GetRealEstate(reasId);
-
-            if (realEstate == null)
+            bool check = await _depositAmountRepository.ChangeStatusWaiting(refundTransactionParam.depositId);
+            if(check)
             {
-                throw new BaseNotFoundException($"Real estate with ID {reasId} not found.");
+                bool checkInsert = await _moneyTransactionRepository.InsertTransactionWhenRefund(refundTransactionParam);
+                if(checkInsert) 
+                {
+                    string email =  _accountRepository.GetAccountByAccountIdAsync(refundTransactionParam.accountReceiveId).Result.AccountEmail;
+                    string reasName = await _realEstateRepository.GetRealEstateName(refundTransactionParam.reasId);
+                    string address = _realEstateRepository.GetRealEstate(refundTransactionParam.reasId).ReasAddress;
+                    SendMailWhenRefund.SendMailWhenRefundMoney(email, reasName, address, refundTransactionParam.money);
+                    return true; 
+                }
+                else { return false; }
             }
-
-            return await _depositAmountRepository.GetAccountsHadDeposited(paginationParams, reasId);
+            else { return false; }
         }
     }
 }

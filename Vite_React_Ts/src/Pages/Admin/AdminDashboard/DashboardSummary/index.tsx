@@ -1,10 +1,15 @@
 import { Card, Statistic } from "antd";
-import { NumberFormat } from "../../../../utils/numbetFormat";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import {
   DollarOutlined,
   ShoppingCartOutlined,
   RiseOutlined,
 } from "@ant-design/icons";
+import { useState, useEffect , useContext} from "react";
+import {
+  getTotalRenueve
+} from "../../../../api/admindashboard";
+import { UserContext } from "../../../../context/userContext";
 
 const gridStyle: React.CSSProperties = {
   width: "33.333%",
@@ -13,6 +18,23 @@ const gridStyle: React.CSSProperties = {
 };
 
 const Summary: React.FC = () => {
+  const { token } = useContext(UserContext);
+  const [totalData, settotalData] = useState<number| undefined>();
+  
+  useEffect(() => {
+    const fetchGetTotalRevenue = async () => {
+      try {
+        if (token) {
+          const data: number | undefined = await getTotalRenueve(token);
+          settotalData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching total revenue:", error);
+      }
+    };
+
+    fetchGetTotalRevenue();
+  }, [token]);
   return (
     <>
       <Card>
@@ -29,7 +51,7 @@ const Summary: React.FC = () => {
                 TOTAL REVENUE
               </span>
             }
-            value={NumberFormat(50000000)}
+            value={NumberFormat(totalData || 0)}
             valueStyle={{ color: "#001529", fontWeight: "bold" }}
             prefix={
               <span

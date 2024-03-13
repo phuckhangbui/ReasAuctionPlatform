@@ -207,6 +207,7 @@ const AdminNewsList: React.FC = () => {
                     uwConfig={uwConfig}
                     setPublicId={setPublicId as SetPublicIdFunction}
                     setUploadedUrl={setUploadedImage}
+                    notList
                   />
                 ) : (
                   <div></div>

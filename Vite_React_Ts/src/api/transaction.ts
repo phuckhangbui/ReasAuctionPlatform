@@ -44,3 +44,25 @@ export const getTransactionDetail = async (token: string, id: number) => {
     console.log("Error: ", error);
   }
 };
+
+export const CreateTransactionRefund = async (token: string, {accountReceiveId,depositId,money,reasId} : TransactionCreateRefund) => {
+  try {
+    const param ={
+      accountReceiveId, depositId, money, reasId
+  }
+    const fetchData = await axios.post<Message>(
+      `${baseUrl}/api/deposits/update/refund`,
+      param,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error: ", error);
+  }
+};

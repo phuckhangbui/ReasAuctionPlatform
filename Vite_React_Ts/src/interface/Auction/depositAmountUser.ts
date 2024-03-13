@@ -1,4 +1,5 @@
 interface DepositAmountUser {
+  depositID : number;
   accountSignId: number;
   accountName: string;
   accountEmail: string;

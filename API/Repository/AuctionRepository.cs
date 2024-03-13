@@ -205,6 +205,8 @@ namespace API.Repository
             {
                 reasId = x.ReasId,
                 reasName = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.ReasName).FirstOrDefault(),
+                dateStart = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.DateStart).FirstOrDefault(),
+                dateEnd = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.DateEnd).FirstOrDefault(),
                 numberOfUser = _context.DepositAmount.Where(y => y.ReasId == x.ReasId).Count(),
             }).Distinct();
             return await real.ToListAsync();
@@ -213,8 +215,9 @@ namespace API.Repository
         public async Task<IEnumerable<DepositAmountUserDto>> GetAllUserForDeposit(int id)
         {
             var getName = new GetStatusName();
-            var deposit = _context.DepositAmount.Where(x => (x.Status == 1 || x.Status == 0) && x.ReasId == id).Select(x => new DepositAmountUserDto
+            var deposit = _context.DepositAmount.Where(x => x.ReasId == id).Select(x => new DepositAmountUserDto
             {
+                depositID = x.DepositId,
                 reasId = x.ReasId,
                 accountSignId = x.AccountSignId,
                 accountName = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.AccountName).FirstOrDefault(),

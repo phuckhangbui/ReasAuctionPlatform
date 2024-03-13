@@ -279,5 +279,11 @@ namespace API.Repository
         {
             return _context.RealEstate.Find(id);
         }
+
+        public async Task<string> GetRealEstateName(int id)
+        {
+            var reasName =  _context.RealEstate.Where(x => x.ReasId == id).Select(y => y.ReasName).FirstOrDefault();
+            return reasName;
+        }
     }
 }

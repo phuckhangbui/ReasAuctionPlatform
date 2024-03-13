@@ -176,5 +176,22 @@ namespace API.Controllers
                 return BadRequest(new ApiResponse(401));
             }
         }
+
+        [HttpGet(BaseUri + "real-estate/name/{reasId}")]
+        public async Task<IActionResult> GetNameRealEstate(int reasId)
+        {
+            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
+            if (idAmin != 0)
+            {
+                var reasName = await _adminRealEstateService.GetRealEstateName(reasId);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                return Ok(reasName);
+            }
+            else
+            {
+                return BadRequest(new ApiResponse(401));
+            }
+        }
     }
 }

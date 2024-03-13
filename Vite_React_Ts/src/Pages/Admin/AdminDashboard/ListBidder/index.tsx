@@ -5,121 +5,60 @@ import {
   Avatar,
   Card,
   Typography,
-  Button,
 } from "@material-tailwind/react";
 import React from "react";
+import { useState, useEffect , useContext} from "react";
+import {
+  getUserListJoinAuction
+} from "../../../../api/admindashboard";
+import { UserContext } from "../../../../context/userContext";
 
 const ListBidder: React.FC = () => {
+
+  const { token } = useContext(UserContext);
+  const [userData, setUserData] = useState<UserJoinAuction[]| undefined>(undefined);
+  
+  useEffect(() => {
+    const fetchGetUserJoinAuction = async () => {
+      try {
+        if (token) {
+          const data: UserJoinAuction[] | undefined = await getUserListJoinAuction(token);
+          setUserData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching user list:", error);
+      }
+    };
+
+    fetchGetUserJoinAuction();
+  }, [token]);
   return (
     <>
       <Card className="w-full h-full">
         <List>
-          <ListItem>
-            <ListItemPrefix>
-              <Avatar
-                variant="circular"
-                alt="candice"
-                src="https://docs.material-tailwind.com/img/face-1.jpg"
-              />
-            </ListItemPrefix>
-            <div>
-              <Typography variant="h6" color="blue-gray">
-                Tania Andrew
-              </Typography>
-              <Typography variant="small" color="gray" className="font-normal">
-                Software Engineer @ Material Tailwind
-              </Typography>
-            </div>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix>
-              <Avatar
-                variant="circular"
-                alt="alexander"
-                src="https://docs.material-tailwind.com/img/face-2.jpg"
-              />
-            </ListItemPrefix>
-            <div>
-              <Typography variant="h6" color="blue-gray">
-                Alexander
-              </Typography>
-              <Typography variant="small" color="gray" className="font-normal">
-                Backend Developer @ Material Tailwind
-              </Typography>
-            </div>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix>
-              <Avatar
-                variant="circular"
-                alt="emma"
-                src="https://docs.material-tailwind.com/img/face-3.jpg"
-              />
-            </ListItemPrefix>
-            <div>
-              <Typography variant="h6" color="blue-gray">
-                Emma Willever
-              </Typography>
-              <Typography variant="small" color="gray" className="font-normal">
-                UI/UX Designer @ Material Tailwind
-              </Typography>
-            </div>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix>
-              <Avatar
-                variant="circular"
-                alt="emma"
-                src="https://docs.material-tailwind.com/img/face-3.jpg"
-              />
-            </ListItemPrefix>
-            <div>
-              <Typography variant="h6" color="blue-gray">
-                Emma Willever
-              </Typography>
-              <Typography variant="small" color="gray" className="font-normal">
-                UI/UX Designer @ Material Tailwind
-              </Typography>
-            </div>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix>
-              <Avatar
-                variant="circular"
-                alt="emma"
-                src="https://docs.material-tailwind.com/img/face-3.jpg"
-              />
-            </ListItemPrefix>
-            <div>
-              <Typography variant="h6" color="blue-gray">
-                Emma Willever
-              </Typography>
-              <Typography variant="small" color="gray" className="font-normal">
-                UI/UX Designer @ Material Tailwind
-              </Typography>
-            </div>
-          </ListItem>
-          <ListItem>
-            <ListItemPrefix>
-              <Avatar
-                variant="circular"
-                alt="emma"
-                src="https://docs.material-tailwind.com/img/face-3.jpg"
-              />
-            </ListItemPrefix>
-            <div>
-              <Typography variant="h6" color="blue-gray">
-                Emma Willever
-              </Typography>
-              <Typography variant="small" color="gray" className="font-normal">
-                UI/UX Designer @ Material Tailwind
-              </Typography>
-            </div>
-          </ListItem>
+          {userData && userData.map((user) => (
+            <ListItem key={user.accountId}>
+              <ListItemPrefix>
+                <Avatar
+                  variant="circular"
+                  alt={user.accountName}
+                  src="https://docs.material-tailwind.com/img/face-2.jpg" // Đảm bảo rằng bạn có trường avatarUrl trong đối tượng UserJoinAuction
+                />
+              </ListItemPrefix>
+              <div>
+                <Typography variant="h6" color="blue-gray">
+                  {user.accountName}
+                </Typography>
+                <Typography variant="small" color="gray" className="font-normal">
+                  {user.accountEmail}
+                </Typography>
+                <Typography variant="small" color="gray" className="font-normal">
+                  <span>Number of auctions participated: {user.numberOfAuction}</span>
+                </Typography>
+              </div>
+            </ListItem>
+          ))}
         </List>
-        <Button size="lg" variant="text">
-          See all
-        </Button>
       </Card>
     </>
   );
