@@ -10,6 +10,7 @@ namespace API.Controllers
         private readonly IBackgroundTaskService _backgroundTaskService;
         private readonly IDepositAmountRepository _depositAmountRepository;
         private readonly IAuctionRepository _auctionRepository;
+        private readonly IParticipantHistoryRepository _participantHistoryRepository;
         private readonly ILogger<BackgroundTaskController> _logger;
 
         private const string BaseUri = "/api/backgroundService";
@@ -17,12 +18,29 @@ namespace API.Controllers
         public BackgroundTaskController(IBackgroundTaskService backgroundTaskService, 
             ILogger<BackgroundTaskController> logger,
             IDepositAmountRepository depositAmountRepository,
-            IAuctionRepository auctionRepository)
+            IAuctionRepository auctionRepository,
+            IParticipantHistoryRepository participantHistoryRepository)
         {
             _backgroundTaskService = backgroundTaskService;
             _logger = logger;
             _depositAmountRepository = depositAmountRepository;
             _auctionRepository = auctionRepository;
+            _participantHistoryRepository = participantHistoryRepository;
+        }
+
+        [HttpGet(BaseUri + "/losingAttendees/{reasId}")]
+        public async Task<IActionResult> GetLosingAttendees(int reasId)
+        {
+            try
+            {
+                var losingAttendees = await _participantHistoryRepository.GetLosingAttendees(reasId);
+
+                return Ok(losingAttendees);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse(500, ex.Message));
+            }
         }
 
         [HttpGet(BaseUri + "/trigger/{auctionId}")]

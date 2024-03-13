@@ -20,7 +20,7 @@ namespace API.Services
             _accountRepository = accountRepository;
         }
 
-        public async Task<PageList<AuctionDto>> GetAuctionHisotoryForAttender(AuctionHistoryParam auctionAccountingParam)
+        public async Task<PageList<AttenderAuctionHistoryDto>> GetAuctionHisotoryForAttender(AuctionHistoryParam auctionAccountingParam)
         {
             var account = await _accountRepository.GetAccountByAccountIdAsync(auctionAccountingParam.AccountId);
             if (account == null)

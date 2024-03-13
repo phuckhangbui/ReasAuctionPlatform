@@ -5,16 +5,19 @@ using API.Helper;
 using API.Interface.Repository;
 using API.Interface.Service;
 using API.Param;
+using API.Param.Enums;
 
 namespace API.Services
 {
     public class MoneyTransactionService : IMoneyTransactionService
     {
         private readonly IMoneyTransactionRepository _moneyTransactionRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public MoneyTransactionService(IMoneyTransactionRepository moneyTransactionRepository)
+        public MoneyTransactionService(IMoneyTransactionRepository moneyTransactionRepository, IAccountRepository accountRepository)
         {
             _moneyTransactionRepository = moneyTransactionRepository;
+            _accountRepository = accountRepository;
         }
 
         public async Task<MoneyTransactionDetailDto> GetMoneyTransactionDetail(int transactionId)
@@ -37,6 +40,37 @@ namespace API.Services
         public async System.Threading.Tasks.Task<bool> CreateMoneyTransaction(MoneyTransaction moneyTransaction)
         {
             return await _moneyTransactionRepository.CreateAsync(moneyTransaction);
+        }
+
+        public async Task<PageList<MoneyTransactionDto>> GetMemberMoneyTransactions(MemberMoneyTransactionParam memberMoneyTransactionParam, int accountId)
+        {
+            var memberAccount = await _accountRepository.GetAccountByAccountIdAsync(accountId);
+
+            if (memberAccount == null || memberAccount.RoleId != (int)RoleEnum.Member)
+            {
+                throw new BaseNotFoundException($"This account with id {accountId} not found or not member role");
+            }
+
+            return await _moneyTransactionRepository.GetMemberMoneyTransactionsAsync(memberMoneyTransactionParam, accountId);
+        }
+
+        public async Task<MoneyTransactionDetailDto> GetMemberMoneyTransactionDetail(int accountId, int transactionId)
+        {
+            var memberAccount = await _accountRepository.GetAccountByAccountIdAsync(accountId);
+
+            if (memberAccount == null || memberAccount.RoleId != (int)RoleEnum.Member)
+            {
+                throw new BaseNotFoundException($"This account with id {accountId} not found or not member role");
+            }
+
+            var transactionDetail = await _moneyTransactionRepository.GetMoneyTransactionDetailAsync(transactionId);
+
+            if (transactionDetail == null)
+            {
+                throw new BaseNotFoundException($"Transaction detail with ID {transactionId} not found.");
+            }
+
+            return transactionDetail;
         }
 
         //public async Task<MoneyTransaction> CreateMoneyTransactionFromDepositPayment(DepositPaymentDto paymentDto)

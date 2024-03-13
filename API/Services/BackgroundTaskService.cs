@@ -1,6 +1,7 @@
 ﻿using API.Interface.Repository;
 using API.Interface.Service;
 using API.Param.Enums;
+using API.Repository;
 using API.ThirdServices;
 using Hangfire;
 
@@ -11,17 +12,20 @@ namespace API.Services
         private readonly IAuctionRepository _auctionRepository;
         private readonly IRealEstateRepository _realEstateRepository;
         private readonly IDepositAmountRepository _depositAmountRepository;
+        private readonly IParticipantHistoryRepository _participantHistoryRepository;
         private readonly ILogger<BackgroundTaskService> _logger;
 
         public BackgroundTaskService(IAuctionRepository auctionRepository, 
             ILogger<BackgroundTaskService> logger,
             IRealEstateRepository realEstateRepository,
-            IDepositAmountRepository depositAmountRepository)
+            IDepositAmountRepository depositAmountRepository,
+            IParticipantHistoryRepository participantHistoryRepository)
         {
             _auctionRepository = auctionRepository;
             _logger = logger;
             _realEstateRepository = realEstateRepository;
             _depositAmountRepository = depositAmountRepository;
+            _participantHistoryRepository = participantHistoryRepository;
         }
 
         public async Task ChangeAuctionStatusToPending(int auctionId)
@@ -82,6 +86,15 @@ namespace API.Services
                     await _depositAmountRepository.UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(auction.ReasId);
                     _logger.LogInformation($"Deposits for real estate id: {realEstateToBeUpdated.ReasId} status updated to 'LostDeposit' successfully at {DateTime.Now}.");
                 }
+                else if (auction != null && auction.Status == (int)AuctionStatus.OnGoing)
+                {
+                    _logger.LogInformation($"Auction id: {auction.AuctionId} is in status 'OnGoing'");
+                    var currentDateTime = DateTime.Now;
+                    TimeSpan delayToSchedule = auction.DateEnd.AddMinutes(1) - currentDateTime;
+
+                    BackgroundJob.Schedule(() => ScheduleSendMailForLoserAttendees(auction), delayToSchedule);
+                    _logger.LogInformation($"Send mail for loser attendees scheduled in {delayToSchedule}");
+                }
             }
             catch (Exception ex)
             {
@@ -112,6 +125,27 @@ namespace API.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while scheduling auction status change.");
+            }
+        }
+
+        public async Task ScheduleSendMailForLoserAttendees(Entity.Auction auction)
+        {
+            try
+            {
+                var losingAttendees = await _participantHistoryRepository.GetLosingAttendees(auction.ReasId);
+                var realEstate = _realEstateRepository.GetRealEstate(auction.ReasId);
+
+                foreach (var attender in losingAttendees)
+                {
+                    SendMailLosingAuction.SendMailLosingAuctionToAttender(attender, realEstate.ReasName, auction.DateStart, auction.DateEnd);
+                    
+                    _logger.LogInformation($"Send mail to losing attender email: {attender.AccountEmail} attend " +
+                        $"auction id {auction.AuctionId} successfully at {DateTime.Now}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while sending mail for loser attendees");
             }
         }
 

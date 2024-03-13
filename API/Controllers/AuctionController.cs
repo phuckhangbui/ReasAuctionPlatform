@@ -293,8 +293,9 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
-        [HttpGet("attender/auction-history")]
+        //Auction attender history: Deposit status: Waiting_for_refund || Refunded || Winner
+        [Authorize(policy: "Member")]
+        [HttpGet("auctions/attend/history")]
         public async Task<IActionResult> GetAttenderAuctionHistory([FromQuery] AuctionHistoryParam auctionHisotoryParam)
         {
             try

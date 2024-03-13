@@ -8,6 +8,7 @@ using API.Param.Enums;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace API.Repository
 {
@@ -114,31 +115,46 @@ namespace API.Repository
             return new PageList<AuctionDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
         }
 
-        public async Task<PageList<AuctionDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam)
+        public async Task<PageList<AttenderAuctionHistoryDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam)
         {
-            var query = _context.DepositAmount
-                .Where(d => d.AccountSignId == auctionAccountingParam.AccountId)
+            var query = _context.ParticipateAuctionHistories
+                .Where(pah => pah.AccountBidId == auctionAccountingParam.AccountId)
                 .Join(
-                    _context.RealEstate,
-                    deposit => deposit.ReasId,
-                    realEstate => realEstate.ReasId,
-                    (deposit, realEstate) => new { Deposit = deposit, RealEstate = realEstate }
+                    _context.Account,
+                    pah => pah.AccountBidId,
+                    a => a.AccountId,
+                    (pah, a) => new { pah, a }
+                )
+                .Join(
+                    _context.DepositAmount,
+                    join1 => join1.a.AccountId,
+                    da => da.AccountSignId,
+                    (join1, da) => new { join1, da }
                 )
                 .Join(
                     _context.Auction,
-                    depositRealEstate => depositRealEstate.RealEstate.ReasId,
-                    auction => auction.ReasId,
-                    (depositRealEstate, auction) => auction
+                    join2 => join2.da.ReasId,
+                    a2 => a2.ReasId,
+                    (join2, a2) => new AttenderAuctionHistoryDto
+                    {
+                        AuctionId = a2.AuctionId,
+                        ReasId = a2.ReasId,
+                        DateStart = a2.DateStart,
+                        DateEnd = a2.DateEnd,
+                        LastBid = join2.join1.pah.LastBid,
+                        DepositStatus = join2.da.Status
+                    }
                 )
-                .Where(a => a.Status == (int)AuctionStatus.Finish)
-                .Distinct()
+                .Where(result => result.DepositStatus == (int)UserDepositEnum.Waiting_for_refund ||
+                                 result.DepositStatus == (int)UserDepositEnum.Refunded ||
+                                 result.DepositStatus == (int)UserDepositEnum.Winner)
                 .AsQueryable();
 
-            var pageList = await PageList<Auction>.CreateAsync(query, auctionAccountingParam.PageNumber, auctionAccountingParam.PageSize);
+            var pageList = await PageList<AttenderAuctionHistoryDto>.CreateAsync(query, auctionAccountingParam.PageNumber, auctionAccountingParam.PageSize);
 
-            var auctionDtos = _mapper.Map<List<AuctionDto>>(pageList);
+            var auctionDtos = _mapper.Map<List<AttenderAuctionHistoryDto>>(pageList);
 
-            return new PageList<AuctionDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
+            return new PageList<AttenderAuctionHistoryDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
 
         }
 
