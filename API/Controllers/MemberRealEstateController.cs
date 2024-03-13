@@ -141,7 +141,7 @@ namespace API.Controllers
         }
 
         [HttpPost(BaseUri + "my_real_estate/detail/{reasId}/createPaymentLink")]
-        public async Task<ActionResult> CreatePaymentLink(CreatePaymentLinkDto createPaymentLinkDto)
+        public async Task<ActionResult<RealEstatePaymentReponseDto>> CreatePaymentLink(CreatePaymentLinkDto createPaymentLinkDto)
         {
             if (GetLoginAccountId() != createPaymentLinkDto.AccountId)
             {
@@ -157,13 +157,18 @@ namespace API.Controllers
 
             if (realEstateDetail.ReasStatus != (int)RealEstateStatus.Approved)
             {
-                return BadRequest(new ApiResponse(401, "Not in the pproved state"));
+                return BadRequest(new ApiResponse(401, "Not in the approved state"));
             }
 
             //default fee is 100,000 VND
             string paymentUrl = _vnPayService.CreatePostRealEstatePaymentURL(HttpContext, _vnPayProperties, createPaymentLinkDto.ReturnUrl);
+            RealEstatePaymentReponseDto response = new RealEstatePaymentReponseDto
+            {
+                ReasId = createPaymentLinkDto.ReasId,
+                paymentUrl = paymentUrl,
+            };
 
-            return Ok(paymentUrl);
+            return Ok(response);
         }
 
         [HttpPost(BaseUri + "pay/fee/returnUrl/{reasId}")]
