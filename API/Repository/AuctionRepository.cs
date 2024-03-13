@@ -5,6 +5,7 @@ using API.Helper;
 using API.Interface.Repository;
 using API.Param;
 using API.Param.Enums;
+using API.ThirdServices;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -245,6 +246,12 @@ namespace API.Repository
                 bool check = await CreateAsync(auction);
                 if (check)
                 {
+                    IEnumerable<NameUserDto> user = _context.DepositAmount.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => new NameUserDto
+                    {
+                        EmailName = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(x => x.AccountEmail).FirstOrDefault(),
+                }).ToList();
+                    var reasname = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasName).FirstOrDefault();
+                    SendMailWhenCreateAuction.SendMailForMemberWhenCreateAuction(user, reasname, auctionCreateParam.DateStart);
                     return true;
                 }
                 else
