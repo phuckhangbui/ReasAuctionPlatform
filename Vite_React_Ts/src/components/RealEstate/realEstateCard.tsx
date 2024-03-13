@@ -19,6 +19,22 @@ const RealEstateCard = ({ realEstate }: RealEstateProps) => {
       setFormattedDateEnd(formattedDate);
     }
   }, []);
+
+  function formatVietnameseDong(price: string) {
+    // Convert the string to a number
+    const numberPrice = parseInt(price, 10);
+    // Check if the conversion was successful
+    if (isNaN(numberPrice)) {
+      // Return the original string if it's not a valid number
+      return price;
+    }
+    // Format the number
+    const formattedNumber = numberPrice
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return formattedNumber;
+  }
+
   return (
     <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow mx-auto sm:my-2 md:my-0">
       <div className="">
@@ -46,10 +62,15 @@ const RealEstateCard = ({ realEstate }: RealEstateProps) => {
           <span> sqrt</span>
         </div>
 
-        <div className="flex xl:justify-between sm:justify-between xl:items-center sm:items-center md:items-start xl:flex-row sm:flex-row md:flex-col text-gray-700">
+        <div className="flex text-gray-700">
           <div className="text-xl font-bold tracking-tight text-gray-900 ">
-            {estate?.reasPrice},000 VND
+            {estate?.reasPrice
+              ? formatVietnameseDong(estate?.reasPrice)
+              : estate?.reasPrice}
+            <span className="pl-1">VND</span>
           </div>
+        </div>
+        <div className="flex justify-end text-gray-700">
           <div className=" tracking-tight">
             Due:{" "}
             <span className="text-gray-900 font-semibold">

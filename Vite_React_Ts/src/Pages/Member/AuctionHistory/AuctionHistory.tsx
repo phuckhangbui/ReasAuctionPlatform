@@ -9,6 +9,9 @@ import {
 import { useEffect, useState } from "react";
 import { NumberFormat } from "../../../utils/numbetFormat";
 import { DatePicker, Pagination, Select } from "antd";
+import { useLocation } from "react-router-dom";
+
+
 
 const AuctionHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -18,6 +21,7 @@ const AuctionHistory: React.FC = () => {
   const [auctionAccounting, setAuctionAccounting] = useState<
     AuctionAccounting[] | undefined
   >([]);
+
   useEffect(() => {
     const fetchedAuctions: AuctionAccounting[] = [];
     for (let i = 1; i <= 10; i++) {
@@ -38,6 +42,8 @@ const AuctionHistory: React.FC = () => {
     }
     setAuctionAccounting(fetchedAuctions);
   }, []);
+
+  
 
   // Update displayed auctions when currentPage or auctionAccounting changes
   useEffect(() => {

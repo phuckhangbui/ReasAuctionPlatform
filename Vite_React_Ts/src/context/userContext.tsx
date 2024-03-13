@@ -25,12 +25,10 @@ export const UserContext = createContext<UserContextType>({
 });
 
 const UserProvider = ({ children }: UserProviderProps) => {
-  const [userRole, setUserRole] = useState<number | undefined>(undefined);
-  const [userAccountName, setUserAccountName] = useState<string | undefined>(
-    undefined
-  );
-  const [userId, setUserId] = useState<number | undefined>(undefined);
-  const [token, setToken] = useState<string | undefined>(undefined);
+  const [userRole, setUserRole] = useState<number | undefined>();
+  const [userAccountName, setUserAccountName] = useState<string | undefined>();
+  const [userId, setUserId] = useState<number | undefined>();
+  const [token, setToken] = useState<string | undefined>();
 
   useEffect(() => {
     try {

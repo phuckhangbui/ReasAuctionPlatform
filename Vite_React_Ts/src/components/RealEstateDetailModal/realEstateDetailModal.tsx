@@ -9,8 +9,14 @@ import { UserContext } from "../../context/userContext";
 import dayjs from "dayjs";
 import { set, ref, get, child, update, onValue } from "firebase/database";
 import { db } from "../../Config/firebase-config";
-import { getAuctionHome, getAuctionStatus } from "../../api/memberAuction";
+import {
+  getAuctionHome,
+  getAuctionStatus,
+  registerParticipateAuction,
+} from "../../api/memberAuction";
 import LoginModal from "../LoginModal/loginModal";
+import { redirect, useNavigate } from "react-router-dom";
+import { DepositContext } from "../../context/depositContext";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -38,6 +44,7 @@ const RealEstateDetailModal = ({
   const [auction, setAuction] = useState<memberAuction | undefined>();
   const [auctionStatus, setAuctionStatus] = useState<number>();
   const [showLogin, setShowLogin] = useState(false);
+
   // 0: RealEstate not in selling status
   // 1: Not register in auction
   // 2: Register but pending payment
@@ -46,10 +53,10 @@ const RealEstateDetailModal = ({
 
   // Use the isAuth function to determine if the user is authenticated
   const isAuthenticated = isAuth();
-
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
+  const { getDeposit } = useContext(DepositContext);
 
   useEffect(() => {
     try {
@@ -140,6 +147,21 @@ const RealEstateDetailModal = ({
       console.log(error);
     }
   }, [realEstateDetail?.dateEnd]);
+
+  function formatVietnameseDong(price: string) {
+    // Convert the string to a number
+    const numberPrice = parseInt(price, 10);
+    // Check if the conversion was successful
+    if (isNaN(numberPrice)) {
+      // Return the original string if it's not a valid number
+      return price;
+    }
+    // Format the number
+    const formattedNumber = numberPrice
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return formattedNumber;
+  }
 
   // Change the tab index
   const toggleTab = (index: string) => {
@@ -309,6 +331,32 @@ const RealEstateDetailModal = ({
       }
     }
   };
+
+  const handleRegister = () => {
+    try {
+      const fetchPaymentUrl = async () => {
+        if (userId && token) {
+          if (realEstateDetail?.reasId) {
+            const response = await registerParticipateAuction(
+              userId,
+              realEstateDetail?.reasId,
+              token
+            );
+            if (response) {
+              const depositId = response?.depositAmountDto.depositId;
+              console.log(depositId);
+              getDeposit(depositId);
+              window.location.href = response?.paymentUrl;
+            }
+          }
+        }
+      };
+      fetchPaymentUrl();
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  };
+
   return (
     <div className="relative w-full max-w-7xl max-h-full ">
       <div className="relative bg-white rounded-lg shadow md:px-10 md:pb-5 sm:px-0 sm:pb-0 ">
@@ -401,7 +449,10 @@ const RealEstateDetailModal = ({
                 </div>
                 <div>
                   <div className="text-xl font-bold ">
-                    {realEstateDetail?.reasPrice},000 VND
+                    {realEstateDetail?.reasPrice
+                      ? formatVietnameseDong(realEstateDetail?.reasPrice)
+                      : realEstateDetail?.reasPrice}{" "}
+                    VND
                   </div>
                   <div className="text-xs text-gray-700">Starting Price</div>
                 </div>
@@ -549,17 +600,24 @@ const RealEstateDetailModal = ({
               ) : auctionStatus === 1 ? (
                 <div className="flex justify-center">
                   <button
-                  
-                  className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
                     Register
                   </button>
                 </div>
               ) : auctionStatus === 2 ? (
-                <div className="flex justify-center py-10">
+                <div className="flex justify-center flex-col items-center py-10">
                   <div className="text-xl text-gray-500">
                     Payment is currently pending, please check your history in
                     the profile section for more information
                   </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
                 </div>
               ) : auctionStatus === 3 ? (
                 <div>

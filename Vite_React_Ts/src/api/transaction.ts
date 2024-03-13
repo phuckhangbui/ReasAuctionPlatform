@@ -44,3 +44,28 @@ export const getTransactionDetail = async (token: string, id: number) => {
     console.log("Error: ", error);
   }
 };
+
+export const payDeposit = async (
+  params: Record<string, string>,
+  depositId: number,
+  token: string
+) => {
+  try {
+    const fetchData = await axios.post(
+      `${baseUrl}/api/Auction/pay/deposit/returnUrl/${depositId}/`,
+      {
+        params,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};

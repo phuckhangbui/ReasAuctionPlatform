@@ -37,6 +37,10 @@ export const generateToken = async () => {
         vapidKey: process.env.REACT_APP_VAP_ID_KEY,
       });
       console.log("Message token:", token);
+      return token;
+    } else {
+      const token = "";
+      return token;
     }
   } catch (error) {
     console.log("An error occured while getting the token: ", error);

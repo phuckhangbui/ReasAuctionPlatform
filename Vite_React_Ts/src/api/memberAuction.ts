@@ -36,3 +36,26 @@ export const getAuctionStatus = async (
     console.log("Error:", error);
   }
 };
+
+export const registerParticipateAuction = async (
+  userId: number,
+  reasId: number,
+  token: string
+) => {
+  try {
+    const fetchData = await axios.get<depositRegister>(
+      `${baseUrl}/api/Auction/register?customerId=${userId}&reasId=${reasId}&returnUrl=http://localhost:5173/success`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};

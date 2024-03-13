@@ -1,26 +1,14 @@
 import "./App.css";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  useNavigate,
-  useLocation,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import PageNotFound from "./Pages/PageNotFound";
 import { AdminLayout } from "./Pages/Admin/AdminLayout";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import AuctionOngoing from "./Pages/Admin/AdminAuctionOngoing";
-import DepositList from "./Pages/Admin/AdminCreateAuction";
 import AdminStaffList from "../src/Pages/Admin/StaffList/StaffList/index";
 import AdminMemberList from "../src/Pages/Admin/MemberList/MemberList/index";
 import AdminAddStaff from "../src/Pages/Admin/AdminCreateStaff/AdminCreateStaff";
 import PendingList from "../src/Pages/Admin/AdminRealEstatePending";
 import AllList from "../src/Pages/Admin/AdminRealEstateAll";
-import NewsList from "../src/Pages/Admin/AdminNews";
-import AdminRule from "../src/Pages/Admin/AdminRule";
-import AddRule from "../src/Pages/Admin/AdminAddRule";
-import AdminCreateNews from "../src/Pages/Admin/AdminCreateNews";
 import AuctionComplete from "../src/Pages/Admin/AdminAuctionComplete";
 // import AuctionDetail from "./Pages/Admin/AdminAuctionDetail";
 import HomePage from "./Pages/Member/HomePage/homePage";
@@ -40,10 +28,12 @@ import Task from "./Pages/Admin/AdminTask";
 import TaskCreate from "./Pages/Admin/AdminTaskCreate";
 import AdminAddNews from "./Pages/Admin/AdminCreateNews/AdminCreateNews";
 import AdminNewsList from "./Pages/Admin/AdminNews/AdminNews";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { onMessage } from "firebase/messaging";
-import { generateToken, messaging } from "./Config/firebase-config";
+import { messaging } from "./Config/firebase-config";
 import toast from "react-hot-toast";
+import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
+import SuccessPage from "./Pages/Member/SuccessPage/successPage";
 
 const roles = {
   Admin: 1,
@@ -53,7 +43,7 @@ const roles = {
 
 function App() {
   useEffect(() => {
-    generateToken();
+    // generateToken();
     onMessage(messaging, (payload) => {
       console.log(payload);
       if (payload.notification?.body) {
@@ -73,6 +63,8 @@ function App() {
             <Route path="/news" element={<NewsPage />} />
             <Route element={<RequiredAuth allowedRoles={[roles.Member]} />}>
               <Route path="/sell" element={<SellPage />} />
+              <Route path="/history" element={<AuctionHistory />} />
+              <Route path="/success" element={<SuccessPage />} />
             </Route>
           </Route>
 
