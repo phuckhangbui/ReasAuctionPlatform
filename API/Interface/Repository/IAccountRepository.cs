@@ -6,7 +6,6 @@ namespace API.Interface.Repository
 {
     public interface IAccountRepository : IBaseRepository<Account>
     {
-        Task<bool> isEmailExisted(string email);
         Task<bool> isEmailExistedCreateAccount(string email);
         Task<int> GetIdAccountToReceiveMoney();
         Task<bool> isUserNameExisted(string userName);
@@ -22,5 +21,7 @@ namespace API.Interface.Repository
         Task<MemberInformationDto> GetMemberAccountDetail(int id);
         Task<bool> UpdateStatusAccount(ChangeStatusAccountParam changeStatusAccountDto);
         Task<Account> FirebaseTokenExisted(string firebaseToken);
+        Task<UserProfileDto> GetMemberProfileDetail(int accountId);
+        Task<Account> GetAccountOnId(int accountId);
     }
 }

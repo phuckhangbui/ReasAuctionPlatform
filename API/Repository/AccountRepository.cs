@@ -21,11 +21,6 @@ namespace API.Repository
             _mapper = mapper;
         }
 
-        public async Task<bool> isEmailExisted(string email)
-        {
-            return await _context.Account.AnyAsync(x => x.AccountEmail.ToLower() == email.ToLower() && x.RoleId == 3);
-        }
-
         public async Task<bool> isEmailExistedCreateAccount(string email)
         {
             return await _context.Account.AnyAsync(x => x.AccountEmail.ToLower() == email.ToLower() && x.RoleId == 2);
@@ -206,7 +201,36 @@ namespace API.Repository
             return await _context.Account.FirstOrDefaultAsync(x => x.FirebaseToken == firebaseToken);
         }
 
-        //public async
+        public async Task<UserProfileDto> GetMemberProfileDetail(int accountId)
+        {
+            Account account = await _context.Account.Include(a => a.Major).FirstOrDefaultAsync(a => a.AccountId == accountId);
+            List<Major> majors = await _context.Major.ToListAsync();
+
+            Dictionary<int, string> majorIdNameMap = majors.ToDictionary(major => major.MajorId, major => major.MajorName);
+
+            if (account == null)
+            {
+                return null;
+            }
+
+            UserProfileDto userDto = _mapper.Map<UserProfileDto>(account);
+            userDto.Major = majorIdNameMap;
+
+            return userDto;
+        }
+
+        public async Task<bool> UpdateMemberProfileDetail(UserUpdateProfileInfo userProfileDto)
+        {
+            Account account = _mapper.Map<Account>(userProfileDto);
+
+            return await UpdateAsync(account);
+        }
+
+        public async Task<Account> GetAccountOnId(int accountId)
+        {
+            Account account = await _context.Account.FirstOrDefaultAsync(a => a.AccountId == accountId);
+            return account;
+        }
 
     }
 }

@@ -4,6 +4,7 @@ using API.Interface.Repository;
 using API.Interface.Service;
 using API.Interfaces;
 using API.Param;
+using API.Param.Enums;
 using Google.Apis.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
@@ -76,9 +77,9 @@ namespace API.Services
 
             string userEmail = payload.Email;
 
-            if (await _accountRepository.isEmailExisted(userEmail))
+            Account account = await _accountRepository.GetAccountByEmailAsync(userEmail);
+            if (account != null && account.Account_Status != (int)AccountStatus.Block)
             {
-                Account account = await _accountRepository.GetAccountByEmailAsync(userEmail);
                 //Check firebase token
                 if (loginGoogleDto.FirebaseRegisterToken.IsNullOrEmpty())
                 {
@@ -109,10 +110,8 @@ namespace API.Services
             }
             else
             {
-                // register
-                using var hmac = new HMACSHA512();
 
-                Account account = new Account();
+                account = new Account();
                 account.AccountEmail = userEmail;
                 account.Username = payload.Name;
                 account.AccountName = payload.Name;

@@ -46,6 +46,7 @@ namespace API.Extensions
             services.AddScoped<IMoneyTransactionService, MoneyTransactionService>();
             services.AddScoped<IDepositAmountService, DepositAmountService>();
             services.AddScoped<IParticipantHistoryService, ParticipantHistoryService>();
+            services.AddScoped<IMemberAccountService, MemberAccountService>();
             services.AddScoped<IVnPayService, VnPayService>();
 
 
