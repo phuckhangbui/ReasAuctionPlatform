@@ -11,6 +11,8 @@ using API.Param.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Collections.Specialized;
+using System.Web;
 
 namespace API.Controllers
 {
@@ -164,8 +166,8 @@ namespace API.Controllers
             return Ok(paymentUrl);
         }
 
-        [HttpGet(BaseUri + "pay/fee/returnUrl/{reasId}")]
-        public async Task<ActionResult> PayRealEstateUploadFee([FromQuery] Dictionary<string, string> vnpayData, int reasId)
+        [HttpPost(BaseUri + "pay/fee/returnUrl/{reasId}")]
+        public async Task<ActionResult> PayRealEstateUploadFee([FromBody] VnPayReturnUrlDto vnpayDataDto, int reasId)
         {
             int customerId = GetLoginAccountId();
 
@@ -186,9 +188,12 @@ namespace API.Controllers
                 return BadRequest(new ApiResponse(401, "Not in the payment state"));
             }
 
-            string vnp_HashSecret = _vnPayProperties.HashSecret;
             try
             {
+                NameValueCollection queryParams = HttpUtility.ParseQueryString(HttpUtility.UrlDecode(vnpayDataDto.url));
+
+                Dictionary<string, string> vnpayData = queryParams.AllKeys.ToDictionary(k => k, k => queryParams[k]);
+                string vnp_HashSecret = _vnPayProperties.HashSecret;
                 MoneyTransaction transaction = ReturnUrl.ProcessReturnUrl(vnpayData, vnp_HashSecret, TransactionType.Upload_Fee);
 
                 if (transaction != null)
