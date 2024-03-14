@@ -16,7 +16,7 @@ using System.Web;
 
 namespace API.Controllers
 {
-    [Authorize(policy: "member")]
+    [Authorize(policy: "Member")]
     public class MemberRealEstateController : BaseApiController
     {
         private readonly IMemberRealEstateService _memberRealEstateService;
@@ -114,6 +114,7 @@ namespace API.Controllers
                 var realEstate = await _memberRealEstateService.CreateNewRealEstate(newRealEstateDto, userMember);
                 if (realEstate != null)
                 {
+
 
                     //send message here
                     await _notificatonService.SendNotificationWhenMemberCreateReal(realEstate);

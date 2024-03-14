@@ -3,7 +3,6 @@ using API.Helper;
 using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
-using API.Param.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -11,12 +10,16 @@ namespace API.Controllers
     public class AdminRealEstateController : BaseApiController
     {
         private readonly IAdminRealEstateService _adminRealEstateService;
+        private readonly IRealEstateService _realEstateService;
+        private readonly INotificatonService _notificatonService;
 
         private const string BaseUri = "/api/admin/";
 
-        public AdminRealEstateController(IAdminRealEstateService adminRealEstateService)
+        public AdminRealEstateController(IAdminRealEstateService adminRealEstateService, IRealEstateService realEstateService, INotificatonService notificatonService)
         {
             _adminRealEstateService = adminRealEstateService;
+            _realEstateService = realEstateService;
+            _notificatonService = notificatonService;
         }
 
         [HttpGet(BaseUri + "real-estate/all/search")]
@@ -164,6 +167,8 @@ namespace API.Controllers
                 var updateReal = await _adminRealEstateService.UpdateStatusRealEstateByAdmin(reasStatusDto);
                 if (updateReal)
                 {
+                    var realEstate = _realEstateService.GetRealEstate(reasStatusDto.reasId);
+                    await _notificatonService.SendNotificationWhenApproveRealEstate(reasStatusDto, realEstate);
                     return new ApiResponseMessage("MSG03");
                 }
                 else

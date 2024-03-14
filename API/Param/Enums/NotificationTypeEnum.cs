@@ -4,11 +4,12 @@
     {
         NewRealEstateCreate = 1,
         NewRealEstateApproved = 2,
-        NewAuctionCreate = 3,
-        AuctionAboutToStart = 4,
-        AuctionFinishSuccess = 5,
-        AuctionFinishLose = 6,
-        AuctionFinishNotAttended = 7,
-        AuctionFinishAdminAndStaff = 8
+        NewRealEstateRejected = 3,
+        NewAuctionCreate = 4,
+        AuctionAboutToStart = 5,
+        AuctionFinishSuccess = 6,
+        AuctionFinishLose = 7,
+        AuctionFinishNotAttended = 8,
+        AuctionFinishAdminAndStaff = 9
     }
 }

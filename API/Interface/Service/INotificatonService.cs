@@ -1,4 +1,5 @@
 ﻿using API.Entity;
+using API.Param;
 
 namespace API.Interface.Service
 {
@@ -6,5 +7,6 @@ namespace API.Interface.Service
     {
         Task<List<Notification>> GetNotificationsOrderByDateCreate(int accountId);
         System.Threading.Tasks.Task SendNotificationWhenMemberCreateReal(RealEstate realEstate);
+        System.Threading.Tasks.Task SendNotificationWhenApproveRealEstate(ReasStatusParam reasStatusParam, RealEstate realEstate);
     }
 }

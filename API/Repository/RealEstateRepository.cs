@@ -52,9 +52,6 @@ namespace API.Repository
                 else if (reasStatusDto.reasStatus == 1)
                 {
                     SendMailWhenApproveRealEstate.SendEmailWhenApproveRealEstate(accountOwner.AccountEmail, accountOwner.AccountName);
-                    // send notification here
-
-                    // then in the notification, forward user to the payment page
 
                 }
                 realEstate.ReasStatus = reasStatusDto.reasStatus;
@@ -282,7 +279,7 @@ namespace API.Repository
 
         public async Task<string> GetRealEstateName(int id)
         {
-            var reasName =  _context.RealEstate.Where(x => x.ReasId == id).Select(y => y.ReasName).FirstOrDefault();
+            var reasName = _context.RealEstate.Where(x => x.ReasId == id).Select(y => y.ReasName).FirstOrDefault();
             return reasName;
         }
     }
