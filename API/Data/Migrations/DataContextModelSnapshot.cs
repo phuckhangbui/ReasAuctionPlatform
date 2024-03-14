@@ -43,6 +43,12 @@ namespace API.Data.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BankingCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankingNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Citizen_identification")
                         .HasColumnType("nvarchar(max)");
 
@@ -51,6 +57,9 @@ namespace API.Data.Migrations
 
                     b.Property<DateTime>("Date_End")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("FirebaseToken")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("MajorId")
                         .HasColumnType("int");
@@ -102,6 +111,9 @@ namespace API.Data.Migrations
 
                     b.Property<DateTime>("DateStart")
                         .HasColumnType("datetime2");
+
+                    b.Property<double>("FloorBid")
+                        .HasColumnType("float");
 
                     b.Property<int>("ReasId")
                         .HasColumnType("int");
@@ -419,6 +431,64 @@ namespace API.Data.Migrations
                     b.ToTable("News");
                 });
 
+            modelBuilder.Entity("API.Entity.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<int>("AccountReceiveId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("AccountReceiveId");
+
+                    b.ToTable("Notification");
+                });
+
+            modelBuilder.Entity("API.Entity.ParticipateAuctionHistory", b =>
+                {
+                    b.Property<int>("ParticipateAuctionHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipateAuctionHistoryId"));
+
+                    b.Property<int>("AccountBidId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AuctionAccountingId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("LastBid")
+                        .HasColumnType("float");
+
+                    b.HasKey("ParticipateAuctionHistoryId");
+
+                    b.HasIndex("AccountBidId");
+
+                    b.HasIndex("AuctionAccountingId");
+
+                    b.ToTable("ParticipateAuctionHistories");
+                });
+
             modelBuilder.Entity("API.Entity.RealEstate", b =>
                 {
                     b.Property<int>("ReasId")
@@ -578,7 +648,7 @@ namespace API.Data.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateUpdated")
+                    b.Property<DateTime?>("DateUpdated")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
@@ -744,7 +814,7 @@ namespace API.Data.Migrations
                     b.HasOne("API.Entity.RealEstate", "RealEstate")
                         .WithOne()
                         .HasForeignKey("API.Entity.DepositAmount", "ReasId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("API.Entity.Rule", "Rule")
@@ -840,6 +910,36 @@ namespace API.Data.Migrations
                     b.Navigation("AccountCreate");
                 });
 
+            modelBuilder.Entity("API.Entity.Notification", b =>
+                {
+                    b.HasOne("API.Entity.Account", "AccountReceive")
+                        .WithMany("Notifications")
+                        .HasForeignKey("AccountReceiveId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AccountReceive");
+                });
+
+            modelBuilder.Entity("API.Entity.ParticipateAuctionHistory", b =>
+                {
+                    b.HasOne("API.Entity.Account", "AccountBid")
+                        .WithMany("ParticipateAuctionHistory")
+                        .HasForeignKey("AccountBidId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("API.Entity.AuctionAccounting", "AuctionAccounting")
+                        .WithMany("ParticipateAuctionHistories")
+                        .HasForeignKey("AuctionAccountingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AccountBid");
+
+                    b.Navigation("AuctionAccounting");
+                });
+
             modelBuilder.Entity("API.Entity.RealEstate", b =>
                 {
                     b.HasOne("API.Entity.Account", "AccountOwner")
@@ -918,7 +1018,11 @@ namespace API.Data.Migrations
 
                     b.Navigation("NewsCreated");
 
+                    b.Navigation("Notifications");
+
                     b.Navigation("OwnedAuctionAccountings");
+
+                    b.Navigation("ParticipateAuctionHistory");
 
                     b.Navigation("RealEstate");
 
@@ -933,6 +1037,11 @@ namespace API.Data.Migrations
                 {
                     b.Navigation("AuctionAccounting")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("API.Entity.AuctionAccounting", b =>
+                {
+                    b.Navigation("ParticipateAuctionHistories");
                 });
 
             modelBuilder.Entity("API.Entity.RealEstate", b =>

@@ -21,4 +21,6 @@ public class AuctionAccounting
     public Account? AccountOwner { get; set; }
     public int AccountOwnerId { get; set; }
     public string AccountOwnerName { get; set; }
+    public List<ParticipateAuctionHistory> ParticipateAuctionHistories { get; set; }
+
 }

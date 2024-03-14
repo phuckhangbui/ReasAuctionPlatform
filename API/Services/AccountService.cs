@@ -4,7 +4,9 @@ using API.Interface.Repository;
 using API.Interface.Service;
 using API.Interfaces;
 using API.Param;
+using API.Param.Enums;
 using Google.Apis.Auth;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -40,6 +42,22 @@ namespace API.Services
                     }
                 }
 
+                if (loginDto.FirebaseRegisterToken.IsNullOrEmpty())
+                {
+
+                }
+                else if (!loginDto.FirebaseRegisterToken.Equals(account.FirebaseToken))
+                {
+                    var firebaseTokenExistedAccount = await _accountRepository.FirebaseTokenExisted(loginDto.FirebaseRegisterToken);
+                    if (firebaseTokenExistedAccount != null)
+                    {
+                        firebaseTokenExistedAccount.FirebaseToken = null;
+                        await _accountRepository.UpdateAsync(firebaseTokenExistedAccount);
+                    }
+                    account.FirebaseToken = loginDto.FirebaseRegisterToken;
+                    await _accountRepository.UpdateAsync(account);
+                }
+
                 return new UserDto
                 {
                     Id = account.AccountId,
@@ -55,14 +73,31 @@ namespace API.Services
         public async Task<UserDto> LoginGoogleByMember(LoginGoogleParam loginGoogleDto)
         {
             // validate token
-            GoogleJsonWebSignature.Payload payload = await GoogleJsonWebSignature.ValidateAsync(loginGoogleDto.idTokenString);
+            GoogleJsonWebSignature.Payload payload = await GoogleJsonWebSignature.ValidateAsync(loginGoogleDto.IdTokenString);
 
             string userEmail = payload.Email;
 
-            if (await _accountRepository.isEmailExisted(userEmail))
+            Account account = await _accountRepository.GetAccountByEmailAsync(userEmail);
+            if (account != null && account.Account_Status != (int)AccountStatus.Block)
             {
+                //Check firebase token
+                if (loginGoogleDto.FirebaseRegisterToken.IsNullOrEmpty())
+                {
+
+                }
+                else if (!loginGoogleDto.FirebaseRegisterToken.Equals(account.FirebaseToken))
+                {
+                    var firebaseTokenExistedAccount = await _accountRepository.FirebaseTokenExisted(loginGoogleDto.FirebaseRegisterToken);
+                    if (firebaseTokenExistedAccount != null)
+                    {
+                        firebaseTokenExistedAccount.FirebaseToken = null;
+                        await _accountRepository.UpdateAsync(firebaseTokenExistedAccount);
+                    }
+                    account.FirebaseToken = loginGoogleDto.FirebaseRegisterToken;
+                    await _accountRepository.UpdateAsync(account);
+                }
+
                 // login
-                Account account = await _accountRepository.GetAccountByEmailAsync(userEmail);
                 return new UserDto
                 {
                     Id = account.AccountId,
@@ -75,16 +110,15 @@ namespace API.Services
             }
             else
             {
-                // register
-                using var hmac = new HMACSHA512();
 
-                Account account = new Account();
+                account = new Account();
                 account.AccountEmail = userEmail;
                 account.Username = payload.Name;
                 account.AccountName = payload.Name;
                 account.RoleId = 3;
                 account.Date_Created = DateTime.UtcNow;
                 account.Date_End = DateTime.MaxValue;
+                account.FirebaseToken = loginGoogleDto.FirebaseRegisterToken;
 
                 await _accountRepository.CreateAsync(account);
 

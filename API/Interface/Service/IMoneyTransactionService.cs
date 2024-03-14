@@ -12,5 +12,7 @@ namespace API.Interface.Service
         //Task<MoneyTransaction> CreateMoneyTransactionFromDepositPayment(DepositPaymentDto paymentDto);
 
         Task<bool> CreateMoneyTransaction(MoneyTransaction moneyTransaction);
+        Task<PageList<MoneyTransactionDto>> GetMemberMoneyTransactions(MemberMoneyTransactionParam memberMoneyTransactionParam, int accountId);
+        Task<MoneyTransactionDetailDto> GetMemberMoneyTransactionDetail(int accountId, int transactionId);
     }
 }

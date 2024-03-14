@@ -48,6 +48,44 @@ namespace API.Repository
             return await _dataContext.MoneyTransaction.MaxAsync(x => x.TransactionId);
         }
 
+        public async Task<PageList<MoneyTransactionDto>> GetMemberMoneyTransactionsAsync(
+            MemberMoneyTransactionParam memberMoneyTransactionParam, int accountId)
+        {
+            var query = _dataContext.MoneyTransaction.AsQueryable();
+
+            query = query.Where(m => m.AccountSendId == accountId);
+            query = query.Include(m => m.Type);
+            DateTime dateExecutionFrom;
+            DateTime dateExecutionTo;
+
+            if (!string.IsNullOrEmpty(memberMoneyTransactionParam.DateExecutionFrom))
+            {
+                dateExecutionFrom = DateTime.Parse(memberMoneyTransactionParam.DateExecutionFrom);
+                query = query.Where(m => m.DateExecution >= dateExecutionFrom);
+            }
+            else if (!string.IsNullOrEmpty(memberMoneyTransactionParam.DateExecutionTo))
+            {
+                dateExecutionTo = DateTime.Parse(memberMoneyTransactionParam.DateExecutionTo);
+                query = query.Where(m => m.DateExecution <= dateExecutionTo);
+            }
+            else if (!string.IsNullOrEmpty(memberMoneyTransactionParam.DateExecutionFrom) &&
+                    !string.IsNullOrEmpty(memberMoneyTransactionParam.DateExecutionTo))
+            {
+                dateExecutionFrom = DateTime.Parse(memberMoneyTransactionParam.DateExecutionFrom);
+                dateExecutionTo = DateTime.Parse(memberMoneyTransactionParam.DateExecutionTo);
+
+                query = query.Where(m => m.DateExecution >= dateExecutionFrom
+                    && m.DateExecution <= dateExecutionTo);
+            }
+
+            query = query.OrderByDescending(r => r.DateExecution);
+
+            return await PageList<MoneyTransactionDto>.CreateAsync(
+                query.AsNoTracking().ProjectTo<MoneyTransactionDto>(_mapper.ConfigurationProvider),
+                memberMoneyTransactionParam.PageNumber,
+                memberMoneyTransactionParam.PageSize);
+        }
+
         public async Task<MoneyTransactionDetailDto> GetMoneyTransactionDetailAsync(int transactionId)
         {
             var moneyTransaction = await _dataContext.MoneyTransaction
@@ -55,7 +93,7 @@ namespace API.Repository
                 .Include(m => m.AccountSend)
                 .Include(m => m.RealEstate)
                 .Include(m => m.Type)
-                .FirstAsync(m => m.TransactionId == transactionId);
+                .FirstOrDefaultAsync(m => m.TransactionId == transactionId);
 
             return _mapper.Map<MoneyTransactionDetailDto>(moneyTransaction);
         }

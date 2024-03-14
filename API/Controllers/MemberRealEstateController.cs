@@ -11,6 +11,8 @@ using API.Param.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Collections.Specialized;
+using System.Web;
 
 namespace API.Controllers
 {
@@ -138,35 +140,39 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet(BaseUri + "my_real_estate/detail/{reasId}/createPaymentLink")]
-        public async Task<ActionResult> CreatePaymentLink(int reasId, string returnUrl)
+        [HttpPost(BaseUri + "my_real_estate/detail/{reasId}/createPaymentLink")]
+        public async Task<ActionResult<RealEstatePaymentReponseDto>> CreatePaymentLink(CreatePaymentLinkDto createPaymentLinkDto)
         {
-            int customerId = GetLoginAccountId();
-
-            if (customerId == 0)
+            if (GetLoginAccountId() != createPaymentLinkDto.AccountId)
             {
-                return BadRequest(new ApiResponse(401));
+                return BadRequest(new ApiResponse(400));
             }
 
-            var realEstateDetail = await _memberRealEstateService.ViewOwnerRealEstateDetail(reasId);
-            if (realEstateDetail.AccountOwnerId != customerId)
+
+            var realEstateDetail = await _memberRealEstateService.ViewOwnerRealEstateDetail(createPaymentLinkDto.ReasId);
+            if (realEstateDetail.AccountOwnerId != createPaymentLinkDto.AccountId)
             {
                 return BadRequest(new ApiResponse(401, "Not match real estate with userId"));
             }
 
             if (realEstateDetail.ReasStatus != (int)RealEstateStatus.Approved)
             {
-                return BadRequest(new ApiResponse(401, "Not in the payment state"));
+                return BadRequest(new ApiResponse(401, "Not in the approved state"));
             }
 
             //default fee is 100,000 VND
-            string paymentUrl = _vnPayService.CreatePostRealEstatePaymentURL(HttpContext, _vnPayProperties, returnUrl);
+            string paymentUrl = _vnPayService.CreatePostRealEstatePaymentURL(HttpContext, _vnPayProperties, createPaymentLinkDto.ReturnUrl);
+            RealEstatePaymentReponseDto response = new RealEstatePaymentReponseDto
+            {
+                ReasId = createPaymentLinkDto.ReasId,
+                paymentUrl = paymentUrl,
+            };
 
-            return Ok(paymentUrl);
+            return Ok(response);
         }
 
-        [HttpGet(BaseUri + "pay/fee/returnUrl/{reasId}")]
-        public async Task<ActionResult> PayRealEstateUploadFee([FromQuery] Dictionary<string, string> vnpayData, int reasId)
+        [HttpPost(BaseUri + "pay/fee/returnUrl/{reasId}")]
+        public async Task<ActionResult> PayRealEstateUploadFee([FromBody] VnPayReturnUrlDto vnpayDataDto, int reasId)
         {
             int customerId = GetLoginAccountId();
 
@@ -187,9 +193,12 @@ namespace API.Controllers
                 return BadRequest(new ApiResponse(401, "Not in the payment state"));
             }
 
-            string vnp_HashSecret = _vnPayProperties.HashSecret;
             try
             {
+                NameValueCollection queryParams = HttpUtility.ParseQueryString(HttpUtility.UrlDecode(vnpayDataDto.url));
+
+                Dictionary<string, string> vnpayData = queryParams.AllKeys.ToDictionary(k => k, k => queryParams[k]);
+                string vnp_HashSecret = _vnPayProperties.HashSecret;
                 MoneyTransaction transaction = ReturnUrl.ProcessReturnUrl(vnpayData, vnp_HashSecret, TransactionType.Upload_Fee);
 
                 if (transaction != null)

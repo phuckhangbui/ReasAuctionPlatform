@@ -114,5 +114,29 @@ namespace API.Repository
             }
             else { return false; }
         }
+
+        public async System.Threading.Tasks.Task UpdateDepositStatusToWaitingForRefund(int reasId)
+        {
+            var deposits = await _context
+                .DepositAmount
+                .Where(d => d.ReasId == reasId && d.Status == (int)UserDepositEnum.Deposited)
+                .ToListAsync();
+
+            deposits.ForEach(deposit => deposit.Status = (int)UserDepositEnum.Waiting_for_refund);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async System.Threading.Tasks.Task UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(int reasId)
+        {
+            var deposits = await _context
+                .DepositAmount
+                .Where(d => d.ReasId == reasId && d.Status == (int)UserDepositEnum.Deposited)
+                .ToListAsync();
+
+            deposits.ForEach(deposit => deposit.Status = (int)UserDepositEnum.LostDeposit);
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

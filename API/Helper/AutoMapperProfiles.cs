@@ -35,6 +35,11 @@ namespace API.Helper
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
             CreateMap<Auction, AuctionDto>()
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
+            CreateMap<Account, UserProfileDto>()
+                .ForMember(dest => dest.MajorName, opt => opt.MapFrom(src => src.Major.MajorName))
+                .ForMember(dest => dest.Major, opt => opt.Ignore())
+                .ReverseMap();
+            CreateMap<Account, AuctionAttenderDto>();
         }
     }
 
