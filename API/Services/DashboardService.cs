@@ -36,6 +36,12 @@ namespace API.Services
             return users;
         }
 
+        public async Task<int> GetStaffActive()
+        {
+            var countUser = await _dashboardRepository.GetStaffActive();
+            return countUser;
+        }
+
         public async Task<TotalUserAuctionReasDto> GetTotalOfUserAndAuctionAndReas()
         {
             var total = await _dashboardRepository.GetTotalOfUserAndAuctionAndReas();

@@ -66,6 +66,12 @@ namespace API.Repository
             return users;
         }
 
+        public async Task<int> GetStaffActive()
+        {
+            var countUsers = _dataContext.Account.Where(x => x.RoleId == 2 || x.Account_Status == 1).Count();
+            return countUsers;
+        }
+
         public async Task<TotalUserAuctionReasDto> GetTotalOfUserAndAuctionAndReas()
         {
             TotalUserAuctionReasDto total = new TotalUserAuctionReasDto();

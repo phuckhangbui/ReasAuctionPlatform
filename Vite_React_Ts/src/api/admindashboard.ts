@@ -96,3 +96,19 @@ export const getRealMonth = async (token : string) => {
       console.log("Error: " + error);
     }
   };
+
+  export const getStaffActive = async (token : string) => {
+    try {
+      const fetchData = await axios.get<number>(`${baseUrl}/admin/dashboard/staffs`, 
+      {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      const response = fetchData.data;
+      return response;
+    } catch (error) {
+      console.log("Error: " + error);
+    }
+  };

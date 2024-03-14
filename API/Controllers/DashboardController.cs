@@ -64,5 +64,13 @@ namespace API.Controllers
             var users = await _dashboardService.GetListUserJoinAuctions();
             return Ok(users);
         }
+
+        [HttpGet("/admin/dashboard/staffs")]
+        [Authorize(policy: "Admin")]
+        public async Task<ActionResult<int>> GetStaffActive()
+        {
+            var users = await _dashboardService.GetStaffActive();
+            return Ok(users);
+        }
     }
 }

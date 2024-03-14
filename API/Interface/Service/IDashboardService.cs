@@ -10,5 +10,6 @@ namespace API.Interface.Service
         Task<IEnumerable<NewsAdminDto>> Get3NewNewsInDashboard();
         Task<double> GetTotalRevenue();
         Task<IEnumerable<UserJoinAuctionsDto>> GetListUserJoinAuctions();
+        Task<int> GetStaffActive();
     }
 }

@@ -10,6 +10,7 @@ namespace API.Interface.Repository
         Task<IEnumerable<NewsAdminDto>> Get3NewNewsInDashboard();
         Task<double> GetTotalRevenue();
         Task<IEnumerable<UserJoinAuctionsDto>> GetListUserJoinAuctions();
+        Task<int> GetStaffActive();
 
     }
 }
