@@ -22,6 +22,10 @@ const profileMenuItems = [
     path: "history",
   },
   {
+    label: "Transaction history",
+    path: "transaction",
+  },
+  {
     label: "Sign Out",
     path: "signout",
   },
@@ -45,6 +49,9 @@ export function AvatarDropdown() {
           break;
         case "profile":
           navigate("/profile");
+          break;
+        case "transaction":
+          navigate("/transaction");
           break;
       }
     }

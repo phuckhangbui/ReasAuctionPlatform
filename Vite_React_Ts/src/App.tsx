@@ -26,6 +26,7 @@ import { useContext } from "react";
 import { UserContext } from "./context/userContext";
 import RequiredAuth from "./components/RequiredAuth/requiredAuth";
 import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
+import TransactionHistory from "./Pages/Member/TransactionHistory";
 
 const roles = {
   Admin: 1,
@@ -47,6 +48,7 @@ function App() {
             <Route path="/help" element={<HelpPage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/history" element={<AuctionHistory />} />
+            <Route path="/transaction" element={<TransactionHistory />} />
             {/* {user && user.roleId === 3 && (
               <Route path="/sell" element={<SellPage />} />
             </Route>*/}

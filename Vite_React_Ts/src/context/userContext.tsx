@@ -10,6 +10,7 @@ interface UserContextType {
   login: (user: loginUser, token: string, userId: number) => void;
   logout: () => void;
   isAuth: () => boolean;
+  userId: number | undefined;
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -18,11 +19,13 @@ export const UserContext = createContext<UserContextType>({
   login: () => {},
   logout: () => {},
   isAuth: () => false,
+  userId: undefined,
 });
 
 const UserProvider = ({ children }: UserProviderProps) => {
   const [userRole, setUserRole] = useState<number | undefined>(undefined);
   const [token, setToken] = useState<string | undefined>(undefined);
+  const [userId, setUserId] = useState<number | undefined>(undefined);
 
   const login = (user: loginUser, token: string, userId: number) => {
     const stringUser = JSON.stringify(user);
@@ -31,6 +34,7 @@ const UserProvider = ({ children }: UserProviderProps) => {
     localStorage.setItem("userId", userId.toString());
     setUserRole(user?.roleId);
     setToken(token);
+    setUserId(userId);
   };
 
   useEffect(() => {
@@ -71,7 +75,9 @@ const UserProvider = ({ children }: UserProviderProps) => {
   };
 
   return (
-    <UserContext.Provider value={{ userRole, token, login, logout, isAuth }}>
+    <UserContext.Provider
+      value={{ userRole, token, login, logout, isAuth, userId }}
+    >
       {children}
     </UserContext.Provider>
   );

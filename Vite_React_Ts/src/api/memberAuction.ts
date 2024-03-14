@@ -24,3 +24,30 @@ export const getAuctionUserList = async (reasId: number) => {
     console.log("Error: " + error);
   }
 };
+
+export const auctionSuccess = async (
+  { auctionId, accountWinId, winAmount }: auctionFinish,
+  userList: userHistory[]
+) => {
+  try {
+    const param = {
+      auctionDetailDto: {
+        auctionId,
+        accountWinId,
+        winAmount,
+      },
+      auctionHistory: userList,
+    };
+    const fetchData = await axios.post<Message>(
+      `${baseUrl}/api/Auction/success`,
+      param
+    );
+    console.log("test");
+    console.log(param);
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.error("Error submitting auction success data:", error);
+    throw error;
+  }
+};

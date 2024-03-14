@@ -6,9 +6,13 @@ import { Empty, InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
 import { UserContext } from "../../context/userContext";
 import dayjs from "dayjs";
-import { set, ref, get, child, update, onValue } from "firebase/database";
+import { ref, get, child, update, onValue } from "firebase/database";
 import { db } from "../../Config/firebase-config";
-import { getAuctionHome, getAuctionUserList } from "../../api/memberAuction";
+import {
+  auctionSuccess,
+  getAuctionHome,
+  getAuctionUserList,
+} from "../../api/memberAuction";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -29,7 +33,7 @@ const RealEstateDetailModal = ({
   const [currentInputBid, setCurrentInputBid] = useState(currentBid);
   const [currentAutoBidValue, setCurrentAutoBidValue] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAuctionOpen, setAuctionOpen] = useState(true);
+  const [isAuctionOpen, setIsAuctionOpen] = useState(true);
   const [checked, setChecked] = useState(false);
   const [isInputValid, setIsInputValid] = useState(false);
   const { isAuth } = useContext(UserContext);
@@ -43,6 +47,7 @@ const RealEstateDetailModal = ({
     number[] | undefined
   >();
   const [isUserRegistered, setIsUserRegistered] = useState(false);
+  const [isBidded, setIsBidded] = useState(false);
 
   // Use the isAuth function to determine if the user is authenticated
   const isAuthenticated = isAuth();
@@ -51,6 +56,7 @@ const RealEstateDetailModal = ({
     realEstateDetail | undefined
   >();
 
+  //get reasDetail
   useEffect(() => {
     try {
       const fetchRealEstateDetail = async () => {
@@ -63,6 +69,7 @@ const RealEstateDetailModal = ({
     }
   }, []);
 
+  //get userRegisterList
   useEffect(() => {
     try {
       const fetchRealEstates = async () => {
@@ -81,6 +88,7 @@ const RealEstateDetailModal = ({
     }
   }, []);
 
+  //get real-time currentBid
   useEffect(() => {
     try {
       const fetchCurrentBid = async () => {
@@ -95,6 +103,7 @@ const RealEstateDetailModal = ({
     } catch (error) {}
   });
 
+  //get auction
   useEffect(() => {
     try {
       const fetchRealEstates = async () => {
@@ -138,6 +147,7 @@ const RealEstateDetailModal = ({
     setTabStatus(index);
   };
 
+  //add auction to firebase
   const toggleAuction = (index: string, auction: memberAuction | undefined) => {
     setTabStatus(index);
     if (!auction) {
@@ -146,6 +156,7 @@ const RealEstateDetailModal = ({
     const auctionRef = ref(db, `auctions/${auction.reasId}`);
     const usersRef = ref(db, `auctions/${auction.reasId}/users`);
     const currentBidRef = ref(db, `auctions/${auction.reasId}/currentBid`);
+    const statusRef = ref(db, `auctions/${realEstateId}/status`);
     const userId = localStorage.getItem("userId");
 
     var userAlreadyRegistered = false;
@@ -165,13 +176,22 @@ const RealEstateDetailModal = ({
             currentBid: auction.floorBid,
             status,
             lastBid: auction.dateStart,
+            statusChangeTime: Date.now(),
           });
         }
 
         if (!userId) return;
 
         if (!userAlreadyRegistered) return;
-        
+
+        get(statusRef).then((statusSnapshot) => {
+          if (statusSnapshot.exists()) {
+            if (statusSnapshot.val() == 4) {
+              return;
+            }
+          }
+        });
+
         get(usersRef)
           .then((usersSnapshot) => {
             if (!usersSnapshot.hasChild(userId)) {
@@ -181,8 +201,18 @@ const RealEstateDetailModal = ({
                   currentUserBid: 0,
                 },
               });
-              setIsUserRegistered(true);
-            } else {
+              if (totalUsers == 0) {
+                update(auctionRef, {
+                  status: 1,
+                  statusChangeTime: Date.now(),
+                });
+              }
+              if (totalUsers == 1) {
+                update(auctionRef, {
+                  status: 2,
+                  statusChangeTime: Date.now(),
+                });
+              }
               setIsUserRegistered(true);
             }
           })
@@ -208,6 +238,47 @@ const RealEstateDetailModal = ({
       .catch((error) => {
         console.error("Error checking auction existence:", error);
       });
+  };
+
+  //identify the user win the bid
+  const identifyWinner = async () => {
+    try {
+      const usersRef = ref(db, `auctions/${realEstateId}/users`);
+
+      // Get all users and their bids
+      const usersSnapshot = await get(usersRef);
+      const usersData = usersSnapshot.val();
+
+      let highestBid = 0;
+      let winningUserId = 0;
+      const userList: userHistory[] = [];
+      // Iterate over users to find the highest bid and winning user
+      if (usersData) {
+        Object.keys(usersData).forEach((userId) => {
+          userList.push({
+            accountId: parseInt(usersData[userId].userId, 10),
+            lastBidAmount: usersData[userId].currentUserBid,
+          });
+          const userBid = usersData[userId].currentUserBid;
+          if (userBid > highestBid) {
+            highestBid = userBid;
+            winningUserId = parseInt(userId, 10);
+          }
+        });
+      }
+
+      console.log(userList);
+      if (auction) {
+        const auctionDetailDto = {
+          auctionId: auction.auctionId,
+          accountWinId: winningUserId,
+          winAmount: highestBid,
+        };
+        await auctionSuccess(auctionDetailDto, userList);
+      }
+    } catch (error) {
+      console.error("Error identifying winner:", error);
+    }
   };
 
   // Tab button status
@@ -260,11 +331,13 @@ const RealEstateDetailModal = ({
       });
 
       setCurrentBid(currentInputBid);
+      setIsBidded(true);
     } catch (error) {
       console.error("Error updating bid in Firebase:", error);
     }
   };
 
+  //subcribe the lastBid and then plus 60 seconds when lastbid updated
   useEffect(() => {
     const lastBidRef = ref(db, `auctions/${realEstateId}/lastBid`);
     const unsubscribe = onValue(lastBidRef, (snapshot) => {
@@ -273,28 +346,44 @@ const RealEstateDetailModal = ({
       setCountdownValue(newCountdownValue);
     });
 
-    // Clean up the listener when component unmounts
     return () => {
       unsubscribe();
     };
   }, [realEstateId]);
 
+  //set count down for status change
+  useEffect(() => {
+    const lastStatusChangeRef = ref(
+      db,
+      `auctions/${realEstateId}/statusChangeTime`
+    );
+    const unsubscribe = onValue(lastStatusChangeRef, (snapshot) => {
+      const lastChange = snapshot.val();
+      const newCountdownValue = lastChange + 5 * 60000;
+      setCountdownValue(newCountdownValue);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [realEstateId]);
+
+  //subcribe for the new bid
   useEffect(() => {
     const currentBidRef = ref(db, `auctions/${realEstateId}/currentBid`);
     const unsubscribe = onValue(currentBidRef, (snapshot) => {
       const newBid = snapshot.val();
       setCurrentBid(newBid);
       setCurrentInputBid(newBid);
-      const newCountdownValue = currentBid === 0 ? 60000 : Date.now() + 10000;
-      setCountdownValue(newCountdownValue);
+      setIsBidded(true);
     });
 
-    // Clean up the listener when component unmounts
     return () => {
       unsubscribe();
     };
   }, [realEstateId]);
 
+  //subcribe the user registered join the auction
   useEffect(() => {
     const usersRef = ref(db, `auctions/${realEstateId}/users`);
     const unsubscribe = onValue(usersRef, (snapshot) => {
@@ -303,35 +392,39 @@ const RealEstateDetailModal = ({
         usersList++;
       });
       setTotalUsers(usersList);
-      if (usersList >= 2) {
-        setIsOneParticipant(false);
-        setIsUserAttend(false);
-        setAuctionOpen(false);
-      }
-      if (usersList == 0) {
-        setIsOneParticipant(false);
-        setIsUserAttend(false);
-        setAuctionOpen(false);
-      }
-      if (usersList == 1) {
-        setIsOneParticipant(true);
-        setIsUserAttend(false);
-        setAuctionOpen(false);
-      }
     });
     return () => {
       unsubscribe();
     };
   }, [realEstateId]);
 
+  //subcribe the status of the auction
   useEffect(() => {
     const statusRef = ref(db, `auctions/${realEstateId}/status`);
     const unsubscribe = onValue(statusRef, (snapshot) => {
       const statusValue = snapshot.val();
-      if (statusValue == 4) {
-        setAuctionOpen(true);
-      } else {
-        setAuctionOpen(false);
+      if (statusValue == 0) {
+        setIsUserRegistered(false);
+        setIsAuctionOpen(false);
+        setIsOneParticipant(false);
+        setIsUserAttend(false);
+      } else if (statusValue == 1) {
+        setIsUserRegistered(true);
+        setIsOneParticipant(true);
+      } else if (statusValue == 2) {
+        setIsOneParticipant(false);
+        setIsUserAttend(false);
+      } else if (statusValue == 3) {
+        setIsOneParticipant(false);
+        setIsUserAttend(true);
+        setIsAuctionOpen(true);
+      } else if (statusValue == 4) {
+        setIsUserRegistered(true);
+        setIsAuctionOpen(false);
+        setIsOneParticipant(false);
+        setIsUserAttend(true);
+        setIsBidded(false);
+        identifyWinner();
       }
     });
     return () => {
@@ -346,8 +439,23 @@ const RealEstateDetailModal = ({
         update(auctionRef, {
           status: 4,
         });
+        setIsAuctionOpen(false);
       }
     }
+  };
+
+  const handleOnFinishWaiting10Mins = () => {
+    const auctionRef = ref(db, `auctions/${realEstateId}`);
+    update(auctionRef, {
+      status: 4,
+    });
+  };
+
+  const handleOnFinishWaiting5Mins = () => {
+    const auctionRef = ref(db, `auctions/${realEstateId}`);
+    update(auctionRef, {
+      status: 3,
+    });
   };
 
   const toggleChecked = () => {
@@ -594,29 +702,19 @@ const RealEstateDetailModal = ({
           <div className={getActiveTabDetail("auction")}>
             {auction ? (
               <>
-                {isAuctionOpen ? (
-                  <>
-                    <Typography variant="h3" className="text-center">
-                      true
-                    </Typography>
-                  </>
-                ) : (
-                  <>
-                    <Typography variant="h3" className="text-center">
-                      false
-                    </Typography>
-                  </>
-                )}
-
                 <div>
                   <Typography variant="h3" className="text-center">
                     Current bid: {NumberFormat(currentBid)}
                   </Typography>
-                  <Countdown
-                    value={countdownValue}
-                    format=" m [minutes] s [secs]"
-                    onFinish={() => handleOnFinish()}
-                  />
+                  {isBidded ? (
+                    <>
+                      <Countdown
+                        value={countdownValue}
+                        format=" m [minutes] s [secs]"
+                        onFinish={() => handleOnFinish()}
+                      />
+                    </>
+                  ) : null}
                 </div>
 
                 <div className="grid grid-cols-5 gap-4">
@@ -630,7 +728,8 @@ const RealEstateDetailModal = ({
                     </div>
                     <Countdown
                       value={dayjs(auction.dateEnd).toDate().toString()}
-                      format="H [hours] m [minutes] s [secs]"
+                      format="m [minutes] s [secs]"
+                      prefix="Remain time"
                     />
                   </div>
                   {!isAuthenticated ? (
@@ -757,6 +856,13 @@ const RealEstateDetailModal = ({
                                 </>
                               ) : (
                                 <>
+                                  <Countdown
+                                    value={countdownValue}
+                                    format=" m [minutes] s [secs]"
+                                    onFinish={() =>
+                                      handleOnFinishWaiting5Mins()
+                                    }
+                                  />
                                   <Typography>
                                     Auction will start in 5 minutes
                                   </Typography>
@@ -765,6 +871,12 @@ const RealEstateDetailModal = ({
                             </>
                           ) : (
                             <>
+                              <Countdown
+                                value={dayjs(auction.dateStart)
+                                  .add(10, "minutes")
+                                  .toString()}
+                                onFinish={() => handleOnFinishWaiting10Mins()}
+                              />
                               <Typography>
                                 Waiting for users in 10 minutes.
                               </Typography>
