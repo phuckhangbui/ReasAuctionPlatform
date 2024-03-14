@@ -32,5 +32,11 @@ namespace API.Services
 
             return false;
         }
+
+        public async Task<IEnumerable<ParticipateAuctionFinalDto>> GetAllParticipates(int auctionId)
+        {
+            var participate = await _participantHistoryRepository.GetAllParticipates(auctionId);
+            return participate;
+        }
     }
 }

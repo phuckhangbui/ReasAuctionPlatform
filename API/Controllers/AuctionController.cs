@@ -483,5 +483,21 @@ namespace API.Controllers
             }
         }
 
+        [Authorize(policy: "AdminAndStaff")]
+        [HttpGet("auctions/complete/participate/{id}")]
+        public async Task<ActionResult<IEnumerable<ParticipateAuctionFinalDto>>> GetAllParticipates(int id)
+        {
+            var participate = await _participantHistoryService.GetAllParticipates(id);
+
+            if (participate != null)
+            {
+                return Ok(participate);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
     }
 }

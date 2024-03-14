@@ -19,6 +19,20 @@ namespace API.Repository
             _mapper = mapper;
         }
 
+        public async Task<IEnumerable<ParticipateAuctionFinalDto>> GetAllParticipates(int auctionId)
+        {
+            var participate = _context.ParticipateAuctionHistories.OrderByDescending(x => x.LastBid).Where(x => x.AuctionAccountingId ==
+            (_context.AuctionsAccounting.Where(y => y.AuctionId == auctionId).Select(z => z.AuctionAccountingId).FirstOrDefault())).Select(x => new ParticipateAuctionFinalDto
+            {
+                idAccount = x.AccountBidId,
+                accountName = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.AccountName).FirstOrDefault(),
+                accountEmail = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.AccountEmail).FirstOrDefault(),
+                accountPhone = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.PhoneNumber).FirstOrDefault(),
+                lastBid = Convert.ToDouble(x.LastBid),
+            });
+            return participate;
+        }
+
         public async Task<List<AuctionAttenderDto>> GetLosingAttendees(int reasId)
         {
             var nonWinningAttendees = await _context.ParticipateAuctionHistories

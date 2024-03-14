@@ -18,14 +18,16 @@ import {
   getUserForDeposit,
   addAuction
 } from "../../../../api/adminAuction";
+import {getReasName} from "../../../../api/deposit"
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
 
 const RealDepositList: React.FC = () => {
-  const { token } = useContext(UserContext);
+  const { token, userId } = useContext(UserContext);
   const [search, setSearch] = useState("");
   const [RealData, setRealData] = useState<RealForDeposit[]>();
   const [DepositData, setDepoistData] = useState<DepositAmountUser[]>();
+  const [reasName, setReasName] = useState<string>();
   const [reasID, setRealID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
   let dateStart: Date = new Date();
@@ -41,6 +43,23 @@ const RealDepositList: React.FC = () => {
     ).slice(-2)}:${("0" + dateObject.getMinutes()).slice(-2)}:${(
       "0" + dateObject.getSeconds()
     ).slice(-2)}`;
+  };
+
+  const viewReasName = (reasId: number) => {
+    try {
+      const fetchReasName = async () => {
+        if (token && reasId) {
+          const response = await getReasName(token, reasId);
+          if (response) {
+            setReasName(response);
+          }
+          setShowDetail(true);
+        }
+      };
+      fetchReasName();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const statusColorMap: { [key: string]: string } = {
@@ -95,6 +114,11 @@ const RealDepositList: React.FC = () => {
     }
   };
 
+  const setDetail = (id : number) => {
+    viewDetail(id);
+    viewReasName(id);
+  };
+
   const columns: TableProps<RealForDeposit>["columns"] = [
     {
       title: "No",
@@ -107,16 +131,28 @@ const RealDepositList: React.FC = () => {
       width: "30%",
     },
     {
+      title: "Date Start",
+      dataIndex: "dateStart",
+      width: "15%",
+      render: (dateStart: Date) => formatDate(dateStart),
+    },
+    {
+      title: "Date End",
+      dataIndex: "dateEnd",
+      width: "15%",
+      render: (dateEnd: Date) => formatDate(dateEnd),
+    },
+    {
       title: "Number of user",
       dataIndex: "numberOfUser",
-      width: "15%",
+      width: "10%",
       render: (num: number) => `${num} users`,
     },
     {
       title: "",
       dataIndex: "operation",
       render: (_: any, record: RealForDeposit) => (
-        <a onClick={() => viewDetail(record.reasId)}>View details</a>
+        <a onClick={() => setDetail(record.reasId)}>View details</a>
       ),
       width: "10%",
     },
@@ -128,6 +164,8 @@ const RealDepositList: React.FC = () => {
   };
   const handleOk = () => {
     setIsModalOpen(false);
+    createAuction();
+    setShowDetail(false);
   };
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -149,7 +187,7 @@ const RealDepositList: React.FC = () => {
 
   const createAuction = async () => {
     const Auction : AuctionCreate = {
-AccountCreateId : 1,
+AccountCreateId : userId,
 DateStart : dateStart,
 ReasId : reasID,
     }
@@ -157,6 +195,7 @@ ReasId : reasID,
     if (response != undefined && response) {
       if (response.statusCode == "MSG05") {
         openNotificationWithIcon("success", response.message);
+        fetchRealList();
       } else {
         openNotificationWithIcon(
           "error",
@@ -239,6 +278,11 @@ ReasId : reasID,
               open={isModalOpen}
               onOk={handleOk}
               onCancel={handleCancel}
+              footer={[
+                <Button key="submit" onClick={handleOk}>
+                  Create
+                </Button>,
+              ]}
             >
               <div style={{alignContent: "center"}}>
               <DatePicker
@@ -251,6 +295,10 @@ ReasId : reasID,
             </Modal>
           </div>
           <br />
+
+          <h5><strong>Real Estate Name: {reasName}</strong></h5><br />
+
+
           <Table columns={columnUsers} dataSource={DepositData} bordered />
         </div>
       ) : (

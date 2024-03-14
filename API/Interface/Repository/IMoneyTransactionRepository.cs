@@ -11,6 +11,7 @@ namespace API.Interface.Repository
         Task<int> GetIdTransactionWhenCreateNewTransaction();
         Task<PageList<MoneyTransactionDto>> GetMoneyTransactionsAsync(MoneyTransactionRequest moneyTransactionRequest);
         Task<MoneyTransactionDetailDto> GetMoneyTransactionDetailAsync(int transactionId);
+        Task<bool> InsertTransactionWhenRefund(RefundTransactionParam refundTransactionParam);
         Task<PageList<MoneyTransactionDto>> GetMemberMoneyTransactionsAsync(MemberMoneyTransactionParam memberMoneyTransactionParam, int accountId);
     }
 }

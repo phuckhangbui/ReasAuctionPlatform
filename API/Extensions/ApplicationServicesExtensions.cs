@@ -16,6 +16,7 @@ namespace API.Extensions
         public static IServiceCollection ApplicationServices(this IServiceCollection services
             , IConfiguration config)
         {
+            services.AddScoped<IDashboardRepository, DashboardRepository>();
             services.AddScoped<IRealEstateRepository, RealEstateRepository>();
             services.AddScoped<IRealEstateDetailRepository, RealEstateDetailRepository>();
             services.AddScoped<IRealEstatePhotoRepository, RealEstatePhotoRepository>();
@@ -50,6 +51,7 @@ namespace API.Extensions
             services.AddScoped<IMemberAccountService, MemberAccountService>();
             services.AddScoped<INotificatonService, NotificationService>();
             services.AddScoped<IVnPayService, VnPayService>();
+            services.AddScoped<IDashboardService, DashboardService>();
 
 
             services.AddScoped<IAuctionAccountingService, AuctionAccountingService>();

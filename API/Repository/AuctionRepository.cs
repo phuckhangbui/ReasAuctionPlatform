@@ -5,10 +5,10 @@ using API.Helper;
 using API.Interface.Repository;
 using API.Param;
 using API.Param.Enums;
+using API.ThirdServices;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace API.Repository
 {
@@ -47,7 +47,7 @@ namespace API.Repository
         public async Task<IEnumerable<AuctionDto>> GetAuctionsNotYetAndOnGoing()
         {
             var getName = new GetStatusName();
-            var query = _context.Auction.OrderByDescending(a => a.DateStart).Where(b => b.Status.Equals((int)AuctionStatus.NotYet) && b.Status.Equals((int)AuctionStatus.OnGoing) && b.Status.Equals((int)AuctionStatus.Cancel)).Select(x => new AuctionDto
+            var query = _context.Auction.OrderByDescending(a => a.DateStart).Where(b => b.Status.Equals((int)AuctionStatus.NotYet) || b.Status.Equals((int)AuctionStatus.OnGoing) || b.Status.Equals((int)AuctionStatus.Cancel)).Select(x => new AuctionDto
             {
                 AuctionId = x.AuctionId,
                 ReasId = x.ReasId,
@@ -217,10 +217,12 @@ namespace API.Repository
 
         public async Task<IEnumerable<ReasForAuctionDto>> GetAuctionsReasForCreate()
         {
-            var real = _context.DepositAmount.Select(x => new ReasForAuctionDto
+            var real = _context.DepositAmount.Where(x => !_context.Auction.Any(y => y.ReasId == x.ReasId)).Select(x => new ReasForAuctionDto
             {
                 reasId = x.ReasId,
                 reasName = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.ReasName).FirstOrDefault(),
+                dateStart = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.DateStart).FirstOrDefault(),
+                dateEnd = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.DateEnd).FirstOrDefault(),
                 numberOfUser = _context.DepositAmount.Where(y => y.ReasId == x.ReasId).Count(),
             }).Distinct();
             return await real.ToListAsync();
@@ -229,8 +231,9 @@ namespace API.Repository
         public async Task<IEnumerable<DepositAmountUserDto>> GetAllUserForDeposit(int id)
         {
             var getName = new GetStatusName();
-            var deposit = _context.DepositAmount.Where(x => (x.Status == (int)UserDepositEnum.Pending || x.Status == (int)UserDepositEnum.Deposited) && x.ReasId == id).Select(x => new DepositAmountUserDto
+            var deposit = _context.DepositAmount.Where(x => x.ReasId == id).Select(x => new DepositAmountUserDto
             {
+                depositID = x.DepositId,
                 reasId = x.ReasId,
                 accountSignId = x.AccountSignId,
                 accountName = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.AccountName).FirstOrDefault(),
@@ -252,11 +255,18 @@ namespace API.Repository
                 auction.AccountCreateId = auctionCreateParam.AccountCreateId;
                 auction.AccountCreateName = _context.Account.Where(x => x.AccountId == auctionCreateParam.AccountCreateId).Select(x => x.AccountName).FirstOrDefault();
                 auction.DateStart = auctionCreateParam.DateStart;
+                auction.DateEnd = auctionCreateParam.DateStart.AddHours(1);
                 auction.FloorBid = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasPrice).FirstOrDefault();
                 auction.Status = 0;
                 bool check = await CreateAsync(auction);
                 if (check)
                 {
+                    IEnumerable<NameUserDto> user = _context.DepositAmount.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => new NameUserDto
+                    {
+                        EmailName = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(x => x.AccountEmail).FirstOrDefault(),
+                }).ToList();
+                    var reasname = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasName).FirstOrDefault();
+                    SendMailWhenCreateAuction.SendMailForMemberWhenCreateAuction(user, reasname, auctionCreateParam.DateStart);
                     return true;
                 }
                 else
@@ -293,8 +303,8 @@ namespace API.Repository
                     auction => auction.ReasId,
                     (deposit, auction) => new { Deposit = deposit, Auction = auction }
                 )
-                .Where(joinResult => joinResult.Deposit.ReasId == reasId && 
-                        joinResult.Deposit.Status == (int)UserDepositEnum.Deposited && 
+                .Where(joinResult => joinResult.Deposit.ReasId == reasId &&
+                        joinResult.Deposit.Status == (int)UserDepositEnum.Deposited &&
                         (joinResult.Auction.Status == (int)AuctionStatus.NotYet || joinResult.Auction.Status == (int)AuctionStatus.Pending))
                 .Select(joinResult => joinResult.Deposit.AccountSignId)
                 .ToListAsync();

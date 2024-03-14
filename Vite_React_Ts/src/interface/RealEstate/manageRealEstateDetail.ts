@@ -2,7 +2,7 @@ interface ManageRealEstateDetail {
     reasId: number;
     reasName: string;
     reasAddress: string;
-    reasPrice: string;
+    reasPrice: number;
     reasArea: number;
     reasDescription: string;
     reasStatus: Number;

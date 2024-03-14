@@ -3,6 +3,7 @@ using API.Exceptions;
 using API.Extension;
 using API.Helper;
 using API.Interface.Service;
+using API.MessageResponse;
 using API.Param;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,19 +21,15 @@ namespace API.Controllers
 
         private const string BaseUri = "/api/deposits";
         private const string DetailUri = BaseUri + "/{depositId}";
-        private const string DepositedUri = BaseUri + "/{reasId}/deposited";
+        private const string UpdateStatusUri = BaseUri + "/update/refund";
 
         [HttpGet(BaseUri)]
         [Authorize(policy: "AdminAndStaff")]
-        public async Task<IActionResult> GetDepositAmounts([FromQuery] DepositAmountParam depositAmountParam)
+        public async Task<IActionResult> GetDepositAmounts()
         {
             try
             {
-                var depositAmounts = await _depositAmountService.GetDepositAmounts(depositAmountParam);
-
-                Response.AddPaginationHeader(new PaginationHeader(depositAmounts.CurrentPage, depositAmounts.PageSize,
-                depositAmounts.TotalCount, depositAmounts.TotalPages));
-
+                var depositAmounts = await _depositAmountService.GetRealEstateForDepositAsync();
                 return Ok(depositAmounts);
             }
             catch (Exception ex)
@@ -43,11 +40,11 @@ namespace API.Controllers
 
         [HttpGet(DetailUri)]
         [Authorize(policy: "AdminAndStaff")]
-        public IActionResult GetDepositDetail(int depositId)
+        public async Task<IActionResult> GetDepositDetail(int depositId)
         {
             try
             {
-                var transactionDetail = _depositAmountService.GetDepositDetail(depositId);
+                var transactionDetail = await _depositAmountService.GetDepositDetail(depositId);
 
                 return Ok(transactionDetail);
             }
@@ -61,18 +58,22 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet(DepositedUri)]
+        [HttpPost(UpdateStatusUri)]
         [Authorize(policy: "AdminAndStaff")]
-        public async Task<IActionResult> GetAccountsHadDeposited([FromQuery] PaginationParams paginationParams, int reasId)
+        public async Task<ActionResult<ApiResponseMessage>> ChangeStatusRefund(RefundTransactionParam refundTransactionParam)
         {
             try
             {
-                var accounts = await _depositAmountService.GetAccountsHadDeposited(paginationParams, reasId);
+                bool flag = await _depositAmountService.ChangeStatusWhenRefund(refundTransactionParam);
 
-                Response.AddPaginationHeader(new PaginationHeader(accounts.CurrentPage, accounts.PageSize,
-                accounts.TotalCount, accounts.TotalPages));
-
-                return Ok(accounts);
+                if (flag)
+                {
+                    return new ApiResponseMessage("MSG26");
+                }
+                else
+                {
+                    return BadRequest(new ApiResponse(400, "Have any error when excute operation."));
+                }
             }
             catch (BaseNotFoundException ex)
             {

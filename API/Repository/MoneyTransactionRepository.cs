@@ -154,5 +154,29 @@ namespace API.Repository
 
         //    }
         //}
+
+        public async Task<bool> InsertTransactionWhenRefund(RefundTransactionParam refundTransactionParam)
+        {
+            MoneyTransaction newTransaction = new MoneyTransaction();
+            newTransaction.TransactionNo = Convert.ToString(Convert.ToDouble(_dataContext.MoneyTransaction.Max(x => x.TransactionNo)) + 1);
+            newTransaction.TxnRef = "";
+            newTransaction.AccountReceiveId = refundTransactionParam.accountReceiveId;
+            newTransaction.AccountSendId = _dataContext.Account.Where(x => x.AccountName.Equals("admin")).Select(x => x.AccountId).FirstOrDefault();
+            newTransaction.ReasId = refundTransactionParam.reasId;
+            newTransaction.DateExecution = DateTime.Now;
+            newTransaction.Money = refundTransactionParam.money;
+            newTransaction.TypeId = 4;
+            newTransaction.TransactionStatus = 2;
+            try
+            {
+                bool check = await CreateAsync(newTransaction);
+                if (check) return true;
+                else return false;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
     }
 }

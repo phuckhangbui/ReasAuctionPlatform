@@ -3,9 +3,7 @@ import {
   BrowserRouter as Router,
   Route,
   Routes,
-  useNavigate,
-  useLocation,
-  Navigate,
+
 } from "react-router-dom";
 import PageNotFound from "./Pages/PageNotFound";
 import { AdminLayout } from "./Pages/Admin/AdminLayout";
@@ -22,7 +20,6 @@ import AdminRule from "../src/Pages/Admin/AdminRule"
 import AddRule from "../src/Pages/Admin/AdminAddRule"
 import AdminCreateNews from "../src/Pages/Admin/AdminCreateNews"
 import AuctionComplete from "../src/Pages/Admin/AdminAuctionComplete";
-import AuctionDetail from "./Pages/Admin/AdminAuctionDetail";
 import HomePage from "./Pages/Member/HomePage/homePage";
 import RealEstatePage from "./Pages/Member/RealEstatePage/realEstatePage";
 import HelpPage from "./Pages/Member/HelpPage/helpPage";
@@ -31,9 +28,6 @@ import AuctionPage from "./Pages/Member/AuctionPage/auctionPage";
 import NewsPage from "./Pages/Member/NewsPage/newsPage";
 import RequiredAuth from "./components/RequiredAuth/requiredAuth";
 import SellPage from "./Pages/Member/SellPage/sellPage";
-import AuctionCreate from "./Pages/Admin/AdminAuctionCreate";
-import AllRule from "./Pages/Admin/AdminRule";
-import CreateRule from "./Pages/Admin/AdminRuleCreate";
 import AllTransaction from "./Pages/Admin/AdminTransaction";
 import AllDeposit from "./Pages/Admin/AdminDeposit";
 import Task from "./Pages/Admin/AdminTask";
@@ -68,17 +62,19 @@ function App() {
               <Route index element={<AdminDashboard />} />
 
               <Route element={<RequiredAuth allowedRoles={[roles.Admin]} />}>
-                <Route path="rule" element={<AllRule />} />
-                <Route path="rule/create" element={<CreateRule />} />
+              <Route path="term" element={<AdminRule/>}/>
+              <Route path="term/create" element={<AddRule/>}/>
 
                 <Route path="task" element={<Task />} />
                 <Route path="task/create" element={<TaskCreate />} />
               </Route>
 
+              <Route path="news" element={<NewsList/>}/>
+              <Route path="news/create" element={<AdminCreateNews/>}/>
+
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
               <Route path="auction/complete" element={<AuctionComplete />} />
-              <Route path="auction/create" element={<AuctionCreate />} />
-              <Route path="auction/detail/:key" element={<AuctionDetail />} />
+              <Route path= "auction/create" element ={<DepositList/>}/>
 
               <Route path="user/staff" element={<AdminStaffList />} />
               <Route path="user/member" element={<AdminMemberList />} />

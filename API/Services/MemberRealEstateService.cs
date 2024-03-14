@@ -50,32 +50,49 @@ namespace API.Services
             newRealEstate.DateStart = newRealEstateParam.DateStart;
             newRealEstate.DateEnd = newRealEstateParam.DateEnd;
             newRealEstate.ReasStatus = (int)RealEstateStatus.InProgress;
-
-            newRealEstate.AccountOwnerName = await _account_repository.GetNameAccountByAccountIdAsync(userMember);
-            await _real_estate_repository.CreateAsync(newRealEstate);
             try
             {
+                newRealEstate.AccountOwnerName = await _account_repository.GetNameAccountByAccountIdAsync(userMember);
+                await _real_estate_repository.CreateAsync(newRealEstate);
                 foreach (PhotoFileDto photos in newRealEstateParam.Photos)
                 {
-                    //IFormFile formFile = convertStringToFile.ConvertToIFormFile(photos.ReasPhotoUrl);
-                    //var result = await _photoService.AddPhotoAsync(formFile, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                    //if (result.Error != null)
-                    //{
-                    //    return false;
-                    //}
-                    //else
-                    //{
-
-                    //newPhotoList.ReasPhotoUrl = result.SecureUrl.AbsoluteUri;
-                    newPhotoList.ReasId = newRealEstate.ReasId;
-                    newPhotoList.ReasPhotoId = 0;
-                    await _real_estate_photo_repository.CreateAsync(newPhotoList);
+                    try
+                    {
+                        //newPhotoList.ReasPhotoUrl = result.SecureUrl.AbsoluteUri;
+                        newPhotoList.ReasId = newRealEstate.ReasId;
+                        newPhotoList.ReasPhotoUrl = photos.ReasPhotoUrl;
+                        bool check = await _real_estate_photo_repository.CreateAsync(newPhotoList);
+                        if (check)
+                        {
+                            try
+                            {
+                                newDetail.Reas_Cert_Of_Land_Img_Front = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_Front;
+                                newDetail.Reas_Cert_Of_Land_Img_After = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_After;
+                                newDetail.Reas_Cert_Of_Home_Ownership = newRealEstateParam.Detail.Reas_Cert_Of_Home_Ownership;
+                                newDetail.Reas_Registration_Book = newRealEstateParam.Detail.Reas_Registration_Book;
+                                newDetail.Sales_Authorization_Contract = newRealEstateParam.Detail.Sales_Authorization_Contract;
+                                newDetail.Documents_Proving_Marital_Relationship = newRealEstateParam.Detail.Documents_Proving_Marital_Relationship;
+                                newDetail.ReasId = newRealEstate.ReasId;
+                                bool flag = await _real_estate_detail_repository.CreateAsync(newDetail);
+                                if (flag) return newRealEstate;
+                                else return null;
+                            }
+                            catch (Exception ex)
+                            {
+                                return null;
+                            }
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return null;
+                    }
                 }
-
-                newDetail.ReasId = newRealEstate.ReasId;
-                bool check = await _real_estate_detail_repository.CreateAsync(newDetail);
-                if (check) return newRealEstate;
-                else return null;
+                return newRealEstate;
             }
             catch (Exception ex)
             {

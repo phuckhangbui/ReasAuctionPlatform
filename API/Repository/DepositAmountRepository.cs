@@ -21,25 +21,17 @@ namespace API.Repository
             _mapper = mapper;
         }
 
-        public async Task<PageList<DepositDto>> GetDepositAmountsAsync(DepositAmountParam depositAmountParam)
+        public async Task<IEnumerable<DepositDto>> GetRealEstateForDepositAsync()
         {
-            PaginationParams paginationParams = new PaginationParams();
-            var query = _context.DepositAmount.AsQueryable();
-            query = query
-                .Include(a => a.RealEstate)
-                .Include(a => a.AccountSign);
-
-            if (!string.IsNullOrEmpty(depositAmountParam.ReasName))
+            var query = _context.RealEstate.OrderByDescending(q => q.DateStart).Where(x => x.ReasStatus.Equals((int)RealEstateStatus.Auctioning) || x.ReasStatus.Equals((int)RealEstateStatus.Selling) || x.ReasStatus.Equals((int)RealEstateStatus.Sold)).Select(x => new DepositDto
             {
-                query = query.Where(d => d.RealEstate.ReasName.ToLower().Contains(depositAmountParam.ReasName.ToLower()));
-            }
+                reasId = x.ReasId,
+                reasName = x.ReasName,
+                dateEnd = x.DateEnd,
+                status = x.ReasStatus,
+            });
 
-            query = query.OrderByDescending(q => q.DepositDate);
-
-            return await PageList<DepositDto>.CreateAsync(
-                query.AsNoTracking().ProjectTo<DepositDto>(_mapper.ConfigurationProvider),
-                paginationParams.PageNumber,
-                paginationParams.PageSize);
+            return await query.ToListAsync();
         }
 
         public async Task<PageList<DepositAmountDto>> GetDepositAmoutForMember(int id)
@@ -111,14 +103,40 @@ namespace API.Repository
             return _context.DepositAmount.FirstOrDefault(d => d.DepositId == depositId);
         }
 
-        public DepositDetailDto GetDepositDetailAsync(int depositId)
+        public async Task<bool> ChangeStatusWaiting(int id)
         {
-            var depositDetail = _context.DepositAmount
-                .Include(d => d.RealEstate)
-                .Include(d => d.AccountSign)
-                .FirstOrDefault(d => d.DepositId == depositId);
+            var deposit = _context.DepositAmount.Where(x => x.DepositId == id).FirstOrDefault();
+            deposit.Status = 3;
+            bool check = await UpdateAsync(deposit);
+            if (check)
+            {
+                return true;
+            }
+            else { return false; }
+        }
 
-            return _mapper.Map<DepositDetailDto>(depositDetail);
+        public async System.Threading.Tasks.Task UpdateDepositStatusToWaitingForRefund(int reasId)
+        {
+            var deposits = await _context
+                .DepositAmount
+                .Where(d => d.ReasId == reasId && d.Status == (int)UserDepositEnum.Deposited)
+                .ToListAsync();
+
+            deposits.ForEach(deposit => deposit.Status = (int)UserDepositEnum.Waiting_for_refund);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async System.Threading.Tasks.Task UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(int reasId)
+        {
+            var deposits = await _context
+                .DepositAmount
+                .Where(d => d.ReasId == reasId && d.Status == (int)UserDepositEnum.Deposited)
+                .ToListAsync();
+
+            deposits.ForEach(deposit => deposit.Status = (int)UserDepositEnum.LostDeposit);
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId)
@@ -149,30 +167,6 @@ namespace API.Repository
                 query.AsNoTracking(),
                 paginationParams.PageNumber,
                 paginationParams.PageSize);
-        }
-
-        public async System.Threading.Tasks.Task UpdateDepositStatusToWaitingForRefund(int reasId)
-        {
-            var deposits = await _context
-                .DepositAmount
-                .Where(d => d.ReasId == reasId && d.Status == (int)UserDepositEnum.Deposited)
-                .ToListAsync();
-
-            deposits.ForEach(deposit => deposit.Status = (int)UserDepositEnum.Waiting_for_refund);
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async System.Threading.Tasks.Task UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(int reasId)
-        {
-            var deposits = await _context
-                .DepositAmount
-                .Where(d => d.ReasId == reasId && d.Status == (int)UserDepositEnum.Deposited)
-                .ToListAsync();
-
-            deposits.ForEach(deposit => deposit.Status = (int)UserDepositEnum.LostDeposit);
-
-            await _context.SaveChangesAsync();
         }
     }
 }
