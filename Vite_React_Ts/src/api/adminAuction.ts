@@ -131,6 +131,23 @@ export const addAuction = async ({
     }
   };
 
+  export const getPaticipateUser = async (token : string, idAuction : number) => {
+    try {
+      const fetchData = await axios.get<ParticipateAccount[]>(`${baseUrl}/api/Auction/auctions/complete/participate/${idAuction}`, 
+      {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      const response = fetchData.data;
+      return response;
+    } catch (error) {
+      console.log("Error: " + error);
+    }
+  };
+
+
 //   export const updateNews = async ({
 //     newsContent,
 //     newsSumary,

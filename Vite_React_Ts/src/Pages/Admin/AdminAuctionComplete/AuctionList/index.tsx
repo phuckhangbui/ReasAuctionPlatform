@@ -1,13 +1,14 @@
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import {Input} from "@material-tailwind/react";
+import { Input } from "@material-tailwind/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { NumberFormat } from "../../../../Utils/numberFormat";
-import { Table, TableProps, Tag , Button, Descriptions} from "antd";
-import { useState, useEffect , useContext} from "react";
+import { Table, TableProps, Tag, Button, Descriptions } from "antd";
+import { useState, useEffect, useContext } from "react";
 import {
   getAuctionCompleteAdmin,
   getAuctionCompleteAdminById,
+  getPaticipateUser,
 } from "../../../../api/adminAuction";
 import { UserContext } from "../../../../context/userContext";
 
@@ -15,7 +16,10 @@ const CompleteList: React.FC = () => {
   const { token } = useContext(UserContext);
   const [search, setSearch] = useState("");
   const [auctionData, setAuctionData] = useState<AuctionAdmin[]>();
-  const [auctionDetailData, setAuctionDetailData] = useState<AuctionDetailCompleteAdmin>();
+  const [auctionDetailData, setAuctionDetailData] =
+    useState<AuctionDetailCompleteAdmin>();
+  const [participateData, setParticipateData] =
+    useState<ParticipateAccount[]>();
   const [auctionID, setAuctionID] = useState<number>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
@@ -68,8 +72,23 @@ const CompleteList: React.FC = () => {
     }
   };
 
+  const fetchParticipate = async (auctionId: number) => {
+    try {
+      if (token) {
+        let data: ParticipateAccount[] | undefined;
+        data = await getPaticipateUser(token, auctionId);
+        setParticipateData(data);
+        setAuctionID(auctionID);
+        setShowDetail(true);
+      }
+    } catch (error) {
+      console.error("Error fetching participate users:", error);
+    }
+  };
+
   const viewDetail = (AuctionId: number) => {
     fetchAuctionDetail(AuctionId);
+    fetchParticipate(AuctionId);
   };
 
   const columns: TableProps<AuctionAdmin>["columns"] = [
@@ -170,27 +189,37 @@ const CompleteList: React.FC = () => {
       {
         key: "9",
         label: "Foor Bid",
-        children: auctionDetailData?.floorBid ? NumberFormat(auctionDetailData?.floorBid) : "",
+        children: auctionDetailData?.floorBid
+          ? NumberFormat(auctionDetailData?.floorBid)
+          : "",
       },
       {
         key: "10",
         label: "Final Amount",
-        children: auctionDetailData?.finalAmount ? NumberFormat(auctionDetailData?.floorBid) : "",
+        children: auctionDetailData?.finalAmount
+          ? NumberFormat(auctionDetailData?.floorBid)
+          : "",
       },
       {
         key: "11",
         label: "Deposit Amount",
-        children: auctionDetailData?.depositAmout ? NumberFormat(auctionDetailData?.depositAmout) : "",
+        children: auctionDetailData?.depositAmout
+          ? NumberFormat(auctionDetailData?.depositAmout)
+          : "",
       },
       {
         key: "12",
         label: "Commision Amount",
-        children: auctionDetailData?.commisionAmount ? NumberFormat(auctionDetailData?.commisionAmount) : "",
+        children: auctionDetailData?.commisionAmount
+          ? NumberFormat(auctionDetailData?.commisionAmount)
+          : "",
       },
       {
         key: "13",
         label: "Recieve Amount",
-        children: auctionDetailData?.ownerReceiveAmount ? NumberFormat(auctionDetailData?.ownerReceiveAmount) : "",
+        children: auctionDetailData?.ownerReceiveAmount
+          ? NumberFormat(auctionDetailData?.ownerReceiveAmount)
+          : "",
       },
       {
         key: "14",
@@ -215,7 +244,9 @@ const CompleteList: React.FC = () => {
       {
         key: "16",
         label: "Date End",
-        children: auctionDetailData ? formatDate(auctionDetailData.dateEnd) : "",
+        children: auctionDetailData
+          ? formatDate(auctionDetailData.dateEnd)
+          : "",
       },
     ];
     return items.map((item) => (
@@ -225,21 +256,47 @@ const CompleteList: React.FC = () => {
     ));
   };
 
+  const columnParticipate: TableProps<ParticipateAccount>["columns"] = [
+    {
+      title: "No",
+      width: "5%",
+      render: (text: any, record: any, index: number) => index + 1,
+    },
+    {
+      title: "Account Name",
+      dataIndex: "accountName",
+      width: "20%",
+    },
+    {
+      title: "Account Email",
+      dataIndex: "accountEmail",
+      width: "15%",
+    },
+    {
+      title: "Account Phone",
+      dataIndex: "accountPhone",
+      width: "15%",
+    },
+    {
+      title: "Last Bid",
+      dataIndex: "lastBid",
+      render: (lastBid: number) => NumberFormat(lastBid),
+      width: "15%",
+    },
+  ];
 
   const handleBackToList = () => {
     setShowDetail(false); // Ẩn bảng chi tiết và hiện lại danh sách
     fetchAuctionList(); // Gọi lại hàm fetchMemberList khi quay lại danh sách
   };
 
-
   // Generate random dates within a range of 10 years from today
 
   // Generate 100 random CompletedAuction items
 
-
   return (
     <>
-     {showDetail ? (
+      {showDetail ? (
         <div>
           <Button onClick={handleBackToList}>
             <FontAwesomeIcon icon={faArrowLeft} style={{ color: "#74C0FC" }} />
@@ -249,12 +306,23 @@ const CompleteList: React.FC = () => {
           <Descriptions bordered title="Detail of Auction">
             {renderBorderedItems()}
           </Descriptions>
+
+          <br />
+          <br />
+          <h4>
+            <strong>Participate List</strong>
+          </h4>
+          <Table
+            columns={columnParticipate}
+            dataSource={participateData}
+            bordered
+          />
         </div>
       ) : (
         <div>
-      <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-        <div className="w-full md:w-72 flex flex-row justify-start">
-          {/* <Select
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <div className="w-full md:w-72 flex flex-row justify-start">
+              {/* <Select
             defaultValue="Residential"
             onChange={handleChange}
             options={[
@@ -267,31 +335,31 @@ const CompleteList: React.FC = () => {
               { value: "department", label: "Department" },
             ]}
           /> */}
-        </div>
+            </div>
 
-        <div className="w-full md:w-72 flex flex-row justify-end">
-          <div className="flex flex-row space-between space-x-2">
-            <Input
-              label="Search"
-              icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              crossOrigin={undefined}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="w-full md:w-72 flex flex-row justify-end">
+              <div className="flex flex-row space-between space-x-2">
+                <Input
+                  label="Search"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  crossOrigin={undefined}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <Table
-        columns={columns}
-        dataSource={auctionData?.filter((reas : AuctionAdmin) => {
-          const isMatchingSearch =
-            search.toLowerCase() === "" ||
-            reas.reasName.toLowerCase().includes(search);
+          <Table
+            columns={columns}
+            dataSource={auctionData?.filter((reas: AuctionAdmin) => {
+              const isMatchingSearch =
+                search.toLowerCase() === "" ||
+                reas.reasName.toLowerCase().includes(search);
 
-          return isMatchingSearch;
-        })}
-        bordered
-      />
-      </div>
+              return isMatchingSearch;
+            })}
+            bordered
+          />
+        </div>
       )}
     </>
   );
