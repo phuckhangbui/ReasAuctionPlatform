@@ -138,5 +138,35 @@ namespace API.Repository
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId)
+        {
+            var query = _context.Account
+                .Join(_context.DepositAmount,
+                    account => account.AccountId,
+                    depositAmount => depositAmount.AccountSignId,
+                    (account, depositAmount) => new { Account = account, DepositAmount = depositAmount })
+                .Join(_context.RealEstate,
+                    joinResult => joinResult.DepositAmount.ReasId,
+                    realEstate => realEstate.ReasId,
+                    (joinResult, realEstate) => new { joinResult.Account, joinResult.DepositAmount, RealEstate = realEstate })
+                .Where(joinResult => joinResult.DepositAmount.ReasId == reasId &&
+                                     joinResult.DepositAmount.Status == (int)UserDepositEnum.Deposited &&
+                                     joinResult.RealEstate.ReasStatus == (int)RealEstateStatus.Selling)
+                .Select(joinResult => new AccountDepositedDto
+                {
+                    AccountId = joinResult.Account.AccountId,
+                    AccountName = joinResult.Account.AccountName,
+                    AccountEmail = joinResult.Account.AccountEmail,
+                    PhoneNumber = joinResult.Account.PhoneNumber,
+                    Account_Status = joinResult.Account.Account_Status.ToString(),
+                    Date_Created = joinResult.Account.Date_Created
+                });
+
+            return await PageList<AccountDepositedDto>.CreateAsync(
+                query.AsNoTracking(),
+                paginationParams.PageNumber,
+                paginationParams.PageSize);
+        }
     }
 }

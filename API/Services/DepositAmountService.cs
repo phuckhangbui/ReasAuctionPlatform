@@ -146,6 +146,16 @@ namespace API.Services
             else { return false; }
         }
 
+        public async Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId)
+        {
+            var realEstate = _realEstateRepository.GetRealEstate(reasId);
 
+            if (realEstate == null)
+            {
+                throw new BaseNotFoundException($"Real estate with ID {reasId} not found.");
+            }
+
+            return await _depositAmountRepository.GetAccountsHadDeposited(paginationParams, reasId);
+        }
     }
 }

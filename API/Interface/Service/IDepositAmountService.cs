@@ -1,5 +1,6 @@
 ﻿using API.DTOs;
 using API.Entity;
+using API.Helper;
 using API.Param;
 
 namespace API.Interface.Service
@@ -17,5 +18,7 @@ namespace API.Interface.Service
         Task<IEnumerable<DepositAmountUserDto>> GetDepositDetail(int depositId);
 
         Task<bool> ChangeStatusWhenRefund(RefundTransactionParam refundTransactionParam);
+        Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId);
+        Task<DepositAmountDto> UpdateStatus(int accountId, int reasId, int status);
     }
 }

@@ -115,31 +115,46 @@ namespace API.Repository
             return new PageList<AuctionDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
         }
 
-        public async Task<PageList<AuctionDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam)
+        public async Task<PageList<AttenderAuctionHistoryDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam)
         {
-            var query = _context.DepositAmount
-                .Where(d => d.AccountSignId == auctionAccountingParam.AccountId)
+            var query = _context.ParticipateAuctionHistories
+                .Where(pah => pah.AccountBidId == auctionAccountingParam.AccountId)
                 .Join(
-                    _context.RealEstate,
-                    deposit => deposit.ReasId,
-                    realEstate => realEstate.ReasId,
-                    (deposit, realEstate) => new { Deposit = deposit, RealEstate = realEstate }
+                    _context.Account,
+                    pah => pah.AccountBidId,
+                    a => a.AccountId,
+                    (pah, a) => new { pah, a }
+                )
+                .Join(
+                    _context.DepositAmount,
+                    join1 => join1.a.AccountId,
+                    da => da.AccountSignId,
+                    (join1, da) => new { join1, da }
                 )
                 .Join(
                     _context.Auction,
-                    depositRealEstate => depositRealEstate.RealEstate.ReasId,
-                    auction => auction.ReasId,
-                    (depositRealEstate, auction) => auction
+                    join2 => join2.da.ReasId,
+                    a2 => a2.ReasId,
+                    (join2, a2) => new AttenderAuctionHistoryDto
+                    {
+                        AuctionId = a2.AuctionId,
+                        ReasId = a2.ReasId,
+                        DateStart = a2.DateStart,
+                        DateEnd = a2.DateEnd,
+                        LastBid = join2.join1.pah.LastBid,
+                        DepositStatus = join2.da.Status
+                    }
                 )
-                .Where(a => a.Status == (int)AuctionStatus.Finish)
-                .Distinct()
+                .Where(result => result.DepositStatus == (int)UserDepositEnum.Waiting_for_refund ||
+                                 result.DepositStatus == (int)UserDepositEnum.Refunded ||
+                                 result.DepositStatus == (int)UserDepositEnum.Winner)
                 .AsQueryable();
 
-            var pageList = await PageList<Auction>.CreateAsync(query, auctionAccountingParam.PageNumber, auctionAccountingParam.PageSize);
+            var pageList = await PageList<AttenderAuctionHistoryDto>.CreateAsync(query, auctionAccountingParam.PageNumber, auctionAccountingParam.PageSize);
 
-            var auctionDtos = _mapper.Map<List<AuctionDto>>(pageList);
+            var auctionDtos = _mapper.Map<List<AttenderAuctionHistoryDto>>(pageList);
 
-            return new PageList<AuctionDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
+            return new PageList<AttenderAuctionHistoryDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
 
         }
 
@@ -272,6 +287,59 @@ namespace API.Repository
                 .SingleOrDefaultAsync(a => a.ReasId == reasId);
 
             return _mapper.Map<AuctionDto>(auction);
+        }
+
+        public async Task<Auction> GetAuctionByAuctionId(int auctionId)
+        {
+            return await _context.Auction.FindAsync(auctionId);
+        }
+
+        public async Task<List<int>> GetAuctionAttenders(int reasId)
+        {
+            var accountSignIds = await _context.DepositAmount
+                .Join(
+                    _context.Auction,
+                    deposit => deposit.ReasId,
+                    auction => auction.ReasId,
+                    (deposit, auction) => new { Deposit = deposit, Auction = auction }
+                )
+                .Where(joinResult => joinResult.Deposit.ReasId == reasId &&
+                        joinResult.Deposit.Status == (int)UserDepositEnum.Deposited &&
+                        (joinResult.Auction.Status == (int)AuctionStatus.NotYet || joinResult.Auction.Status == (int)AuctionStatus.Pending))
+                .Select(joinResult => joinResult.Deposit.AccountSignId)
+                .ToListAsync();
+
+            return accountSignIds;
+        }
+
+        public async Task<List<string>> GetAuctionAttendersEmail(int auctionId)
+        {
+            var attendersEmails = await _context.DepositAmount
+                .Join(
+                    _context.Auction,
+                    deposit => deposit.ReasId,
+                    auction => auction.ReasId,
+                    (deposit, auction) => new { Deposit = deposit, Auction = auction }
+                )
+                .Join(
+                    _context.Account,
+                    joinResult => joinResult.Deposit.AccountSignId,
+                    account => account.AccountId,
+                    (joinResult, account) => new { JoinResult = joinResult, Account = account }
+                )
+                .Where(joinResult => joinResult.JoinResult.Auction.AuctionId == auctionId &&
+                        joinResult.JoinResult.Deposit.Status == (int)UserDepositEnum.Deposited &&
+                        (joinResult.JoinResult.Auction.Status == (int)AuctionStatus.NotYet || joinResult.JoinResult.Auction.Status == (int)AuctionStatus.Pending))
+                .Select(joinResult => joinResult.Account.AccountEmail)
+                .ToListAsync();
+
+            return attendersEmails;
+        }
+        public async Task<List<int>> GetUserIdInAuctionUsingReasId(int reasId)
+        {
+            var deposit = await _context.DepositAmount.Where(x => x.Status == (int)UserDepositEnum.Deposited && x.ReasId == reasId).ToListAsync();
+
+            return deposit.Select(d => d.AccountSignId).ToList();
         }
     }
 }
