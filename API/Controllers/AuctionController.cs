@@ -60,6 +60,21 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("/auctions/{reasId}/attenders")]
+        public async Task<IActionResult> GetAuctionAttenders(int reasId)
+        {
+            try
+            {
+                var attenderIds = await _auctionService.GetAuctionAttenders(reasId);
+
+                return Ok(attenderIds);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse(500, ex.Message));
+            }
+        }
+
         [HttpGet("auctions")]
         public async Task<IActionResult> GetAuctionsForMember([FromQuery] AuctionParam auctionParam)
         {
@@ -281,8 +296,9 @@ namespace API.Controllers
             }
         }
 
-        [Authorize]
-        [HttpGet("attender/auction-history")]
+        //Auction attender history: Deposit status: Waiting_for_refund || Refunded || Winner
+        [Authorize(policy: "Member")]
+        [HttpGet("auctions/attend/history")]
         public async Task<IActionResult> GetAttenderAuctionHistory([FromQuery] AuctionHistoryParam auctionHisotoryParam)
         {
             try

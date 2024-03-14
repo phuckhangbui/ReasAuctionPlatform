@@ -15,5 +15,7 @@ namespace API.Interface.Repository
         DepositAmount GetDepositAmount(int depositId);
         DepositDetailDto GetDepositDetailAsync(int depositId);
         Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId);
+        System.Threading.Tasks.Task UpdateDepositStatusToWaitingForRefund(int reasId);
+        System.Threading.Tasks.Task UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(int reasId);
     }
 }
