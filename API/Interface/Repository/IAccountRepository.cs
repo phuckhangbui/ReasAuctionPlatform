@@ -23,5 +23,6 @@ namespace API.Interface.Repository
         Task<Account> FirebaseTokenExisted(string firebaseToken);
         Task<UserProfileDto> GetMemberProfileDetail(int accountId);
         Task<Account> GetAccountOnId(int accountId);
+        Task<List<Account>> GetAllStaffAndAdminAccounts();
     }
 }

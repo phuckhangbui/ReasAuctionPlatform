@@ -28,7 +28,7 @@ namespace API.Services
         public async Task<UserDto> LoginByAdminOrStaff(LoginDto loginDto)
         {
             Account account = await _accountRepository.GetAccountByUsernameAsync(loginDto.Username);
-            if (account == null)
+            if (account == null || account.Account_Status == (int)AccountStatus.Block)
                 return null;
             else
             {
@@ -78,8 +78,13 @@ namespace API.Services
             string userEmail = payload.Email;
 
             Account account = await _accountRepository.GetAccountByEmailAsync(userEmail);
-            if (account != null && account.Account_Status != (int)AccountStatus.Block)
+            if (account != null)
             {
+                if (account.Account_Status == (int)AccountStatus.Block)
+                {
+                    return null;
+                }
+
                 //Check firebase token
                 if (loginGoogleDto.FirebaseRegisterToken.IsNullOrEmpty())
                 {
@@ -133,5 +138,13 @@ namespace API.Services
                 };
             }
         }
+
+        public async Task<string> GetFirebaseToken(int accountId)
+        {
+            var account = await _accountRepository.GetAccountByAccountIdAsync(accountId);
+            return account.FirebaseToken;
+        }
+
+        //public async Task<>
     }
 }

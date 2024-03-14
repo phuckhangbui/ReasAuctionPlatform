@@ -7,10 +7,12 @@ namespace API.Services
     public class NotificationService : INotificatonService
     {
         private readonly INotificationRepository _notificationRepository;
+        private readonly IFirebaseMessagingService _messagingService;
 
-        public NotificationService(INotificationRepository notificationRepository)
+        public NotificationService(INotificationRepository notificationRepository, IFirebaseMessagingService messagingService)
         {
             _notificationRepository = notificationRepository;
+            _messagingService = messagingService;
         }
 
         public async Task<List<Notification>> GetNotificationsOrderByDateCreate(int accountId)
@@ -21,6 +23,11 @@ namespace API.Services
             return orderNotificationList;
         }
 
+        //Task<bool> SendNotificationWhenMemberCreateReal(List<Account> staffAndAdminAccount, Account realEstateOwnerAccount, RealEstate realEstate)
+        //{
+        //    string title = "New real estate posted!";
+        //    string body = $"New real estate with name of {realEstate.ReasName} has been created by {realEstateOwnerAccount.AccountName} at {realEstate.DateCreated.}";
+        //}
 
 
     }

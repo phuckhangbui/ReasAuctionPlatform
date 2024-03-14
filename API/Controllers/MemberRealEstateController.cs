@@ -111,7 +111,10 @@ namespace API.Controllers
             {
                 bool flag = await _memberRealEstateService.CreateNewRealEstate(newRealEstateDto, userMember);
                 if (flag)
+                {
+
                     return new ApiResponseMessage("MSG16");
+                }
                 else
                 {
                     return BadRequest(new ApiResponse(400, "Have any error when excute operation."));

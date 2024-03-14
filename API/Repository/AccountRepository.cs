@@ -232,5 +232,10 @@ namespace API.Repository
             return account;
         }
 
+        public async Task<List<Account>> GetAllStaffAndAdminAccounts()
+        {
+            return _context.Account.Where(a => (a.RoleId == (int)RoleEnum.Staff || a.RoleId == (int)RoleEnum.Admin)
+                                        && a.Account_Status == (int)AccountStatus.Active).ToList();
+        }
     }
 }

@@ -21,6 +21,10 @@ namespace API.Controllers
             try
             {
                 var account = await _accountService.LoginGoogleByMember(loginGoogleDto);
+                if (account == null)
+                {
+                    return BadRequest(new ApiResponse(400, "Your account has been blocked"));
+                }
                 return Ok(account);
             }
             catch (Exception ex)
