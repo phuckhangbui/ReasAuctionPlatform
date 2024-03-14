@@ -29,6 +29,7 @@ namespace API.Extensions
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<IAuctionAccountingRepository, AuctionAccountingRepository>();
             services.AddScoped<IParticipantHistoryRepository, ParticipantHistoryRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             services.AddScoped<IRealEstateService, RealEstateService>();
             services.AddScoped<IRuleService, RuleService>();
@@ -47,6 +48,7 @@ namespace API.Extensions
             services.AddScoped<IDepositAmountService, DepositAmountService>();
             services.AddScoped<IParticipantHistoryService, ParticipantHistoryService>();
             services.AddScoped<IMemberAccountService, MemberAccountService>();
+            services.AddScoped<INotificatonService, NotificationService>();
             services.AddScoped<IVnPayService, VnPayService>();
 
 

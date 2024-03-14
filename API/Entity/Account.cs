@@ -38,4 +38,5 @@ public class Account
     public List<AuctionAccounting> WonAuctionAccountings { get; set; }
     public List<AuctionAccounting> OwnedAuctionAccountings { get; set; }
     public List<ParticipateAuctionHistory> ParticipateAuctionHistory { get; set; }
+    public List<Notification> Notifications { get; set; }
 }
