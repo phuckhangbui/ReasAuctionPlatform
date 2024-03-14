@@ -165,7 +165,7 @@ namespace API.Repository
             if (account != null)
             {
                 account.Account_Status = changeStatusAccountDto.AccountStatus;
-                if (changeStatusAccountDto.AccountStatus == 0)
+                if (changeStatusAccountDto.AccountStatus == (int)AccountStatus.Block)
                 {
                     account.Date_End = DateTime.UtcNow;
                 }
