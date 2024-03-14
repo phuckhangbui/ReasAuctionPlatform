@@ -3,6 +3,5 @@
     public interface IBackgroundTaskService
     {
         Task ScheduleAuction();
-        Task ScheduleSendEmailNoticeAttenders();
     }
 }

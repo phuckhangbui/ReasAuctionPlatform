@@ -1,7 +1,6 @@
 ﻿using API.Interface.Repository;
 using API.Interface.Service;
 using API.Param.Enums;
-using API.Repository;
 using API.ThirdServices;
 using Hangfire;
 
@@ -120,6 +119,9 @@ namespace API.Services
                     BackgroundJob.Schedule(() => ChangeAuctionStatusToPending(auction.AuctionId), delayToStart);
                     _logger.LogInformation($"Auction id: {auction.AuctionId} scheduled for status change: " +
                         $"'Pending' at {auction.DateStart}");
+
+                    //SendMailToAnnounceAuctionStartTime
+                    await ScheduleSendEmailNoticeAttenders(auction);
                 }
             }
             catch (Exception ex)
@@ -149,32 +151,22 @@ namespace API.Services
             }
         }
 
-        public async Task ScheduleSendEmailNoticeAttenders()
+        public async Task ScheduleSendEmailNoticeAttenders(Entity.Auction auction)
         {
             try
             {
-                var currentDateTime = DateTime.Now;
+                DateTime emailSendingTime = auction.DateStart.AddMinutes(-5);
 
-                var auctionsToBeScheduled = await _auctionRepository.GetAllAsync();
+                var attenderMails = await _auctionRepository.GetAuctionAttendersEmail(auction.AuctionId);
+                var realEstate = _realEstateRepository.GetRealEstate(auction.ReasId);
 
-                auctionsToBeScheduled = auctionsToBeScheduled
-                    .Where(a => a.Status == (int)AuctionStatus.NotYet && a.DateStart > currentDateTime).ToList();
-
-                foreach (var auction in auctionsToBeScheduled)
+                foreach (var mail in attenderMails)
                 {
-                    DateTime emailSendingTime = auction.DateStart.AddMinutes(-5);
+                    BackgroundJob.Schedule(() =>
+                    SendMailAnnounceAuction.SendMailToAnnounceAuctionStartTime(mail, realEstate.ReasName, auction.DateStart), emailSendingTime);
 
-                    var attenderMails = await _auctionRepository.GetAuctionAttendersEmail(auction.AuctionId);
-                    var realEstate = _realEstateRepository.GetRealEstate(auction.ReasId);
-
-                    foreach (var mail in attenderMails)
-                    {
-                        BackgroundJob.Schedule(() =>
-                        SendMailAnnounceAuction.SendMailToAnnounceAuctionStartTime(mail, realEstate.ReasName, auction.DateStart), emailSendingTime);
-
-                        _logger.LogInformation($"Attender register auction id {auction.AuctionId}, " +
-                            $"with mail {mail}: had sent at {DateTime.Now}");
-                    }
+                    _logger.LogInformation($"Attender register auction id {auction.AuctionId}, " +
+                        $"with mail {mail}: had sent at {DateTime.Now}");
                 }
             }
             catch (Exception ex)
