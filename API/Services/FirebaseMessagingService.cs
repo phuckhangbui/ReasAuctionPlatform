@@ -39,8 +39,8 @@ namespace API.Services
             catch (Exception ex)
             {
                 Console.WriteLine("Error sending message: " + ex.Message);
-                throw;
             }
+            return $"Send message for {registrationToken} fail";
         }
 
         public async Task<List<string>> SendPushNotifications(List<string> registrationTokens, string title, string body, Dictionary<string, string> data = null)

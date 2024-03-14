@@ -32,7 +32,7 @@ namespace API.Services
 
         public IAccountRepository AccountRepository => _account_repository;
 
-        public async Task<bool> CreateNewRealEstate(NewRealEstateParam newRealEstateParam, int userMember)
+        public async Task<RealEstate> CreateNewRealEstate(NewRealEstateParam newRealEstateParam, int userMember)
         {
             var newRealEstate = new RealEstate();
             var newPhotoList = new RealEstatePhoto();
@@ -53,64 +53,33 @@ namespace API.Services
 
             newRealEstate.AccountOwnerName = await _account_repository.GetNameAccountByAccountIdAsync(userMember);
             await _real_estate_repository.CreateAsync(newRealEstate);
-            foreach (PhotoFileDto photos in newRealEstateParam.Photos)
-            {
-                //IFormFile formFile = convertStringToFile.ConvertToIFormFile(photos.ReasPhotoUrl);
-                //var result = await _photoService.AddPhotoAsync(formFile, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                //if (result.Error != null)
-                //{
-                //    return false;
-                //}
-                //else
-                //{
-                    try
-                    {
-                        //newPhotoList.ReasPhotoUrl = result.SecureUrl.AbsoluteUri;
-                        newPhotoList.ReasId = newRealEstate.ReasId;
-                        newPhotoList.ReasPhotoId = 0;
-                        bool check = await _real_estate_photo_repository.CreateAsync(newPhotoList);
-                        if (check)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        return false;
-                    }
-                }
             try
             {
-                //IFormFile file_documents_Proving_Marital_Relationship = convertStringToFile.ConvertToIFormFile(newRealEstateParam.Detail.Documents_Proving_Marital_Relationship);
-                //IFormFile file_reas_Cert_Of_Land_Img_Front = convertStringToFile.ConvertToIFormFile(newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_Front);
-                //IFormFile file_reas_Cert_Of_Land_Img_After = convertStringToFile.ConvertToIFormFile(newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_After);
-                //IFormFile file_reas_Cert_Of_Home_Ownership = convertStringToFile.ConvertToIFormFile(newRealEstateParam.Detail.Reas_Cert_Of_Home_Ownership);
-                //IFormFile file_reas_Registration_Book = convertStringToFile.ConvertToIFormFile(newRealEstateParam.Detail.Reas_Registration_Book);
-                //IFormFile file_sales_Authorization_Contract = convertStringToFile.ConvertToIFormFile(newRealEstateParam.Detail.Sales_Authorization_Contract);
-                //var documents_Proving_Marital_Relationship = await _photoService.AddPhotoAsync(file_documents_Proving_Marital_Relationship, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                //var reas_Cert_Of_Land_Img_Front = await _photoService.AddPhotoAsync(file_reas_Cert_Of_Land_Img_Front, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                //var reas_Cert_Of_Land_Img_After = await _photoService.AddPhotoAsync(file_reas_Cert_Of_Land_Img_After, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                //var reas_Cert_Of_Home_Ownership = await _photoService.AddPhotoAsync(file_reas_Cert_Of_Home_Ownership, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                //var reas_Registration_Book = await _photoService.AddPhotoAsync(file_reas_Registration_Book, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                //var sales_Authorization_Contract = await _photoService.AddPhotoAsync(file_sales_Authorization_Contract, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
-                //newDetail.Documents_Proving_Marital_Relationship = documents_Proving_Marital_Relationship.SecureUrl.AbsoluteUri;
-                //newDetail.Reas_Cert_Of_Land_Img_Front = reas_Cert_Of_Land_Img_Front.SecureUrl.AbsoluteUri;
-                //newDetail.Reas_Cert_Of_Land_Img_After = reas_Cert_Of_Land_Img_After.SecureUrl.AbsoluteUri;
-                //newDetail.Reas_Cert_Of_Home_Ownership = reas_Cert_Of_Home_Ownership.SecureUrl.AbsoluteUri;
-                //newDetail.Reas_Registration_Book = reas_Registration_Book.SecureUrl.AbsoluteUri;
-                //newDetail.Sales_Authorization_Contract = sales_Authorization_Contract.SecureUrl.AbsoluteUri;
+                foreach (PhotoFileDto photos in newRealEstateParam.Photos)
+                {
+                    //IFormFile formFile = convertStringToFile.ConvertToIFormFile(photos.ReasPhotoUrl);
+                    //var result = await _photoService.AddPhotoAsync(formFile, newRealEstate.ReasId, newRealEstate.ReasName, newRealEstate.AccountOwnerName);
+                    //if (result.Error != null)
+                    //{
+                    //    return false;
+                    //}
+                    //else
+                    //{
+
+                    //newPhotoList.ReasPhotoUrl = result.SecureUrl.AbsoluteUri;
+                    newPhotoList.ReasId = newRealEstate.ReasId;
+                    newPhotoList.ReasPhotoId = 0;
+                    await _real_estate_photo_repository.CreateAsync(newPhotoList);
+                }
+
                 newDetail.ReasId = newRealEstate.ReasId;
                 bool check = await _real_estate_detail_repository.CreateAsync(newDetail);
-                if (check) return true;
-                else return false;
+                if (check) return newRealEstate;
+                else return null;
             }
             catch (Exception ex)
             {
-                return false;
+                return null;
             }
         }
 

@@ -123,6 +123,7 @@ namespace API.Services
                 account.RoleId = 3;
                 account.Date_Created = DateTime.UtcNow;
                 account.Date_End = DateTime.MaxValue;
+                account.Account_Status = (int)AccountStatus.Active;
                 account.FirebaseToken = loginGoogleDto.FirebaseRegisterToken;
 
                 await _accountRepository.CreateAsync(account);

@@ -20,17 +20,19 @@ namespace API.Controllers
     public class MemberRealEstateController : BaseApiController
     {
         private readonly IMemberRealEstateService _memberRealEstateService;
+        private readonly INotificatonService _notificatonService;
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
         private readonly IMoneyTransactionService _moneyTransactionService;
 
         private const string BaseUri = "/api/home/";
-        public MemberRealEstateController(IMemberRealEstateService memberRealEstateService, IVnPayService vnPayService, IOptions<VnPayProperties> vnPayProperties, IMoneyTransactionService moneyTransactionService)
+        public MemberRealEstateController(IMemberRealEstateService memberRealEstateService, IVnPayService vnPayService, IOptions<VnPayProperties> vnPayProperties, IMoneyTransactionService moneyTransactionService, INotificatonService notificatonService)
         {
             _memberRealEstateService = memberRealEstateService;
             _vnPayService = vnPayService;
             _vnPayProperties = vnPayProperties.Value;
             _moneyTransactionService = moneyTransactionService;
+            _notificatonService = notificatonService;
         }
 
         [HttpGet(BaseUri + "my_real_estate")]
@@ -109,9 +111,12 @@ namespace API.Controllers
             int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
             if (userMember != 0)
             {
-                bool flag = await _memberRealEstateService.CreateNewRealEstate(newRealEstateDto, userMember);
-                if (flag)
+                var realEstate = await _memberRealEstateService.CreateNewRealEstate(newRealEstateDto, userMember);
+                if (realEstate != null)
                 {
+
+                    //send message here
+                    await _notificatonService.SendNotificationWhenMemberCreateReal(realEstate);
 
                     return new ApiResponseMessage("MSG16");
                 }
