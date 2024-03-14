@@ -2,7 +2,7 @@
 {
     public enum AccountStatus
     {
-        Active = 0,
-        Block = 1,
+        Block = 0,
+        Active = 1,
     }
 }
