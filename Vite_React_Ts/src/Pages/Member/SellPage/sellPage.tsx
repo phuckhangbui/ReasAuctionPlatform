@@ -15,7 +15,7 @@ const validate = (values: createRealEstate) => {
   const errors: Partial<validateRealEstate> = {};
   if (!values.reasName) {
     errors.reasName = "Required";
-  } else if (values.reasName.length < 10) {
+  } else if (values.reasName.length < 20) {
     errors.reasName = "Title is too short!";
   }
 
@@ -25,6 +25,8 @@ const validate = (values: createRealEstate) => {
     errors.reasArea = "Required";
   } else if (isNaN(values.reasArea)) {
     errors.reasArea = "Area must be a number";
+  } else if (values.reasArea < 100) {
+    errors.reasArea = "Are of land must be more than 100";
   }
 
   if (values.reasPrice < 0) {
@@ -33,6 +35,12 @@ const validate = (values: createRealEstate) => {
     errors.reasPrice = "Required";
   } else if (isNaN(values.reasPrice)) {
     errors.reasPrice = "Price must be a number";
+  } else if (values.reasPrice < 100000000) {
+    errors.reasPrice = "Price must be more than 100.000.000";
+  } else if (values.reasPrice > 100000000000) {
+    errors.reasPrice = "Price must be less than 100.000.000.000 đ";
+  } else if (!values.reasPrice.toString().endsWith('000')) {
+    errors.reasPrice = "Price must end with 000 at the end";
   }
 
   if (!values.reasAddress) {
@@ -111,8 +119,8 @@ const SellPage = () => {
     initialValues: {
       reasName: "",
       reasAddress: "",
-      reasPrice: 0,
-      reasArea: 0,
+      reasPrice: 100000000,
+      reasArea: 100000,
       reasDescription: "",
       dateStart: new Date(),
       dateEnd: new Date(),
@@ -146,10 +154,11 @@ const SellPage = () => {
         ) {
           toast.error("Photos of Real Estate Are Required");
         } else {
+          console.log(values);
           const response = await createRealEstate(token, values);
           if (response) {
             formik.resetForm();
-            navigate("/");
+            navigate("/memberReas");
           }
         }
       } catch (error) {
@@ -241,6 +250,12 @@ const SellPage = () => {
       toggleTab("reasPhoto");
     }
   };
+
+  const formattedReasPrice = formik.values.reasPrice.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 3,
+  });
 
   return (
     <div className="pt-20">
@@ -340,7 +355,7 @@ const SellPage = () => {
                   {formik.touched.reasName && formik.errors.reasName ? (
                     <div className="text-red-700">{formik.errors.reasName}</div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="col-span-2">
@@ -369,7 +384,7 @@ const SellPage = () => {
                       {formik.errors.reasAddress}
                     </div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="col-span-1">
@@ -401,7 +416,7 @@ const SellPage = () => {
                   {formik.touched.reasArea && formik.errors.reasArea ? (
                     <div className="text-red-700">{formik.errors.reasArea}</div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="col-span-1">
@@ -409,7 +424,7 @@ const SellPage = () => {
                     htmlFor="reasPrice"
                     className="block mb-1 text-md font-medium text-gray-900 dark:text-white "
                   >
-                    Price
+                    Price <span className="text-sm text-gray-500">(VND)</span>
                   </label>
                   <input
                     type="number"
@@ -425,17 +440,21 @@ const SellPage = () => {
                     onBlur={formik.handleBlur}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value.length <= 10) {
+                      if (value.length <= 12) {
                         formik.handleChange(e);
                       }
+                      // if (value.length >= 9) {
+                      //   formik.handleChange(e);
+                      // }
                     }}
                   />
-                  {formik.touched.reasPrice && formik.errors.reasPrice ? (
+                  {formik.touched.reasPrice &&
+                  formik.errors.reasPrice ? (
                     <div className="text-red-700">
                       {formik.errors.reasPrice}
                     </div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div>{formattedReasPrice}</div>
                   )}
                 </div>
                 <div className="col-span-2">
@@ -462,7 +481,7 @@ const SellPage = () => {
                         {formik.errors.reasDescription}
                       </div>
                     ) : (
-                      <div className="text-white">Error Holder</div>
+                      <div className="text-white ">'</div>
                     )}
                     {formik.touched.reasDescription &&
                     formik.errors.reasDescription ? (
@@ -470,7 +489,7 @@ const SellPage = () => {
                         {formik.errors.reasDescription}
                       </div>
                     ) : (
-                      <div className="text-white">Error Holder</div>
+                      <div className="text-white pointer-events-none ">'</div>
                     )}
                   </div>
                 </div>
@@ -533,7 +552,7 @@ const SellPage = () => {
                       {formik.errors.reasDescription}
                     </div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="block mb-1 text-md font-medium text-gray-900 col-span-3">

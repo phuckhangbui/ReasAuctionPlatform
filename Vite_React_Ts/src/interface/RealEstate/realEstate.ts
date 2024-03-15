@@ -4,7 +4,7 @@ export default interface realEstate {
   reasPrice: string;
   reasArea: number;
   reasTypeName: string;
-  reasStatus: number;
+  reasStatus: string;
   uriPhotoFirst: string
   dateStart: Date;
   dateEnd: Date;

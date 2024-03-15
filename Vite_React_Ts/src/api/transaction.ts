@@ -45,6 +45,35 @@ export const getTransactionDetail = async (token: string, id: number) => {
   }
 };
 
+// Auction Transaction
+export const registerParticipateAuction = async (
+  userId: number,
+  reasId: number,
+  token: string
+) => {
+  try {
+    const fetchData = await axios.post<depositRegister>(
+      `${baseUrl}/api/Auction/register`,
+      {
+        accountId: userId,
+        reasId: reasId,
+        returnUrl: "http://localhost:5173/success",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
 export const payDeposit = async (
   queryString: string,
   depositId: number,
@@ -70,6 +99,35 @@ export const payDeposit = async (
   }
 };
 
+// Real Estate Transaction
+export const payRealEstatePostingFee = async (
+  userId: number,
+  reasId: number,
+  token: string
+) => {
+  try {
+    const fetchData = await axios.post(
+      `${baseUrl}/api/home/my_real_estate/detail/${reasId}/createPaymentLink?`,
+      {
+        accountId: userId,
+        reasId: reasId,
+        returnUrl: "http://localhost:5173/success",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};
+
 export const payRealEstate = async (
   queryString: string,
   reasId: number,
@@ -77,7 +135,7 @@ export const payRealEstate = async (
 ) => {
   try {
     const fetchData = await axios.post(
-      `${baseUrl}/api/Auction/pay/fee/returnUrl/${reasId}`,
+      `${baseUrl}/api/home/pay/fee/returnUrl/${reasId}`,
       {
         url: queryString,
       },
@@ -89,6 +147,7 @@ export const payRealEstate = async (
       }
     );
     const response = fetchData.data;
+    console.log(response)
     return response;
   } catch (error) {
     console.log("Error:", error);

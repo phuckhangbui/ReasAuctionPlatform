@@ -299,7 +299,10 @@ const RealEstatePage = () => {
               Take a look at our various options and find your forever home
             </div>
           </div>
-          <RealEstateList realEstatesList={realEstateList} />
+          <RealEstateList
+            realEstatesList={realEstateList}
+            ownRealEstates={false}
+          />
         </div>
       </div>
     </>

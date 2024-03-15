@@ -62,6 +62,7 @@ function App() {
             <Route path="/auction" element={<AuctionPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/news" element={<NewsPage />} />
+
             <Route element={<RequiredAuth allowedRoles={[roles.Member]} />}>
               <Route path="/sell" element={<SellPage />} />
               <Route path="/history" element={<AuctionHistory />} />

@@ -5,18 +5,21 @@ import realEstate from "../../interface/RealEstate/realEstate";
 
 interface RealEstateListProps {
   realEstatesList?: realEstate[];
+  ownRealEstates?: boolean;
 }
 
-const RealEstateList = ({ realEstatesList }: RealEstateListProps) => {
+const RealEstateList = ({
+  realEstatesList,
+  ownRealEstates,
+}: RealEstateListProps) => {
   const [realEstates, setRealEstates] = useState<realEstate[] | undefined>([]);
   const [showModal, setShowModal] = useState(false);
   const [realEstateId, setRealEstateId] = useState<number>(0);
+  const [ownRealEstatesStatus, setOwnRealEstatesStatus] = useState<boolean>();
 
   const toggleModal = (realEstate: realEstate) => {
     setShowModal((prevShowModal) => !prevShowModal);
     setRealEstateId(realEstate.reasId);
-
-
   };
   useEffect(() => {
     if (realEstatesList) {
@@ -24,7 +27,9 @@ const RealEstateList = ({ realEstatesList }: RealEstateListProps) => {
     }
   }, [realEstatesList]);
 
-
+  useEffect(() => {
+    setOwnRealEstatesStatus(ownRealEstates);
+  }, [ownRealEstates]);
 
   useEffect(() => {
     // Disable scroll on body when modal is open
@@ -61,7 +66,10 @@ const RealEstateList = ({ realEstatesList }: RealEstateListProps) => {
                 key={realEstate.reasId}
                 onClick={() => toggleModal(realEstate)}
               >
-                <RealEstateCard realEstate={realEstate} />
+                <RealEstateCard
+                  realEstate={realEstate}
+                  ownRealEstatesStatus={ownRealEstatesStatus}
+                />
               </div>
             ))}
         </div>
@@ -77,7 +85,6 @@ const RealEstateList = ({ realEstatesList }: RealEstateListProps) => {
           <RealEstateDetailModal
             closeModal={closeModal}
             realEstateId={realEstateId}
-            address="1600 Amphitheatre Parkway, Mountain View, CA"
             index="detail"
           />
         </div>

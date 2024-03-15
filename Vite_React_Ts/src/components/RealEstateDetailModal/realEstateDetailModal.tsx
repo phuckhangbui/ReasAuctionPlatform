@@ -9,18 +9,14 @@ import { UserContext } from "../../context/userContext";
 import dayjs from "dayjs";
 import { set, ref, get, child, update, onValue } from "firebase/database";
 import { db } from "../../Config/firebase-config";
-import {
-  getAuctionHome,
-  getAuctionStatus,
-  registerParticipateAuction,
-} from "../../api/memberAuction";
+import { getAuctionHome, getAuctionStatus } from "../../api/memberAuction";
 import LoginModal from "../LoginModal/loginModal";
 import { DepositContext } from "../../context/depositContext";
+import { registerParticipateAuction } from "../../api/transaction";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
   closeModal: () => void;
-  address: string;
   index: string;
 }
 
@@ -38,24 +34,23 @@ const RealEstateDetailModal = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checked, setChecked] = useState(false);
   const [isInputValid, setIsInputValid] = useState(false);
-  const { isAuth, token, userId } = useContext(UserContext);
+  const [realEstateDetail, setRealEstateDetail] = useState<
+    realEstateDetail | undefined
+  >();
   const [dateEnd, setDateEnd] = useState<any>();
   const [auction, setAuction] = useState<memberAuction | undefined>();
-  const [auctionStatus, setAuctionStatus] = useState<number>();
   const [showLogin, setShowLogin] = useState(false);
-
+  const [auctionStatus, setAuctionStatus] = useState<number>();
   // 0: RealEstate not in selling status
   // 1: Not register in auction
   // 2: Register but pending payment
   // 3: Register success
   // 4: User is the owner of real estate
 
+  const { getDeposit } = useContext(DepositContext);
+  const { isAuth, token, userId } = useContext(UserContext);
   // Use the isAuth function to determine if the user is authenticated
   const isAuthenticated = isAuth();
-  const [realEstateDetail, setRealEstateDetail] = useState<
-    realEstateDetail | undefined
-  >();
-  const { getDeposit } = useContext(DepositContext);
 
   useEffect(() => {
     try {
@@ -423,6 +418,18 @@ const RealEstateDetailModal = ({
                     Auction
                   </button>
                 </li>
+                {userId === realEstateDetail?.accountOwnerId ? (
+                  <li>
+                    <button
+                      className={getActiveTab("ownership")}
+                      onClick={() => toggleTab("ownership")}
+                    >
+                      Ownership
+                    </button>
+                  </li>
+                ) : (
+                  <></>
+                )}
               </ul>
             </div>
           </div>
@@ -439,9 +446,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M8 17.3a5 5 0 0 0 2.6 1.7c2.2.6 4.5-.5 5-2.3.4-2-1.3-4-3.6-4.5-2.3-.6-4-2.7-3.5-4.5.5-1.9 2.7-3 5-2.3 1 .2 1.8.8 2.5 1.6m-3.9 12v2m0-18v2.2"
                     />
                   </svg>
@@ -467,9 +474,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M9 7H7m2 3H7m2 3H7m4 2v2m3-2v2m3-2v2M4 5v14c0 .6.4 1 1 1h14c.6 0 1-.4 1-1v-3c0-.6-.4-1-1-1h-9a1 1 0 0 1-1-1V5c0-.6-.4-1-1-1H5a1 1 0 0 0-1 1Z"
                     />
                   </svg>
@@ -492,7 +499,7 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-width="2"
+                      strokeWidth="2"
                       d="M7 17v1c0 .6.4 1 1 1h8c.6 0 1-.4 1-1v-1a3 3 0 0 0-3-3h-4a3 3 0 0 0-3 3Zm8-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                     />
                   </svg>
@@ -515,9 +522,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M6 4h12M6 4v16M6 4H5m13 0v16m0-16h1m-1 16H6m12 0h1M6 20H5M9 7h1v1H9V7Zm5 0h1v1h-1V7Zm-5 4h1v1H9v-1Zm5 0h1v1h-1v-1Zm-3 4h2a1 1 0 0 1 1 1v4h-4v-4a1 1 0 0 1 1-1Z"
                     />
                   </svg>
@@ -540,9 +547,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="m4 12 8-8 8 8M6 10.5V19c0 .6.4 1 1 1h3v-3c0-.6.4-1 1-1h2c.6 0 1 .4 1 1v3h3c.6 0 1-.4 1-1v-8.5"
                     />
                   </svg>
@@ -565,9 +572,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14c.6 0 1-.4 1-1V7c0-.6-.4-1-1-1H5a1 1 0 0 0-1 1v12c0 .6.4 1 1 1Zm3-7h0v0h0v0Zm4 0h0v0h0v0Zm4 0h0v0h0v0Zm-8 4h0v0h0v0Zm4 0h0v0h0v0Zm4 0h0v0h0v0Z"
                     />
                   </svg>
@@ -757,6 +764,132 @@ const RealEstateDetailModal = ({
                 </button>
               </div>
             )}
+          </div>
+          <div className={getActiveTabDetail("ownership")}>
+            <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-2">
+              <div>
+                <div className="text-center text-lg">Front Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Back Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_After ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_After}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Ownership Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Home_Ownership ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Home_Ownership}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Registration Book</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Registration_Book ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Registration_Book}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Relationship Document</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail
+                    .documents_Proving_Marital_Relationship ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={
+                        realEstateDetail?.detail
+                          .documents_Proving_Marital_Relationship
+                      }
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">
+                  Authorization Contract
+                </div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.sales_Authorization_Contract ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={
+                        realEstateDetail?.detail.sales_Authorization_Contract
+                      }
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         {showLogin && (
