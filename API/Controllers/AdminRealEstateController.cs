@@ -4,6 +4,7 @@ using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
 using API.Param.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -19,12 +20,10 @@ namespace API.Controllers
             _adminRealEstateService = adminRealEstateService;
         }
 
+        [Authorize(policy: "AdminAndStaff")]
         [HttpGet(BaseUri + "real-estate/all/search")]
         public async Task<IActionResult> GetAllRealEstatesBySearch([FromQuery] SearchRealEsateAdminParam searchRealEstateParam)
         {
-            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAmin != 0)
-            {
                 var reals = await _adminRealEstateService.GetAllRealEstatesBySearch(searchRealEstateParam);
                 if (reals != null)
                 {
@@ -37,19 +36,13 @@ namespace API.Controllers
                     var apiResponseMessage = new ApiResponseMessage("MSG01");
                     return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "AdminAndStaff")]
         [HttpGet(BaseUri + "real-estate/pending/search")]
         public async Task<IActionResult> GetAllRealEstatesPendingBySearch([FromQuery] SearchRealEsateAdminParam searchRealEstateParam)
         {
-            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAmin != 0)
-            {
                 var reals = await _adminRealEstateService.GetAllRealEstatesPendingBySearch(searchRealEstateParam);
                 if (reals != null)
                 {
@@ -62,53 +55,35 @@ namespace API.Controllers
                     var apiResponseMessage = new ApiResponseMessage("MSG01");
                     return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "AdminAndStaff")]
         [HttpGet(BaseUri + "real-estate/pending/detail/{reasId}")]
         public async Task<IActionResult> GetRealEstatePendingDetail(int reasId)
         {
-            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAmin != 0)
-            {
                 var realEstateDetailDto = await _adminRealEstateService.GetRealEstatePendingDetail(reasId);
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
                 return Ok(realEstateDetailDto);
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "AdminAndStaff")]
         [HttpGet(BaseUri + "real-estate/all/detail/{reasId}")]
         public async Task<IActionResult> GetRealEstateAllDetail(int reasId)
         {
-            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAmin != 0)
-            {
                 var realEstateDetailDto = await _adminRealEstateService.GetRealEstateAllDetail(reasId);
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
                 return Ok(realEstateDetailDto);
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "AdminAndStaff")]
         [HttpGet(BaseUri + "real-estate/pending")]
         public async Task<IActionResult> GetRealEstateOnGoingByAdmin([FromQuery] PaginationParams paginationParams)
         {
-            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAmin != 0)
-            {
                 var reals = await _adminRealEstateService.GetRealEstateOnGoingByAdmin();
 
                 if (reals != null)
@@ -122,19 +97,13 @@ namespace API.Controllers
                     var apiResponseMessage = new ApiResponseMessage("MSG01");
                     return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "AdminAndStaff")]
         [HttpGet(BaseUri + "real-estate/all")]
         public async Task<IActionResult> GetAllRealEstateExceptOnGoingByAdmin([FromQuery] PaginationParams paginationParams)
         {
-            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAmin != 0)
-            {
                 var reals = await _adminRealEstateService.GetAllRealEstateExceptOnGoingByAdmin();
 
                 if (reals != null)
@@ -148,19 +117,13 @@ namespace API.Controllers
                     var apiResponseMessage = new ApiResponseMessage("MSG01");
                     return Ok(new List<ApiResponseMessage> { apiResponseMessage });
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "AdminAndStaff")]
         [HttpPost(BaseUri + "real-estate/change")]
         public async Task<ActionResult<ApiResponseMessage>> UpdateStatusRealEstateByAdmin(ReasStatusParam reasStatusDto)
         {
-            int idAdmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAdmin != 0)
-            {
                 var updateReal = await _adminRealEstateService.UpdateStatusRealEstateByAdmin(reasStatusDto);
                 if (updateReal)
                 {
@@ -170,28 +133,17 @@ namespace API.Controllers
                 {
                     return BadRequest(new ApiResponse(400, "Have any error when excute operation."));
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "AdminAndStaff")]
         [HttpGet(BaseUri + "real-estate/name/{reasId}")]
         public async Task<IActionResult> GetNameRealEstate(int reasId)
         {
-            int idAmin = GetIdAdmin(_adminRealEstateService.AccountRepository);
-            if (idAmin != 0)
-            {
                 var reasName = await _adminRealEstateService.GetRealEstateName(reasId);
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
                 return Ok(reasName);
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
     }
 }
