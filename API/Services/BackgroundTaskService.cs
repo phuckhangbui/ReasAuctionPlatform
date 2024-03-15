@@ -101,6 +101,25 @@ namespace API.Services
             }
         }
 
+        public async Task ChangeRealEsateStatusToWaiting(int reasId)
+        {
+            try
+            {
+                var realEstateToBeUpdated = _realEstateRepository.GetRealEstate(reasId);
+
+                if (realEstateToBeUpdated != null && realEstateToBeUpdated.ReasStatus == (int)RealEstateStatus.Selling)
+                {
+                    realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.WaitingForAuction;
+                    await _realEstateRepository.UpdateAsync(realEstateToBeUpdated);
+                    _logger.LogInformation($"Real estate id: {realEstateToBeUpdated.ReasId} status updated to 'WaitingForAuction' successfully at {DateTime.Now}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating real estate status.");
+            }
+        }
+
         public async Task ScheduleAuction()
         {
             try
@@ -115,13 +134,20 @@ namespace API.Services
                 foreach (var auction in auctionsToBeScheduled)
                 {
                     TimeSpan delayToStart = auction.DateStart - currentDateTime;
+                    TimeSpan delayChangeReasStatus = auction.DateStart.AddHours(-1) - currentDateTime;
 
-                    BackgroundJob.Schedule(() => ChangeAuctionStatusToPending(auction.AuctionId), delayToStart);
-                    _logger.LogInformation($"Auction id: {auction.AuctionId} scheduled for status change: " +
-                        $"'Pending' at {auction.DateStart}");
+                    //Update reas estate to 'Waiting' before 10 minutes auction start
+                    BackgroundJob.Schedule(() => ChangeRealEsateStatusToWaiting(auction.ReasId), delayChangeReasStatus);
+                    _logger.LogInformation($"Reas id: {auction.ReasId} scheduled for status change: " +
+                        $"'Waiting' at {auction.DateStart.AddHours(-1)}");
 
                     //SendMailToAnnounceAuctionStartTime
                     await ScheduleSendEmailNoticeAttenders(auction);
+
+                    //Update auction to 'Pending' when it's time to start
+                    BackgroundJob.Schedule(() => ChangeAuctionStatusToPending(auction.AuctionId), delayToStart);
+                    _logger.LogInformation($"Auction id: {auction.AuctionId} scheduled for status change: " +
+                        $"'Pending' at {auction.DateStart}");
                 }
             }
             catch (Exception ex)
@@ -166,7 +192,7 @@ namespace API.Services
                     SendMailAnnounceAuction.SendMailToAnnounceAuctionStartTime(mail, realEstate.ReasName, auction.DateStart), emailSendingTime);
 
                     _logger.LogInformation($"Attender register auction id {auction.AuctionId}, " +
-                        $"with mail {mail}: had sent at {DateTime.Now}");
+                        $"with mail {mail}: had sent at {emailSendingTime}");
                 }
             }
             catch (Exception ex)
