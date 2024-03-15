@@ -232,6 +232,18 @@ namespace API.Controllers
                 {
                     //send email
                     await _auctionAccountingService.SendWinnerEmail(auctionAccountingDto);
+
+                    //send notification
+                    _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
+
+                    _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AccountWinId);
+
+                    _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
+
+                    userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
+
+                    _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
+
                 }
             }
             catch (Exception ex)
@@ -474,9 +486,12 @@ namespace API.Controllers
         [HttpPost("admin/create")]
         public async Task<ActionResult<ApiResponseMessage>> CreateAuction(AuctionCreateParam auctionCreateParam)
         {
-            bool check = await _auctionService.CreateAuction(auctionCreateParam);
-            if (check)
+            var auction = await _auctionService.CreateAuction(auctionCreateParam);
+            if (auction != null)
             {
+                //send noti here
+                await _notificatonService.SendNotificationWhenCreateAuction(auction.AuctionId);
+
                 return new ApiResponseMessage("MSG05");
             }
             else

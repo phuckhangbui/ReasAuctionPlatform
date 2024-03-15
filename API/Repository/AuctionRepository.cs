@@ -246,7 +246,7 @@ namespace API.Repository
             return await deposit.ToListAsync();
         }
 
-        public async Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam)
+        public async Task<Auction> CreateAuction(AuctionCreateParam auctionCreateParam)
         {
             try
             {
@@ -264,19 +264,19 @@ namespace API.Repository
                     IEnumerable<NameUserDto> user = _context.DepositAmount.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => new NameUserDto
                     {
                         EmailName = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(x => x.AccountEmail).FirstOrDefault(),
-                }).ToList();
+                    }).ToList();
                     var reasname = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasName).FirstOrDefault();
                     SendMailWhenCreateAuction.SendMailForMemberWhenCreateAuction(user, reasname, auctionCreateParam.DateStart);
-                    return true;
+                    return auction;
                 }
                 else
                 {
-                    return false;
+                    return null;
                 }
             }
             catch (Exception ex)
             {
-                return false;
+                return null;
             }
         }
 
@@ -340,6 +340,25 @@ namespace API.Repository
             var deposit = await _context.DepositAmount.Where(x => x.Status == (int)UserDepositEnum.Deposited && x.ReasId == reasId).ToListAsync();
 
             return deposit.Select(d => d.AccountSignId).ToList();
+        }
+
+        public async Task<List<Account>> GetAccoutnDepositedInAuctionUsingReasId(int reasId)
+        {
+            var listUserDeposited = await GetUserIdInAuctionUsingReasId(reasId);
+
+            List<Account> depositedAccounts = new List<Account>();
+
+            foreach (int accountId in listUserDeposited)
+            {
+                // Assuming there's a method to retrieve account by user ID
+                Account account = await _context.Account.FindAsync(accountId);
+                if (account != null)
+                {
+                    depositedAccounts.Add(account);
+                }
+            }
+
+            return depositedAccounts;
         }
     }
 }
