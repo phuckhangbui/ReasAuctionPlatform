@@ -67,7 +67,6 @@ const AuctionList = ({ realEstatesList = [] }: RealEstateListProps) => {
           <RealEstateDetailModal
             closeModal={closeModal}
             realEstateId={realEstateId}
-            address="1600 Amphitheatre Parkway, Mountain View, CA"
             index="auction"
           />
         </div>
