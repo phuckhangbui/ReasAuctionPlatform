@@ -26,10 +26,11 @@ namespace API.Controllers
         private readonly IMoneyTransactionService _moneyTransactionService;
         private readonly IRealEstateService _realEstateService;
         private readonly IParticipantHistoryService _participantHistoryService;
+        private readonly INotificatonService _notificatonService;
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
 
-        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService)
+        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService, INotificatonService notificatonService)
         {
             _auctionService = auctionService;
             _auctionAccountingService = auctionAccountingService;
@@ -39,6 +40,7 @@ namespace API.Controllers
             _vnPayService = vnPayService;
             _realEstateService = realEstateService;
             _participantHistoryService = participantHistoryService;
+            _notificatonService = notificatonService;
         }
 
         [HttpGet("/auctions/{reasId}")]

@@ -11,6 +11,7 @@
         Rollback = 6,
         ReUp = 7,
         DeclineAfterAuction = 8,
-        Block = 9
+        Block = 9,
+        WaitingForAuction = 10,
     }
 }

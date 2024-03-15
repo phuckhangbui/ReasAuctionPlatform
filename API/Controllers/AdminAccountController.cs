@@ -1,10 +1,10 @@
 using API.DTOs;
 using API.Errors;
-using API.Extension;
 using API.Helper;
 using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -71,11 +71,12 @@ public class AdminAccountController : BaseApiController
         }
     }
 
+    [Authorize]
     [HttpGet(BaseUri + "user/staff")]
     public async Task<ActionResult<IEnumerable<AccountStaffDto>>> GetAllAccountStaffs([FromQuery] PaginationParams paginationParams)
     {
-        var adminAccount = GetIdAdmin(_adminAccountService.AccountRepository);
-        if (adminAccount != 0)
+        int accountId = GetLoginAccountId();
+        if (accountId != 0)
         {
             var list_account = await _adminAccountService.GetStaffAccounts();
             if (list_account != null)
@@ -111,8 +112,8 @@ public class AdminAccountController : BaseApiController
             }
             else
             {
-            var apiResponseMessage = new ApiResponseMessage("MSG01");
-            return Ok(new List<ApiResponseMessage> { apiResponseMessage });
+                var apiResponseMessage = new ApiResponseMessage("MSG01");
+                return Ok(new List<ApiResponseMessage> { apiResponseMessage });
             }
         }
         else
