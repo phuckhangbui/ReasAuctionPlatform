@@ -61,7 +61,7 @@ const AuctionPage = () => {
         <form action="">
           <div className="w-full relative">
             <img
-              src="../../public/Search-bar-bg.jpg"
+              src="./Search-bar-bg.jpg"
               alt=""
               className="w-full md:h-96 sm:h-72 object-cover"
             />

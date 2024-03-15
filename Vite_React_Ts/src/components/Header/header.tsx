@@ -59,7 +59,7 @@ const Header = () => {
           className="flex items-center space-x-3 rtl:space-x-reverse"
         >
           <img
-            src="../../public/REAS-removebg-preview.png"
+            src="./REAS-removebg-preview.png"
             className="h-8"
             alt="Flowbite Logo"
           />
