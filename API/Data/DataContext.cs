@@ -1,6 +1,5 @@
 using API.Entity;
 using Microsoft.EntityFrameworkCore;
-using Task = API.Entity.Task;
 
 namespace API.Data;
 
@@ -17,9 +16,7 @@ public class DataContext : DbContext
     public DbSet<ParticipateAuctionHistory> ParticipateAuctionHistories { get; set; }
     public DbSet<Notification> Notification { get; set; }
     public DbSet<DepositAmount> DepositAmount { get; set; }
-    public DbSet<Log> Logs { get; set; }
     public DbSet<Major> Major { get; set; }
-    public DbSet<Message> Message { get; set; }
     public DbSet<MoneyTransaction> MoneyTransaction { get; set; }
     public DbSet<MoneyTransactionType> MoneyTransactionType { get; set; }
     public DbSet<News> News { get; set; }
@@ -28,7 +25,6 @@ public class DataContext : DbContext
     public DbSet<RealEstatePhoto> RealEstatePhoto { get; set; }
     public DbSet<Role> Role { get; set; }
     public DbSet<Rule> Rule { get; set; }
-    public DbSet<Task> Task { get; set; }
     public DbSet<Type_REAS> type_REAS { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -83,27 +79,11 @@ public class DataContext : DbContext
             .ValueGeneratedOnAdd()
             .UseIdentityColumn();
 
-        modelBuilder.Entity<Log>()
-            .HasKey(k => k.LogId);
-
-        modelBuilder.Entity<Log>()
-            .Property(a => a.LogId)
-            .ValueGeneratedOnAdd()
-            .UseIdentityColumn();
-
         modelBuilder.Entity<Major>()
             .HasKey(k => k.MajorId);
 
         modelBuilder.Entity<Major>()
             .Property(a => a.MajorId)
-            .ValueGeneratedOnAdd()
-            .UseIdentityColumn();
-
-        modelBuilder.Entity<Message>()
-            .HasKey(k => k.MessageId);
-
-        modelBuilder.Entity<Message>()
-            .Property(a => a.MessageId)
             .ValueGeneratedOnAdd()
             .UseIdentityColumn();
 
@@ -178,35 +158,6 @@ public class DataContext : DbContext
             .ValueGeneratedOnAdd()
             .UseIdentityColumn();
 
-        modelBuilder.Entity<Task>()
-            .HasKey(k => k.TaskId);
-
-        modelBuilder.Entity<Task>()
-            .Property(a => a.TaskId)
-            .ValueGeneratedOnAdd()
-            .UseIdentityColumn();
-
-        //one account can create many tasks
-        modelBuilder.Entity<Task>()
-            .HasOne(t => t.AccountCreate)
-            .WithMany(a => a.TasksCreated)
-            .HasForeignKey(t => t.AccountCreateId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //many task can assign to one account
-        modelBuilder.Entity<Task>()
-            .HasOne(t => t.AccountAssigned)
-            .WithMany(a => a.TasksAssigned)
-            .HasForeignKey(t => t.AccountAssignedId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //one account can write many log
-        modelBuilder.Entity<Log>()
-            .HasOne(l => l.AccountWriter)
-            .WithMany(a => a.LogWrote)
-            .HasForeignKey(l => l.AccountWriterId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         //one account has only one major
         modelBuilder.Entity<Account>()
             .HasOne(a => a.Major)
@@ -267,20 +218,6 @@ public class DataContext : DbContext
             .HasOne(a => a.RealEstate)
             .WithOne()
             .HasForeignKey<Auction>(re => re.ReasId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //one account can sent many messages
-        modelBuilder.Entity<Message>()
-            .HasOne(m => m.AccountSerder)
-            .WithMany(a => a.MessagesSent)
-            .HasForeignKey(m => m.AccountSerderId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        //one account can receive many messages
-        modelBuilder.Entity<Message>()
-            .HasOne(m => m.AccountReceiver)
-            .WithMany(a => a.MessagesReceived)
-            .HasForeignKey(m => m.AccountReceiverId)
             .OnDelete(DeleteBehavior.Restrict);
 
         //one account can create many news 

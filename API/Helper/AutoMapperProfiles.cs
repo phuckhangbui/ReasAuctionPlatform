@@ -22,8 +22,6 @@ namespace API.Helper
             CreateMap<Rule, Rule>();
             CreateMap<RealEstate, RealEstateDto>();
             CreateMap<RealEstatePhoto, RealEstatePhotoDto>();
-            CreateMap<Entity.Task, TaskDto>();
-            CreateMap<Entity.Task, TaskDetailDto>();
             CreateMap<MoneyTransaction, MoneyTransactionDto>()
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
             CreateMap<DepositAmount, DepositAmountDto>();
