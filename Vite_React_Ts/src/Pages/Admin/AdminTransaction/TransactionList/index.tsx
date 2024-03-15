@@ -11,13 +11,13 @@ import {
 } from "../../../../api/transaction";
 
 const statusStringMap: { [key: number]: string } = {
-  1: "Received",
-  2: "Sent",
+  0: "Success",
+  1: "Error",
 };
 
 const statusTransactionColorMap: { [key: string]: string } = {
-  Received: "green",
-  Sent: "blue",
+  Success: "green",
+  Error: "red",
 };
 
 const TransactionList: React.FC = () => {
@@ -113,7 +113,6 @@ const TransactionList: React.FC = () => {
       dataIndex: "transactionStatus",
       width: "5%",
       render: (transactionStatus: number) => {
-        if (transactionStatus) {
           const color =
             statusTransactionColorMap[statusStringMap[transactionStatus]];
           return (
@@ -121,9 +120,6 @@ const TransactionList: React.FC = () => {
               {statusStringMap[transactionStatus]}
             </Tag>
           );
-        } else {
-          return null;
-        }
       },
     },
     {

@@ -35,80 +35,64 @@ namespace API.Controllers
             _notificatonService = notificatonService;
         }
 
+
+        [Authorize(policy: "Member")]
         [HttpGet(BaseUri + "my_real_estate")]
         public async Task<ActionResult<RealEstateDto>> GetOnwerRealEstate([FromQuery] PaginationParams paginationParams)
         {
-            int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
-            if (userMember != 0)
+            var reals = await _memberRealEstateService.GetOnwerRealEstate(GetLoginAccountId());
+            Response.AddPaginationHeader(new PaginationHeader(reals.CurrentPage, reals.PageSize,
+            reals.TotalCount, reals.TotalPages));
+            if (reals.PageSize != 0)
             {
-                var reals = await _memberRealEstateService.GetOnwerRealEstate(userMember);
-                Response.AddPaginationHeader(new PaginationHeader(reals.CurrentPage, reals.PageSize,
-                reals.TotalCount, reals.TotalPages));
-                if (reals.PageSize != 0)
-                {
-                    if (!ModelState.IsValid)
-                        return BadRequest(ModelState);
-                    return Ok(reals);
-                }
-                else
-                {
-                    return BadRequest(new ApiResponse(404, "No data with your search"));
-                }
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                return Ok(reals);
             }
             else
             {
-                return BadRequest(new ApiResponse(401));
+                return BadRequest(new ApiResponse(404, "No data with your search"));
             }
         }
 
+
+        [Authorize(policy: "Member")]
         [HttpPost(BaseUri + "my_real_estate/search")]
         public async Task<IActionResult> SearchOwnerRealEstateForMember(SearchRealEstateParam searchRealEstateParam)
         {
-            int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
-            if (userMember != 0)
+            var reals = await _memberRealEstateService.SearchOwnerRealEstateForMember(searchRealEstateParam, GetLoginAccountId());
+            Response.AddPaginationHeader(new PaginationHeader(reals.CurrentPage, reals.PageSize,
+            reals.TotalCount, reals.TotalPages));
+            if (reals.PageSize == 0)
             {
-                var reals = await _memberRealEstateService.SearchOwnerRealEstateForMember(searchRealEstateParam, userMember);
-                Response.AddPaginationHeader(new PaginationHeader(reals.CurrentPage, reals.PageSize,
-                reals.TotalCount, reals.TotalPages));
-                if (reals.PageSize == 0)
-                {
-                    var apiResponseMessage = new ApiResponseMessage("MSG01");
-                    return Ok(new List<ApiResponseMessage> { apiResponseMessage });
-                }
-                else
-                {
-                    if (!ModelState.IsValid)
-                        return BadRequest(ModelState);
-                    return Ok(reals);
-                }
+                var apiResponseMessage = new ApiResponseMessage("MSG01");
+                return Ok(new List<ApiResponseMessage> { apiResponseMessage });
             }
             else
             {
-                return BadRequest(new ApiResponse(401));
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                return Ok(reals);
             }
         }
 
+
+        [Authorize(policy: "Member")]
         [HttpGet(BaseUri + "my_real_estate/view")]
         public async Task<ActionResult<CreateNewRealEstatePage>> ViewCreateNewRealEstatePage()
         {
-            int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
-            if (userMember != 0)
-            {
-                var list_type_reas = await _memberRealEstateService.ViewCreateNewRealEstatePage();
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-                return Ok(list_type_reas);
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
+            var list_type_reas = await _memberRealEstateService.ViewCreateNewRealEstatePage();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            return Ok(list_type_reas);
         }
 
+
+        [Authorize(policy: "Member")]
         [HttpPost(BaseUri + "my_real_estate/create")]
         public async Task<ActionResult<ApiResponseMessage>> CreateNewRealEstate(NewRealEstateParam newRealEstateDto)
         {
-            int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
+            int userMember = GetLoginAccountId();
             if (userMember != 0)
             {
                 var realEstate = await _memberRealEstateService.CreateNewRealEstate(newRealEstateDto, userMember);
@@ -126,29 +110,22 @@ namespace API.Controllers
                     return BadRequest(new ApiResponse(400, "Have any error when excute operation."));
                 }
             }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
+            return BadRequest(new ApiResponse(400, "Not match accountId"));
+
         }
 
+
+        [Authorize(policy: "Member")]
         [HttpGet(BaseUri + "my_real_estate/detail/{id}")]
         public async Task<ActionResult<RealEstateDetailDto>> ViewOwnerRealEstateDetail(int id)
         {
-            int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
-            if (userMember != 0)
-            {
-                var _real_estate_detail = _memberRealEstateService.ViewOwnerRealEstateDetail(id);
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-                return Ok(_real_estate_detail);
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
+            var _real_estate_detail = _memberRealEstateService.ViewOwnerRealEstateDetail(id);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            return Ok(_real_estate_detail);
         }
 
+        [Authorize(policy: "Member")]
         [HttpPost(BaseUri + "my_real_estate/detail/{reasId}/createPaymentLink")]
         public async Task<ActionResult<RealEstatePaymentReponseDto>> CreatePaymentLink(CreatePaymentLinkDto createPaymentLinkDto)
         {
@@ -180,6 +157,7 @@ namespace API.Controllers
             return Ok(response);
         }
 
+        [Authorize(policy: "Member")]
         [HttpPost(BaseUri + "pay/fee/returnUrl/{reasId}")]
         public async Task<ActionResult> PayRealEstateUploadFee([FromBody] VnPayReturnUrlDto vnpayDataDto, int reasId)
         {

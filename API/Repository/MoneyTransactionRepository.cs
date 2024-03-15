@@ -4,6 +4,7 @@ using API.Entity;
 using API.Helper;
 using API.Interface.Repository;
 using API.Param;
+using API.Param.Enums;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -166,7 +167,7 @@ namespace API.Repository
             newTransaction.DateExecution = DateTime.Now;
             newTransaction.Money = refundTransactionParam.money;
             newTransaction.TypeId = 4;
-            newTransaction.TransactionStatus = 2;
+            newTransaction.TransactionStatus = (int)TransactionStatus.success;
             try
             {
                 bool check = await CreateAsync(newTransaction);

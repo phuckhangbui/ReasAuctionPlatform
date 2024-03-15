@@ -55,6 +55,7 @@ namespace API.Services
             foreach (var account in staffAndAdminAccount)
             {
                 notification.AccountReceiveId = account.AccountId;
+                notification.NotificationId = 0;
                 await _notificationRepository.CreateAsync(notification);
 
                 if (!account.FirebaseToken.IsNullOrEmpty())
