@@ -184,16 +184,36 @@ const TransactionList: React.FC = () => {
       },
       {
         key: "3",
+        label: "Sender Banking Code",
+        children: transactionDetail?.sendBankCode || "",
+      },
+      {
+        key: "4",
+        label: "Sender Banking Account",
+        children: transactionDetail?.sendBankAccount || "",
+      },
+      {
+        key: "5",
         label: "Receiver Name",
         children: transactionDetail?.accountReceiveName || "",
       },
       {
-        key: "4",
+        key: "6",
+        label: "Receiver Banking Code",
+        children: transactionDetail?.receivedBankCode || "",
+      },
+      {
+        key: "7",
+        label: "Receiver Banking Account",
+        children: transactionDetail?.receiveBankAccount || "",
+      },
+      {
+        key: "8",
         label: "Real Estate Name",
         children: transactionDetail?.reasName || "",
       },
       {
-        key: "5",
+        key: "9",
         label: "Status",
         children: transactionDetail?.transactionStatus || "",
         render: (transactionStatus: string | number) => {
@@ -211,17 +231,17 @@ const TransactionList: React.FC = () => {
         },
       },
       {
-        key: "6",
+        key: "10",
         label: "Money",
         children: transactionDetail?.money ? NumberFormat(transactionDetail?.money) : "",
       },
       {
-        key: "7",
+        key: "11",
         label: "Type",
         children: transactionDetail?.transactionType || "",
       },
       {
-        key: "8",
+        key: "12",
         label: "Date Executed",
         children: transactionDetail?.dateExecution
           ? formatDate(transactionDetail?.dateExecution)
