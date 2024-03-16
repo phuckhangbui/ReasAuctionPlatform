@@ -3,7 +3,8 @@ interface DepositAmountUser {
   accountSignId: number;
   accountName: string;
   accountEmail: string;
-  accountPhone: string;
+  accountBankingCode: string;
+  accountBankingNumber: string;
   reasId: number;
   amount: number;
   depositDate: Date;

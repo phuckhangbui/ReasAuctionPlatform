@@ -237,7 +237,8 @@ namespace Repository.Implement
                 accountSignId = x.AccountSignId,
                 accountName = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.AccountName).FirstOrDefault(),
                 accountEmail = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.AccountEmail).FirstOrDefault(),
-                accountPhone = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.PhoneNumber).FirstOrDefault(),
+                accountBankingCode = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.BankingCode).FirstOrDefault(),
+                accountBankingNumber = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(z => z.BankingNumber).FirstOrDefault(),
                 amount = x.Amount,
                 depositDate = (DateTime)x.DepositDate,
                 status = getName.GetStatusDepositName(x.Status),
@@ -245,7 +246,7 @@ namespace Repository.Implement
             return await deposit.ToListAsync();
         }
 
-        public async Task<Auction> CreateAuction(AuctionCreateParam auctionCreateParam)
+        public async Task<AuctionCreationResult> CreateAuction(AuctionCreateParam auctionCreateParam)
         {
             try
             {
@@ -265,8 +266,12 @@ namespace Repository.Implement
                         EmailName = _context.Account.Where(y => y.AccountId == x.AccountSignId).Select(x => x.AccountEmail).FirstOrDefault(),
                     }).ToList();
                     var reasname = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasName).FirstOrDefault();
-                    //SendMailWhenCreateAuction.SendMailForMemberWhenCreateAuction(user, reasname, auctionCreateParam.DateStart);
-                    return auction;
+                    return new AuctionCreationResult
+                    {
+                        AuctionId = auction.AuctionId,
+                        Users = user,
+                        ReasName = reasname
+                    };
                 }
                 else
                 {

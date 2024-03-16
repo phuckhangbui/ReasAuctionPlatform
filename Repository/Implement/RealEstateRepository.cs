@@ -22,7 +22,7 @@ namespace Repository.Implement
             _mapper = mapper;
         }
 
-        public async Task<bool> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto)
+        public async Task<Account> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto)
         {
             var realEstate = await _context.RealEstate.Where(r => r.ReasId == reasStatusDto.reasId).Select(x => new RealEstate
             {
@@ -44,33 +44,24 @@ namespace Repository.Implement
             var accountOwner = await _context.Account.Where(x => x.AccountId == realEstate.AccountOwnerId).FirstOrDefaultAsync();
             if (realEstate != null)
             {
-                if (reasStatusDto.reasStatus == 3 || reasStatusDto.reasStatus == 9)
-                {
-                    //SendMailWhenRejectRealEstate.SendEmailWhenRejectRealEstate(accountOwner.AccountEmail, accountOwner.AccountName, reasStatusDto.messageString);
-                }
-                else if (reasStatusDto.reasStatus == 1)
-                {
-                    //SendMailWhenApproveRealEstate.SendEmailWhenApproveRealEstate(accountOwner.AccountEmail, accountOwner.AccountName);
-
-                }
                 realEstate.ReasStatus = reasStatusDto.reasStatus;
                 realEstate.Message = reasStatusDto.messageString;
                 try
                 {
                     bool check = await UpdateAsync(realEstate);
-                    if (check) return true;
+                    if (check) return accountOwner;
                     else
                     {
-                        return false;
+                        return null;
                     }
                 }
                 catch (Exception ex)
                 {
-                    return false;
+                    return null;
                 }
             }
 
-            return false;
+            return null;
         }
 
         public async Task<bool> CheckRealEstateExist(int reasId)

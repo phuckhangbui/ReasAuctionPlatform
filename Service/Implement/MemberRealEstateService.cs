@@ -145,9 +145,13 @@ namespace Service.Implement
                 reasStatus = realEstateDetailDto.ReasStatus,
                 messageString = message,
             };
-            bool check = await _real_estate_repository.UpdateRealEstateStatusAsync(realEstateStatus);
+            Account check = await _real_estate_repository.UpdateRealEstateStatusAsync(realEstateStatus);
+            if (check != null)
+            {
+                return true;
+            }
 
-            return check;
+            else return false;
         }
 
 

@@ -1,4 +1,5 @@
-﻿using Repository.DTOs;
+﻿using BusinessObject.Entity;
+using Repository.DTOs;
 using Repository.Interface;
 using Repository.Param;
 using Service.Interface;
@@ -60,8 +61,8 @@ namespace Service.Implement
         {
             try
             {
-                bool updateReal = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatusDto);
-                if (updateReal) { return true; }
+                Account updateReal = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatusDto);
+                if (updateReal != null) { return true; }
                 else { return false; }
             }
             catch { return false; }

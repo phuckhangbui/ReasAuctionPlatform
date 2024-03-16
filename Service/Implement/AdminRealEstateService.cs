@@ -1,8 +1,10 @@
-﻿using BusinessObject.Enum;
+﻿using BusinessObject.Entity;
+using BusinessObject.Enum;
 using Repository.DTOs;
 using Repository.Interface;
 using Repository.Param;
 using Service.Interface;
+using Service.Mail;
 
 namespace Service.Implement
 {
@@ -20,21 +22,6 @@ namespace Service.Implement
         }
 
         public IAccountRepository AccountRepository => _accountRepository;
-
-        public async Task<bool> BlockRealEstate(int reasId)
-        {
-            ReasStatusParam reasStatus = new ReasStatusParam();
-            reasStatus.reasId = reasId;
-            reasStatus.reasStatus = (int)RealEstateStatus.Block;
-            reasStatus.messageString = "";
-
-            bool check = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatus);
-            if (check)
-            {
-                return true;
-            }
-            else { return false; }
-        }
 
         public async Task<IEnumerable<ManageRealEstateDto>> GetAllRealEstateExceptOnGoingByAdmin()
         {
@@ -78,26 +65,20 @@ namespace Service.Implement
             return realEstateDetailDto;
         }
 
-        public async Task<bool> UnblockRealEstate(int reasId)
-        {
-            ReasStatusParam reasStatus = new ReasStatusParam();
-            reasStatus.reasId = reasId;
-            reasStatus.reasStatus = (int)RealEstateStatus.Selling;
-            reasStatus.messageString = "";
-
-            bool check = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatus);
-            if (check)
-            {
-                return true;
-            }
-            else { return false; }
-        }
-
         public async Task<bool> UpdateStatusRealEstateByAdmin(ReasStatusParam reasStatusParam)
         {
-            bool updateReal = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatusParam);
-            if (updateReal)
+            Account account = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatusParam);
+            if (account != null)
             {
+                if (reasStatusParam.reasStatus == 3 || reasStatusParam.reasStatus == 9)
+                {
+                    SendMailWhenRejectRealEstate.SendEmailWhenRejectRealEstate(account.AccountEmail, account.AccountName, reasStatusParam.messageString);
+                }
+                else if (reasStatusParam.reasStatus == 1)
+                {
+                    SendMailWhenApproveRealEstate.SendEmailWhenApproveRealEstate(account.AccountEmail, account.AccountName);
+
+                }
                 return true;
             }
             else { return false; }

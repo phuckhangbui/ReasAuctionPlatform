@@ -208,7 +208,7 @@ const AllDepositsList: React.FC = () => {
   const detailColumns: TableProps<DepositAmountUser>["columns"] = [
     {
       title: "No",
-      width: "5%",
+      width: "3%",
       render: (_text: any, _record: any, index: number) => index + 1,
     },
     {
@@ -222,8 +222,13 @@ const AllDepositsList: React.FC = () => {
       width: "15%",
     },
     {
-      title: "Account Phone",
-      dataIndex: "accountPhone",
+      title: "BankingCode",
+      dataIndex: "accountBankingCode",
+      width: "5%",
+    },
+    {
+      title: "Banking Number",
+      dataIndex: "accountBankingNumber",
       width: "10%",
     },
     {
@@ -274,7 +279,7 @@ const AllDepositsList: React.FC = () => {
           return null;
         }
       },
-      width: "10%",
+      width: "5%",
     },
   ];
   const handleBackToList = () => {
