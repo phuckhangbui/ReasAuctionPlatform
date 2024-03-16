@@ -170,6 +170,16 @@ const TransactionList: React.FC = () => {
     setShowDetail(false);
   };
 
+  const ParseStatusString = (transactionStatus: number) => {
+    const color =
+      statusTransactionColorMap[statusStringMap[transactionStatus]];
+    return (
+      <Tag color={color} key={statusStringMap[transactionStatus]}>
+        {statusStringMap[transactionStatus]}
+      </Tag>
+    );
+};
+
   const renderBorderedItems = () => {
     const items = [
       {
@@ -185,12 +195,12 @@ const TransactionList: React.FC = () => {
       {
         key: "3",
         label: "Sender Banking Code",
-        children: transactionDetail?.sendBankCode || "",
+        children: transactionDetail?.accountSendBankingCode || "",
       },
       {
         key: "4",
         label: "Sender Banking Account",
-        children: transactionDetail?.sendBankAccount || "",
+        children: transactionDetail?.accountSendBankingNumber || "",
       },
       {
         key: "5",
@@ -200,12 +210,12 @@ const TransactionList: React.FC = () => {
       {
         key: "6",
         label: "Receiver Banking Code",
-        children: transactionDetail?.receivedBankCode || "",
+        children: transactionDetail?.accountReceiveBankingCode || "",
       },
       {
         key: "7",
         label: "Receiver Banking Account",
-        children: transactionDetail?.receiveBankAccount || "",
+        children: transactionDetail?.accountReceiveBankingNumber || "",
       },
       {
         key: "8",
@@ -215,20 +225,7 @@ const TransactionList: React.FC = () => {
       {
         key: "9",
         label: "Status",
-        children: transactionDetail?.transactionStatus || "",
-        render: (transactionStatus: string | number) => {
-          if (typeof transactionStatus === "number") {
-            const color =
-              statusTransactionColorMap[statusStringMap[transactionStatus]];
-            return (
-              <Tag color={color} key={statusStringMap[transactionStatus]}>
-                {statusStringMap[transactionStatus]}
-              </Tag>
-            );
-          } else {
-            return null;
-          }
-        },
+        children: transactionDetail?.transactionStatus //? ParseStatusString(transactionDetail?.transactionStatus),
       },
       {
         key: "10",
