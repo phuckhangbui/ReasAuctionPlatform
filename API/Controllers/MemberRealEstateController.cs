@@ -119,7 +119,7 @@ namespace API.Controllers
         [HttpGet(BaseUri + "my_real_estate/detail/{id}")]
         public async Task<ActionResult<RealEstateDetailDto>> ViewOwnerRealEstateDetail(int id)
         {
-            var _real_estate_detail = _memberRealEstateService.ViewOwnerRealEstateDetail(id);
+            var _real_estate_detail = await _memberRealEstateService.ViewOwnerRealEstateDetail(id);
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             return Ok(_real_estate_detail);

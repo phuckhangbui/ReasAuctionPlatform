@@ -130,6 +130,8 @@ namespace API.Repository
                 Address = x.Address,
                 Citizen_identification = x.Citizen_identification,
                 PhoneNumber = x.PhoneNumber,
+                bank_Code = x.BankingCode,
+                bank_Account = x.BankingNumber,
                 Date_Created = x.Date_Created,
                 Date_End = x.Date_End,
                 Major = _context.Major.Where(y => y.MajorId == x.MajorId).Select(x => x.MajorName).FirstOrDefault(),
