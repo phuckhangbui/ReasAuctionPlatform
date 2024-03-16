@@ -133,7 +133,7 @@ namespace API.Services
 
         public async Task<RealEstateDetailDto> ViewOwnerRealEstateDetail(int id)
         {
-            var _real_estate_detail = await _real_estate_detail_repository.GetRealEstateDetail(id);
+            var _real_estate_detail = await _real_estate_detail_repository.GetRealEstateMemberDetail(id);
             return _real_estate_detail;
         }
 
