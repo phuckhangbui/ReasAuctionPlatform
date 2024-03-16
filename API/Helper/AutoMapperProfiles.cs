@@ -31,8 +31,10 @@ namespace API.Helper
                 .ForMember(dest => dest.AccountReceiveName, opt => opt.MapFrom(src => src.AccountReceive.AccountName))
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName))
-                .ForMember(dest => dest.BankingNumber, opt => opt.MapFrom(src => src.AccountSend.BankingNumber))
-                .ForMember(dest => dest.BankingCode, opt => opt.MapFrom(src => src.AccountSend.BankingCode));
+                .ForMember(dest => dest.AccountSendBankingNumber, opt => opt.MapFrom(src => src.AccountSend.BankingNumber))
+                .ForMember(dest => dest.AccountSendBankingCode, opt => opt.MapFrom(src => src.AccountSend.BankingCode))
+                .ForMember(dest => dest.AccountReceiveBankingNumber, opt => opt.MapFrom(src => src.AccountReceive.BankingNumber))
+                .ForMember(dest => dest.AccountReceiveBankingCode, opt => opt.MapFrom(src => src.AccountReceive.BankingCode));
             CreateMap<Auction, AuctionDto>()
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
             CreateMap<Account, UserProfileDto>()
