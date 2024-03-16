@@ -209,7 +209,7 @@ const AllDepositsList: React.FC = () => {
     {
       title: "No",
       width: "5%",
-      render: (index: number) => index + 1,
+      render: (_text: any, _record: any, index: number) => index + 1,
     },
     {
       title: "Account Name",

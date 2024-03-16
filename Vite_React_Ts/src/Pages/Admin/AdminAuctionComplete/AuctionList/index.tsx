@@ -117,7 +117,11 @@ const CompleteList: React.FC = () => {
     {
       title: "No",
       width: "5%",
+<<<<<<< Updated upstream
       render: (_text: any, _record: any, index: number) => index + 1,
+=======
+      render: (_text: any, _record: any,index: number) => index + 1,
+>>>>>>> Stashed changes
     },
     {
       title: "Reas Name",
