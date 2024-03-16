@@ -1,13 +1,12 @@
-﻿using API.DTOs;
-using API.Errors;
-using API.Extension;
-using API.Helper;
-using API.Interface.Service;
+﻿using API.Extensions;
 using API.MessageResponse;
-using API.Param;
-using API.Param.Enums;
+using BusinessObject.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.DTOs;
+using Repository.Paging;
+using Repository.Param;
+using Service.Interface;
 
 namespace API.Controllers
 {

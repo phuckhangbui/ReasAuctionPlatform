@@ -1,6 +1,6 @@
-﻿using API.Helper.VnPay;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Service.VnPay;
 
 namespace API.Controllers
 {

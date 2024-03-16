@@ -1,11 +1,10 @@
-﻿using API.Errors;
-using API.Extension;
-using API.Helper;
-using API.Interface.Service;
+﻿using API.Extensions;
 using API.MessageResponse;
-using API.Param;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Paging;
+using Repository.Param;
+using Service.Interface;
 
 namespace API.Controllers
 {
