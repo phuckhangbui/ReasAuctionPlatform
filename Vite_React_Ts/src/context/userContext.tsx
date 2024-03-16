@@ -27,7 +27,7 @@ export const UserContext = createContext<UserContextType>({
 const UserProvider = ({ children }: UserProviderProps) => {
   const [userRole, setUserRole] = useState<number | undefined>(undefined);
   const [token, setToken] = useState<string | undefined>(undefined);
-  const [userAccountName, setUserAccountName] = useState<string | undefined>();
+  const [_userAccountName, setUserAccountName] = useState<string | undefined>();
   const [userId, setUserId] = useState<number | undefined>(undefined);
 
   const login = (user: loginUser, token: string, userId: number) => {
