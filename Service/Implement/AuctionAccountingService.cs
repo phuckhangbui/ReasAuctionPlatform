@@ -32,7 +32,7 @@ namespace Service.Implement
             _mapper = mapper;
         }
 
-        public async Task<AuctionAccountingDto> UpdateAuctionAccounting(AuctionDetailDto auctionDetailDto)
+        public async Task<AuctionAccountingDto> CreateAuctionAccounting(AuctionDetailDto auctionDetailDto)
         {
             //get auction accounting
             AuctionAccounting auctionAccountingOld = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionDetailDto.AuctionId);
@@ -66,7 +66,7 @@ namespace Service.Implement
 
             auctionAccounting.MaxAmount = auctionDetailDto.WinAmount;
             auctionAccounting.DepositAmount = depositAmount.Amount;
-            auctionAccounting.CommissionAmount = auctionDetailDto.WinAmount * COMMISSION_PERCENT;
+            auctionAccounting.CommissionAmount = Math.Floor(auctionDetailDto.WinAmount * COMMISSION_PERCENT);
             auctionAccounting.AmountOwnerReceived = auctionDetailDto.WinAmount - auctionAccounting.CommissionAmount;
 
             await _auctionAccountingRepository.CreateAsync(auctionAccounting);
@@ -95,6 +95,41 @@ namespace Service.Implement
             }
 
             return _mapper.Map<AuctionAccountingDto>(auctionAccouting);
+        }
+
+        public async Task<AuctionAccountingDto> UpdateAuctionAccountingWinner(AuctionDetailDto auctionUpdateInformation)
+        {
+            AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionUpdateInformation.AuctionId);
+
+            Account accountWin = await _accountRepository.GetAccountByAccountIdAsync(auctionUpdateInformation.AccountWinId);
+
+            auctionAccounting.AccountWinId = accountWin.AccountId;
+            auctionAccounting.AccountWinName = accountWin.AccountName;
+            auctionAccounting.MaxAmount = auctionUpdateInformation.WinAmount;
+            auctionAccounting.EstimatedPaymentDate = DateTime.Now.AddDays(DATE_UNTIL_PAY);
+            auctionAccounting.CommissionAmount = Math.Floor(auctionUpdateInformation.WinAmount * COMMISSION_PERCENT);
+            auctionAccounting.AmountOwnerReceived = auctionUpdateInformation.WinAmount - auctionAccounting.CommissionAmount;
+
+            await _auctionAccountingRepository.UpdateAsync(auctionAccounting);
+
+            AuctionAccountingDto auctionAccountingDto = _mapper.Map<AuctionAccounting, AuctionAccountingDto>(auctionAccounting);
+            return auctionAccountingDto;
+
+        }
+
+        public async Task<AuctionAccountingDto> UpdateAuctionAccountingWhenNoWinnerRemain(int auctionId)
+        {
+            AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
+
+            //keep the AccountWin 
+            auctionAccounting.MaxAmount = 0;
+            auctionAccounting.CommissionAmount = 0;
+            auctionAccounting.AmountOwnerReceived = 0;
+
+            await _auctionAccountingRepository.UpdateAsync(auctionAccounting);
+
+            AuctionAccountingDto auctionAccountingDto = _mapper.Map<AuctionAccounting, AuctionAccountingDto>(auctionAccounting);
+            return auctionAccountingDto;
         }
     }
 }

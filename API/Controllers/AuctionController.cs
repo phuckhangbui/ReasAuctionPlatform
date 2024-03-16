@@ -515,50 +515,68 @@ namespace API.Controllers
         }
 
         [Authorize(policy: "AdminAndStaff")]
-        [HttpGet("update/winner")]
-        public async Task<ActionResult> UpdateAuctionWinner(int auctionId)
+        [HttpPost("update/winner")]
+        public async Task<ActionResult> UpdateAuctionWinner(UpdateAuctionWinnerDto updateAuctionWinnerDto)
         {
-            Auction auction = await _auctionService.GetAuctionByAuctionId(auctionId);
+            Auction auction = await _auctionService.GetAuctionByAuctionId(updateAuctionWinnerDto.auctionId);
 
             if (auction == null || auction.Status != (int)AuctionStatus.Finish)
             {
                 return BadRequest(new ApiResponse(400, "Auction not avaible for edit"));
             }
 
-            var auctionAccounting = await _auctionAccountingService.GetAuctionAccounting(auctionId);
+            var auctionAccounting = await _auctionAccountingService.GetAuctionAccounting(updateAuctionWinnerDto.auctionId);
 
-            var nextHighestBidder = await _participantHistoryService.GetNextHighestBidder(auctionId, auctionAccounting.MaxAmount);
+            var nextHighestBidder = await _participantHistoryService.GetNextHighestBidder(updateAuctionWinnerDto.auctionId, auctionAccounting.MaxAmount);
 
-            var newAuctionInformation = new AuctionDetailDto
-            {
-                AuctionId = auctionId,
-                AccountWinId = nextHighestBidder.idAccount,
-                WinAmount = nextHighestBidder.lastBid
-            };
+            /// update status of userdeposit to LostDeposit
+            await _depositAmountService.UpdateStatus(auctionAccounting.AccountWinId, auction.ReasId, (int)UserDepositEnum.LostDeposit);
+
             //update status of participant history of old winner IsWinner = false
+            await _participantHistoryService.UpdateParticipateHistoryStatus(auctionAccounting.AuctionAccountingId, auctionAccounting.AccountWinId, (int)ParticipateAuctionHistoryEnum.Others, updateAuctionWinnerDto.message);
 
             //send noti + mail for old winner, inform loose deposit
 
 
+
             if (nextHighestBidder != null)
             {
+                var newAuctionInformation = new AuctionDetailDto
+                {
+                    AuctionId = updateAuctionWinnerDto.auctionId,
+                    AccountWinId = nextHighestBidder.idAccount,
+                    WinAmount = nextHighestBidder.lastBid
+                };
                 //update 
-                auctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWinner(newAuctionInformation);
+                var newAuctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWinner(newAuctionInformation);
+
                 //update status of participant history of new winner IsWinner = true
+                // auctionAccounting now have the id of the new winner in the method above
+                await _participantHistoryService.UpdateParticipateHistoryStatus(newAuctionAccounting.AuctionAccountingId, newAuctionAccounting.AccountWinId, (int)ParticipateAuctionHistoryEnum.Winner, null);
+
+                //update status of userdeposit to Winner
+                await _depositAmountService.UpdateStatus(newAuctionAccounting.AccountWinId, auction.ReasId, (int)UserDepositEnum.Winner);
 
                 //send noti + mail for new winner
+
+
+                return Ok(new { message = $"Auction now has new winner, with new winning price set at {newAuctionAccounting.MaxAmount} VND" });
+
             }
             else
             {
                 //realestate now in the DeclineAfterAuction
+                await _realEstateService.UpdateRealEstateStatus(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
+
+                //update auction accounting to floor level
+                auctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWhenNoWinnerRemain(updateAuctionWinnerDto.auctionId);
 
                 //send noti + mail for owner notif ther real estate status
 
-                //update auction accounting to floor level
+
+                return Ok(new { message = "Auction has no available next bidder, process real estate to Decline After Auction" });
+
             }
-
-
-
         }
 
     }
