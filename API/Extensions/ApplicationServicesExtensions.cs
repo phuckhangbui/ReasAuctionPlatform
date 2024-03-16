@@ -1,13 +1,12 @@
-﻿using API.Data;
-using API.Errors;
-using API.Helper;
-using API.Interface.Repository;
-using API.Interface.Service;
-using API.Interfaces;
-using API.Repository;
-using API.Services;
+﻿using API.MessageResponse;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Repository.Data;
+using Repository.Implement;
+using Repository.Interface;
+using Service.Cloundinary;
+using Service.Implement;
+using Service.Interface;
 
 namespace API.Extensions
 {

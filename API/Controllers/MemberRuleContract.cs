@@ -1,9 +1,7 @@
-﻿using API.Entity;
-using API.Errors;
-using API.Interface.Repository;
-using API.Interface.Service;
+﻿using BusinessObject.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.Interface;
 
 namespace API.Controllers
 {
