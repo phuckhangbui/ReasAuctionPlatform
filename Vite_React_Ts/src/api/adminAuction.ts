@@ -158,7 +158,7 @@ export const addAuction = async ({
           note
         }
       const fetchData = await axios.post<Message>(
-        `${baseUrl}/api/Auction/admin/create`,
+        `${baseUrl}/api/Auction/admin/????`,
         param,
         {
           headers: {
