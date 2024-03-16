@@ -141,7 +141,11 @@ namespace Repository.Implement
                         DateStart = a2.DateStart,
                         DateEnd = a2.DateEnd,
                         LastBid = join2.join1.pah.LastBid,
-                        DepositStatus = join2.da.Status
+                        DepositStatus = join2.da.Status,
+                        ReasArea = a2.RealEstate.ReasArea,
+                        ReasName = a2.RealEstate.ReasName,
+                        TypeName = a2.RealEstate.Type_REAS.Type_Reas_Name,
+                        ThumbnailUrl = a2.RealEstate.Photos.FirstOrDefault(r => r.ReasId == a2.ReasId).ReasPhotoUrl
                     }
                 )
                 .Where(result => result.DepositStatus == (int)UserDepositEnum.Waiting_for_refund ||
