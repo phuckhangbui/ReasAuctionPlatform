@@ -1,5 +1,4 @@
 ﻿using API.DTOs;
-using API.Entity;
 
 namespace API.Param
 {

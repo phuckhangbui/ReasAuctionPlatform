@@ -27,6 +27,7 @@
         public const string MSG23 = "MSG23";
         public const string MSG24 = "MSG24";
         public const string MSG25 = "MSG25";
+        public const string MSG26 = "MSG26";
 
 
         public string StatusCode { get; set; }
@@ -60,10 +61,11 @@
             MSG19 => "Your real estate has uploaded on website.",
             MSG20 => "The amount you entered to pay does not match the suggested amount.",
             MSG21 => "Create new news successfully",
-            MSG22 => "Username already exist",
-            MSG23 => "Email already exist",
+            MSG22 => "Username already exists",
+            MSG23 => "Email already exists",
             MSG24 => "Create task successfully.",
             MSG25 => "Update task successfully.",
+            MSG26 => "Refund money successfully.",
             _ => null
         };
     }

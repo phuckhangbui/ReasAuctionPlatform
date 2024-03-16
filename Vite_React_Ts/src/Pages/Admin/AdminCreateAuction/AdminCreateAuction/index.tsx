@@ -2,22 +2,25 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { Input } from "@material-tailwind/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { Table, TableProps, Tag, Button, Modal, DatePicker } from "antd";
+import { Table, TableProps, Tag, Button, Modal, DatePicker ,notification} from "antd";
 import { NumberFormat } from "../../../../Utils/numberFormat";
 import { useState, useEffect } from "react";
 import {
   getRealForDeposit,
   getUserForDeposit,
+  addAuction
 } from "../../../../api/adminAuction";
+import {getReasName} from "../../../../api/deposit"
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
 
 const RealDepositList: React.FC = () => {
-  const { token } = useContext(UserContext);
+  const { token, userId } = useContext(UserContext);
   const [search, setSearch] = useState("");
   const [RealData, setRealData] = useState<RealForDeposit[]>();
   const [DepositData, setDepoistData] = useState<DepositAmountUser[]>();
-  const [_reasID, setRealID] = useState<number | undefined>();
+  const [reasName, setReasName] = useState<string>();
+  const [reasID, setRealID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const formatDate = (dateString: Date): string => {
@@ -30,6 +33,23 @@ const RealDepositList: React.FC = () => {
     ).slice(-2)}:${("0" + dateObject.getMinutes()).slice(-2)}:${(
       "0" + dateObject.getSeconds()
     ).slice(-2)}`;
+  };
+
+  const viewReasName = (reasId: number) => {
+    try {
+      const fetchReasName = async () => {
+        if (token && reasId) {
+          const response = await getReasName(token, reasId);
+          if (response) {
+            setReasName(response);
+          }
+          setShowDetail(true);
+        }
+      };
+      fetchReasName();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const statusColorMap: { [key: string]: string } = {
@@ -72,17 +92,22 @@ const RealDepositList: React.FC = () => {
     fetchDepositUser(reasID);
   };
 
-  // const fetchCreateAuction = async (Auction: AuctionCreate) => {
-  //   try {
-  //     if (token) {
-  //       let data: Message | undefined;
-  //       data = await addAuction(Auction, token);
-  //       return data;
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching add news:", error);
-  //   }
-  // };
+  const fetchCreateAuction = async (Auction: AuctionCreate) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await addAuction(Auction, token);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching add auction:", error);
+    }
+  };
+
+  const setDetail = (id : number) => {
+    viewDetail(id);
+    viewReasName(id);
+  };
 
   const columns: TableProps<RealForDeposit>["columns"] = [
     {
@@ -96,16 +121,28 @@ const RealDepositList: React.FC = () => {
       width: "30%",
     },
     {
+      title: "Date Start",
+      dataIndex: "dateStart",
+      width: "15%",
+      render: (dateStart: Date) => formatDate(dateStart),
+    },
+    {
+      title: "Date End",
+      dataIndex: "dateEnd",
+      width: "15%",
+      render: (dateEnd: Date) => formatDate(dateEnd),
+    },
+    {
       title: "Number of user",
       dataIndex: "numberOfUser",
-      width: "15%",
+      width: "10%",
       render: (num: number) => `${num} users`,
     },
     {
       title: "",
       dataIndex: "operation",
       render: (_: any, record: RealForDeposit) => (
-        <a onClick={() => viewDetail(record.reasId)}>View details</a>
+        <a onClick={() => setDetail(record.reasId)}>View details</a>
       ),
       width: "10%",
     },
@@ -117,43 +154,46 @@ const RealDepositList: React.FC = () => {
   };
   const handleOk = () => {
     setIsModalOpen(false);
+    createAuction();
+    setShowDetail(false);
   };
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-
-  const onChangeDate = (_date: any) => {
-    // dateStart = date;
+let dateStart : Date = new Date();
+  const onChangeDate = (date: any) => {
+     dateStart = date;
   };
 
-  // const openNotificationWithIcon = (
-  //   type: "success" | "error",
-  //   description: string
-  // ) => {
-  //   notification[type]({
-  //     message: "Notification Title",
-  //     description: description,
-  //   });
-  // };
+  const openNotificationWithIcon = (
+    type: "success" | "error",
+    description: string
+  ) => {
+    notification[type]({
+      message: "Notification Title",
+      description: description,
+    });
+  };
 
-  //   const createAuction = async () => {
-  //     const Auction : AuctionCreate = {
-  // AccountCreateId : 1,
-  // DateStart : dateStart,
-  // ReasId : reasID,
-  //     }
-  //     const response = await fetchCreateAuction(Auction);
-  //     if (response != undefined && response) {
-  //       if (response.statusCode == "MSG05") {
-  //         openNotificationWithIcon("success", response.message);
-  //       } else {
-  //         openNotificationWithIcon(
-  //           "error",
-  //           "Something went wrong when executing operation. Please try again!"
-  //         );
-  //       }
-  //     }
-  //   };
+  const createAuction = async () => {
+    const Auction : AuctionCreate = {
+AccountCreateId : userId,
+DateStart : dateStart,
+ReasId : reasID,
+    }
+    const response = await fetchCreateAuction(Auction);
+    if (response != undefined && response) {
+      if (response.statusCode == "MSG05") {
+        openNotificationWithIcon("success", response.message);
+        fetchRealList();
+      } else {
+        openNotificationWithIcon(
+          "error",
+          "Something went wrong when executing operation. Please try again!"
+        );
+      }
+    }
+  };
 
   const columnUsers: TableProps<DepositAmountUser>["columns"] = [
     {
@@ -228,6 +268,11 @@ const RealDepositList: React.FC = () => {
               open={isModalOpen}
               onOk={handleOk}
               onCancel={handleCancel}
+              footer={[
+                <Button key="submit" onClick={handleOk}>
+                  Create
+                </Button>,
+              ]}
             >
               <div style={{ alignContent: "center" }}>
                 <DatePicker
@@ -240,6 +285,10 @@ const RealDepositList: React.FC = () => {
             </Modal>
           </div>
           <br />
+
+          <h5><strong>Real Estate Name: {reasName}</strong></h5><br />
+
+
           <Table columns={columnUsers} dataSource={DepositData} bordered />
         </div>
       ) : (

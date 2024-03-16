@@ -21,11 +21,6 @@ namespace API.Repository
             _mapper = mapper;
         }
 
-        public async Task<bool> isEmailExisted(string email)
-        {
-            return await _context.Account.AnyAsync(x => x.AccountEmail.ToLower() == email.ToLower() && x.RoleId == 3);
-        }
-
         public async Task<bool> isEmailExistedCreateAccount(string email)
         {
             return await _context.Account.AnyAsync(x => x.AccountEmail.ToLower() == email.ToLower() && x.RoleId == 2);
@@ -53,7 +48,7 @@ namespace API.Repository
             query = query.Where(a => a.RoleId == (int)RoleEnum.Member &&
             (accountParams.KeyWord == null || a.AccountEmail.ToLower().Contains(accountParams.KeyWord.ToLower()) ||
             a.AccountName.ToLower().Contains(accountParams.KeyWord.ToLower())));
-            var result  = query.Select(x => new AccountMemberDto
+            var result = query.Select(x => new AccountMemberDto
             {
                 AccountId = x.AccountId,
                 AccountName = x.AccountName,
@@ -105,7 +100,7 @@ namespace API.Repository
                 Account_Status = getName.GetStatusAccountName(x.Account_Status),
                 Date_Created = x.Date_Created,
                 Date_End = x.Date_End,
-            }).OrderByDescending(x =>x.Date_Created);
+            }).OrderByDescending(x => x.Date_Created);
             return query.ToList();
         }
 
@@ -170,7 +165,7 @@ namespace API.Repository
             if (account != null)
             {
                 account.Account_Status = changeStatusAccountDto.AccountStatus;
-                if (changeStatusAccountDto.AccountStatus == 0)
+                if (changeStatusAccountDto.AccountStatus == (int)AccountStatus.Block)
                 {
                     account.Date_End = DateTime.UtcNow;
                 }
@@ -191,7 +186,7 @@ namespace API.Repository
             else
             {
                 return false;
-            }  
+            }
         }
 
         public async Task<string> GetNameAccountByAccountIdAsync(int accountId)
@@ -201,5 +196,46 @@ namespace API.Repository
         public async Task<int> GetIdAccountToReceiveMoney()
         => await _context.Account.Where(x => x.AccountName.Equals("admin")).Select(x => x.AccountId).FirstOrDefaultAsync();
 
+        public async Task<Account> FirebaseTokenExisted(string firebaseToken)
+        {
+            return await _context.Account.FirstOrDefaultAsync(x => x.FirebaseToken == firebaseToken);
+        }
+
+        public async Task<UserProfileDto> GetMemberProfileDetail(int accountId)
+        {
+            Account account = await _context.Account.Include(a => a.Major).FirstOrDefaultAsync(a => a.AccountId == accountId);
+            List<Major> majors = await _context.Major.ToListAsync();
+
+            Dictionary<int, string> majorIdNameMap = majors.ToDictionary(major => major.MajorId, major => major.MajorName);
+
+            if (account == null)
+            {
+                return null;
+            }
+
+            UserProfileDto userDto = _mapper.Map<UserProfileDto>(account);
+            userDto.Major = majorIdNameMap;
+
+            return userDto;
+        }
+
+        public async Task<bool> UpdateMemberProfileDetail(UserUpdateProfileInfo userProfileDto)
+        {
+            Account account = _mapper.Map<Account>(userProfileDto);
+
+            return await UpdateAsync(account);
+        }
+
+        public async Task<Account> GetAccountOnId(int accountId)
+        {
+            Account account = await _context.Account.FirstOrDefaultAsync(a => a.AccountId == accountId);
+            return account;
+        }
+
+        public async Task<List<Account>> GetAllStaffAndAdminAccounts()
+        {
+            return _context.Account.Where(a => (a.RoleId == (int)RoleEnum.Staff || a.RoleId == (int)RoleEnum.Admin)
+                                        && a.Account_Status == (int)AccountStatus.Active).ToList();
+        }
     }
 }

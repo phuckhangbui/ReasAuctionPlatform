@@ -14,6 +14,8 @@ public class DataContext : DbContext
     public DbSet<Account> Account { get; set; }
     public DbSet<Auction> Auction { get; set; }
     public DbSet<AuctionAccounting> AuctionsAccounting { get; set; }
+    public DbSet<ParticipateAuctionHistory> ParticipateAuctionHistories { get; set; }
+    public DbSet<Notification> Notification { get; set; }
     public DbSet<DepositAmount> DepositAmount { get; set; }
     public DbSet<Log> Logs { get; set; }
     public DbSet<Major> Major { get; set; }
@@ -54,6 +56,22 @@ public class DataContext : DbContext
 
         modelBuilder.Entity<AuctionAccounting>()
             .Property(a => a.AuctionAccountingId)
+            .ValueGeneratedOnAdd()
+            .UseIdentityColumn();
+
+        modelBuilder.Entity<ParticipateAuctionHistory>()
+            .HasKey(p => p.ParticipateAuctionHistoryId);
+
+        modelBuilder.Entity<ParticipateAuctionHistory>()
+            .Property(p => p.ParticipateAuctionHistoryId)
+            .ValueGeneratedOnAdd()
+            .UseIdentityColumn();
+
+        modelBuilder.Entity<Notification>()
+            .HasKey(k => k.NotificationId);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.NotificationId)
             .ValueGeneratedOnAdd()
             .UseIdentityColumn();
 
@@ -291,7 +309,7 @@ public class DataContext : DbContext
             .HasOne(da => da.RealEstate)
             .WithOne()
             .HasForeignKey<DepositAmount>(da => da.ReasId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         //one account can has many auction win 
         modelBuilder.Entity<AuctionAccounting>()
@@ -313,6 +331,28 @@ public class DataContext : DbContext
             .WithOne()
             .HasForeignKey<AuctionAccounting>(ac => ac.ReasId)
             .HasConstraintName("FK_AuctionAccounting_RealEstate");
+
+        //one ParticipateAuctionHistory has one account, one account can have many history
+        modelBuilder.Entity<ParticipateAuctionHistory>()
+            .HasOne(p => p.AccountBid)
+            .WithMany(a => a.ParticipateAuctionHistory)
+            .HasForeignKey(a => a.AccountBidId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        //one ParticipateAuctionHistory has one auctionAccouting, one auctionAccounting has many history
+        modelBuilder.Entity<ParticipateAuctionHistory>()
+            .HasOne(p => p.AuctionAccounting)
+            .WithMany(a => a.ParticipateAuctionHistories)
+            .HasForeignKey(a => a.AuctionAccountingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        //one Notification has one accountReceive, one account can have many notification
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.AccountReceive)
+            .WithMany(a => a.Notifications)
+            .HasForeignKey(n => n.AccountReceiveId)
+            .OnDelete(DeleteBehavior.Restrict);
+
 
         //one account can create many real estate
         modelBuilder.Entity<RealEstate>()

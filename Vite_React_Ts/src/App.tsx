@@ -10,7 +10,6 @@ import AdminAddStaff from "../src/Pages/Admin/AdminCreateStaff/AdminCreateStaff"
 import PendingList from "../src/Pages/Admin/AdminRealEstatePending";
 import AllList from "../src/Pages/Admin/AdminRealEstateAll";
 import AuctionComplete from "../src/Pages/Admin/AdminAuctionComplete";
-// import AuctionDetail from "./Pages/Admin/AdminAuctionDetail";
 import HomePage from "./Pages/Member/HomePage/homePage";
 import RealEstatePage from "./Pages/Member/RealEstatePage/realEstatePage";
 import HelpPage from "./Pages/Member/HelpPage/helpPage";
@@ -19,9 +18,6 @@ import AuctionPage from "./Pages/Member/AuctionPage/auctionPage";
 import NewsPage from "./Pages/Member/NewsPage/newsPage";
 import RequiredAuth from "./components/RequiredAuth/requiredAuth";
 import SellPage from "./Pages/Member/SellPage/sellPage";
-import AuctionCreate from "./Pages/Admin/AdminAuctionCreate";
-import AllRule from "./Pages/Admin/AdminRule";
-import CreateRule from "./Pages/Admin/AdminRuleCreate";
 import AllTransaction from "./Pages/Admin/AdminTransaction";
 import AllDeposit from "./Pages/Admin/AdminDeposit";
 import Task from "./Pages/Admin/AdminTask";
@@ -32,9 +28,15 @@ import { useEffect } from "react";
 import { onMessage } from "firebase/messaging";
 import { messaging } from "./Config/firebase-config";
 import toast from "react-hot-toast";
-import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
 import SuccessPage from "./Pages/Member/SuccessPage/successPage";
 import MemberRealEstatePage from "./Pages/Member/MemberRealEstatePage/memberRealEstatePage";
+import AdminCreateNews from "./Pages/Admin/AdminCreateNews";
+import NewsList from "./components/News/newsList";
+import DepositList from "./Pages/Admin/AdminCreateAuction";
+import AddRule from "./Pages/Admin/AdminAddRule";
+import AdminRule from "./Pages/Admin/AdminRule";
+import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
+import TransactionHistory from "./Pages/Member/TransactionHistory";
 
 const roles = {
   Admin: 1,
@@ -64,8 +66,9 @@ function App() {
             <Route path="/news" element={<NewsPage />} />
 
             <Route element={<RequiredAuth allowedRoles={[roles.Member]} />}>
-              <Route path="/sell" element={<SellPage />} />
               <Route path="/history" element={<AuctionHistory />} />
+              <Route path="/transaction" element={<TransactionHistory />} />
+              <Route path="/sell" element={<SellPage />} />
               <Route path="/memberReas" element={<MemberRealEstatePage />} />
               <Route path="/success" element={<SuccessPage />} />
             </Route>
@@ -78,17 +81,19 @@ function App() {
               <Route index element={<AdminDashboard />} />
 
               <Route element={<RequiredAuth allowedRoles={[roles.Admin]} />}>
-                <Route path="rule" element={<AllRule />} />
-                <Route path="rule/create" element={<CreateRule />} />
+                <Route path="term" element={<AdminRule />} />
+                <Route path="term/create" element={<AddRule />} />
 
                 <Route path="task" element={<Task />} />
                 <Route path="task/create" element={<TaskCreate />} />
               </Route>
 
+              <Route path="news" element={<NewsList />} />
+              <Route path="news/create" element={<AdminCreateNews />} />
+
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
               <Route path="auction/complete" element={<AuctionComplete />} />
-              <Route path="auction/create" element={<AuctionCreate />} />
-              {/* <Route path="auction/detail/:key" element={<AuctionDetail />} /> */}
+              <Route path="auction/create" element={<DepositList />} />
 
               <Route path="user/staff" element={<AdminStaffList />} />
               <Route path="user/member" element={<AdminMemberList />} />

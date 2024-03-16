@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft} from "@fortawesome/free-solid-svg-icons";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import {
   Table,
   TableProps,
@@ -238,7 +239,7 @@ const AdminRealEstatePendingList: React.FC = () => {
     {
       title: "Price",
       dataIndex: "reasPrice",
-      render: (reasPrice: string) => `${reasPrice} $`,
+      render: (reasPrice: number) => NumberFormat(reasPrice),
       width: "10%",
     },
     {
@@ -298,7 +299,7 @@ const AdminRealEstatePendingList: React.FC = () => {
       {
         key: "2",
         label: "Price",
-        children: realDetailData?.reasPrice + "$" || "",
+        children: realDetailData?.reasPrice ? NumberFormat(realDetailData?.reasPrice) : "",
       },
       {
         key: "3",

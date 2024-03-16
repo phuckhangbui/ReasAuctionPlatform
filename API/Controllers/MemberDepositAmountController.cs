@@ -4,6 +4,7 @@ using API.Helper;
 using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -18,38 +19,33 @@ namespace API.Controllers
             _memberDepositAmountService = memberDepositAmountService;
         }
 
+        [Authorize(policy: "Member")]
         [HttpGet(BaseUri + "my-deposit")]
         public async Task<IActionResult> ListDepositAmoutByMember([FromQuery] PaginationParams paginationParams)
         {
-            int userMember = GetIdMember(_memberDepositAmountService.AccountRepository);
-            if(userMember != 0)
+            var deposit = await _memberDepositAmountService.ListDepositAmoutByMember(GetLoginAccountId());
+            Response.AddPaginationHeader(new PaginationHeader(deposit.CurrentPage, deposit.PageSize,
+            deposit.TotalCount, deposit.TotalPages));
+            if (deposit.PageSize == 0)
             {
-                var deposit = await _memberDepositAmountService.ListDepositAmoutByMember(userMember);
-                Response.AddPaginationHeader(new PaginationHeader(deposit.CurrentPage, deposit.PageSize,
-                deposit.TotalCount, deposit.TotalPages));
-                if (deposit.PageSize == 0)
-                {
-                    var apiResponseMessage = new ApiResponseMessage("MSG01");
-                    return Ok(new List<ApiResponseMessage> { apiResponseMessage });
-                }
-                else
-                {
-                    if (!ModelState.IsValid)
-                        return BadRequest(ModelState);
-                    return Ok(deposit);
-                }
+                var apiResponseMessage = new ApiResponseMessage("MSG01");
+                return Ok(new List<ApiResponseMessage> { apiResponseMessage });
             }
             else
             {
-                return BadRequest(new ApiResponse(401));
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                return Ok(deposit);
             }
         }
 
+
+        [Authorize(policy: "Member")]
         [HttpGet(BaseUri + "my-deposit/search")]
         public async Task<IActionResult> ListDepositAmoutByMemberWhenSearch([FromQuery] SearchDepositAmountParam searchDepositAmountParam)
         {
-            int userMember = GetIdMember(_memberDepositAmountService.AccountRepository);
-            if(userMember != 0)
+            int userMember = GetLoginAccountId();
+            if (userMember != 0)
             {
                 var deposit = await _memberDepositAmountService.ListDepositAmoutByMemberWhenSearch(searchDepositAmountParam, userMember);
                 Response.AddPaginationHeader(new PaginationHeader(deposit.CurrentPage, deposit.PageSize,

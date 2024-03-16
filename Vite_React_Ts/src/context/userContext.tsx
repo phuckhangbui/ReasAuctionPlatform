@@ -25,10 +25,20 @@ export const UserContext = createContext<UserContextType>({
 });
 
 const UserProvider = ({ children }: UserProviderProps) => {
-  const [userRole, setUserRole] = useState<number | undefined>();
-  const [userAccountName, setUserAccountName] = useState<string | undefined>();
-  const [userId, setUserId] = useState<number | undefined>();
-  const [token, setToken] = useState<string | undefined>();
+  const [userRole, setUserRole] = useState<number | undefined>(undefined);
+  const [token, setToken] = useState<string | undefined>(undefined);
+  const [_userAccountName, setUserAccountName] = useState<string | undefined>();
+  const [userId, setUserId] = useState<number | undefined>(undefined);
+
+  const login = (user: loginUser, token: string, userId: number) => {
+    const stringUser = JSON.stringify(user);
+    localStorage.setItem("userLogin", stringUser);
+    localStorage.setItem("token", token);
+    localStorage.setItem("userId", userId.toString());
+    setUserRole(user?.roleId);
+    setToken(token);
+    setUserId(userId);
+  };
 
   useEffect(() => {
     try {
@@ -54,15 +64,6 @@ const UserProvider = ({ children }: UserProviderProps) => {
     console.log("User ID: ", userId);
   }, [userId]);
 
-  const login = (user: loginUser, token: string) => {
-    const stringUser = JSON.stringify(user);
-    localStorage.setItem("user", stringUser);
-    localStorage.setItem("token", token);
-    setUserAccountName(user?.accountName);
-    setUserRole(user?.roleId);
-    setUserId(user?.id);
-    setToken(token);
-  };
 
   const logout = () => {
     setUserAccountName(undefined);
@@ -83,17 +84,7 @@ const UserProvider = ({ children }: UserProviderProps) => {
   };
 
   return (
-    <UserContext.Provider
-      value={{
-        userAccountName,
-        userId,
-        userRole,
-        token,
-        login,
-        logout,
-        isAuth,
-      }}
-    >
+    <UserContext.Provider value={{ userRole, token, login, logout, isAuth }}>
       {children}
     </UserContext.Provider>
   );

@@ -55,7 +55,7 @@ export const getAuctionAllAdminById = async (id: Number | undefined, token : str
 export const getAuctionCompleteAdminById = async (id: Number | undefined, token : string) => {
     try {
       const fetchData = await axios.get<AuctionDetailCompleteAdmin>(
-        `${baseUrl}/api/Auction/auctions/all/complete/${id}`,
+        `${baseUrl}/api/Auction/auctions/complete/detail/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -130,6 +130,23 @@ export const addAuction = async ({
       console.log("Error: " + error);
     }
   };
+
+  export const getPaticipateUser = async (token : string, idAuction : number) => {
+    try {
+      const fetchData = await axios.get<ParticipateAccount[]>(`${baseUrl}/api/Auction/auctions/complete/participate/${idAuction}`, 
+      {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      const response = fetchData.data;
+      return response;
+    } catch (error) {
+      console.log("Error: " + error);
+    }
+  };
+
 
 //   export const updateNews = async ({
 //     newsContent,

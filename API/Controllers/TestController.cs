@@ -1,5 +1,6 @@
 ﻿using API.DTOs;
 using API.Helper.VnPay;
+using API.Interface.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -10,12 +11,37 @@ namespace API.Controllers
     public class TestController : BaseApiController
     {
         private readonly VnPayProperties _vnPayProperties;
+        private readonly IFirebaseMessagingService _firebaseMessagingService;
 
-
-        public TestController(IOptions<VnPayProperties> vnPayProperties)
+        public TestController(IOptions<VnPayProperties> vnPayProperties, IFirebaseMessagingService firebaseMessagingService)
         {
             _vnPayProperties = vnPayProperties.Value;
+            _firebaseMessagingService = firebaseMessagingService;
         }
+
+        [HttpPost("pushnoti")]
+        public async Task<IActionResult> SendNotification([FromBody] NotificationRequest request)
+        {
+            try
+            {
+                string response = await _firebaseMessagingService.SendPushNotification(request.RegistrationToken, request.Title, request.Body, request.Data);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        public class NotificationRequest
+        {
+            public string RegistrationToken { get; set; }
+            public string Title { get; set; }
+            public string Body { get; set; }
+            public Dictionary<string, string> Data { get; set; }
+        }
+
+
 
         [HttpGet("vnpayUrl/{TnxRef}")]
         public async Task<ActionResult<string>> TestCreatePayment(string TnxRef)

@@ -1,18 +1,18 @@
 import { Button, Carousel, Typography } from "@material-tailwind/react";
 import { useContext, useEffect, useState } from "react";
 import { getRealEstateById } from "../../api/realEstate";
-import { NumberFormat } from "../../Utils/numbetFormat";
-import { InputNumber, Modal, Statistic } from "antd";
+import { NumberFormat } from "../../utils/numbetFormat";
+import { Empty, InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
-import { EyeOutlined } from "@ant-design/icons";
 import { UserContext } from "../../context/userContext";
 import dayjs from "dayjs";
-import { set, ref, get, child, update, onValue } from "firebase/database";
+import { ref, get, child, update, onValue } from "firebase/database";
 import { db } from "../../Config/firebase-config";
-import { getAuctionHome, getAuctionStatus } from "../../api/memberAuction";
-import LoginModal from "../LoginModal/loginModal";
-import { DepositContext } from "../../context/depositContext";
-import { registerParticipateAuction } from "../../api/transaction";
+import {
+  auctionSuccess,
+  getAuctionHome,
+  getAuctionUserList,
+} from "../../api/memberAuction";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -28,12 +28,29 @@ const RealEstateDetailModal = ({
   index,
 }: RealEstateDetailModalProps) => {
   const [tabStatus, setTabStatus] = useState(index);
-  const [currentBid, setCurrentBid] = useState(100000);
+  const [currentBid, setCurrentBid] = useState(0);
   const [currentInputBid, setCurrentInputBid] = useState(currentBid);
   const [currentAutoBidValue, setCurrentAutoBidValue] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAuctionOpen, setIsAuctionOpen] = useState(true);
   const [checked, setChecked] = useState(false);
   const [isInputValid, setIsInputValid] = useState(false);
+  const { isAuth } = useContext(UserContext);
+  const [dateEnd, setDateEnd] = useState<any>();
+  const [auction, setAuction] = useState<memberAuction | undefined>();
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [isUsersAttend, setIsUserAttend] = useState(false);
+  const [isOneParticipant, setIsOneParticipant] = useState(true);
+  const [countdownValue, setCountdownValue] = useState(60000);
+  const [userRegisterList, setUserRegisterList] = useState<
+    number[] | undefined
+  >();
+  const [isUserRegistered, setIsUserRegistered] = useState(false);
+  const [isBidded, setIsBidded] = useState(false);
+
+  // Use the isAuth function to determine if the user is authenticated
+  const isAuthenticated = isAuth();
+
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
@@ -52,6 +69,7 @@ const RealEstateDetailModal = ({
   // Use the isAuth function to determine if the user is authenticated
   const isAuthenticated = isAuth();
 
+  //get reasDetail
   useEffect(() => {
     try {
       const fetchRealEstateDetail = async () => {
@@ -65,6 +83,26 @@ const RealEstateDetailModal = ({
     }
   }, []);
 
+  //get userRegisterList
+  useEffect(() => {
+    try {
+      const fetchRealEstates = async () => {
+        const response = await getAuctionUserList(realEstateId);
+        setUserRegisterList(response);
+      };
+      fetchRealEstates();
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        if (userRegisterList?.includes(parseInt(userId))) {
+          setIsUserRegistered(true);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  //get real-time currentBid
   useEffect(() => {
     try {
       const fetchAuctionStatus = async () => {
@@ -93,14 +131,13 @@ const RealEstateDetailModal = ({
         if (snapshot.exists()) {
           const currentBidValue = snapshot.val();
           setCurrentBid(currentBidValue);
-        } else {
-          console.log("Current bid not found in Firebase");
         }
       };
       fetchCurrentBid();
     } catch (error) {}
   });
 
+  //get auction
   useEffect(() => {
     try {
       const fetchRealEstates = async () => {
@@ -110,12 +147,9 @@ const RealEstateDetailModal = ({
           if (snapshot.exists()) {
             setAuction(snapshot.val().auction);
           } else {
-            console.log("Auction not found in Firebase");
             if (realEstateId) {
               const response = await getAuctionHome(realEstateId);
               setAuction(response);
-            } else {
-              console.log("not found id");
             }
           }
         } catch (error) {
@@ -132,6 +166,7 @@ const RealEstateDetailModal = ({
   const dateEndFormat = (dateEnd: any) => {
     setDateEnd(dayjs(dateEnd).format("DD/MM/YYYY HH:mm:ss"));
   };
+
   useEffect(() => {
     try {
       if (realEstateDetail?.dateEnd) {
@@ -162,77 +197,140 @@ const RealEstateDetailModal = ({
     setTabStatus(index);
   };
 
+  //add auction to firebase
   const toggleAuction = (index: string, auction: memberAuction | undefined) => {
     setTabStatus(index);
-    if (auction) {
-      const auctionRef = ref(db, `auctions/${auction.reasId}`);
-      const userId = localStorage.getItem("userId");
-      get(child(auctionRef, "auction"))
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            // Auction already exists
-            console.log("Auction already exists:", auction.reasId);
-            // Check if user exists in the auction
-            const usersRef = ref(db, `auctions/${auction.reasId}/users`);
-            get(usersRef)
-              .then((usersSnapshot) => {
-                if (!userId) {
-                  console.error(
-                    "User ID not found in local storage or is null"
-                  );
-                  return;
-                }
-                if (!usersSnapshot.hasChild(userId)) {
-                  // User doesn't exist, add the new user
-                  console.log("Adding new user to the auction:", userId);
-                  update(ref(db, `auctions/${auction.reasId}/users`), {
-                    [userId]: {
-                      userId: userId,
-                      currentUserBid: 0,
-                    },
-                  });
-                  // Notify all users in the userList
-                  usersSnapshot.forEach((childSnapshot) => {
-                    const userKey = childSnapshot.key;
-                    console.log(
-                      `New user ${userId} has been added to the auction by ${userKey}`
-                    );
-                  });
-                } else {
-                  console.log("UserId already exists in the auction:", userId);
-                }
-              })
-              .catch((error) => {
-                console.error(
-                  "Error checking user existence in the auction:",
-                  error
-                );
-              });
-          } else {
-            // Auction doesn't exist, add it to Firebase
-            console.log(
-              "Auction doesn't exist. Adding it to Firebase:",
-              auction.reasId
-            );
-            set(ref(db, `auctions/${auction.reasId}`), {
-              auction,
-              users: {
-                [localStorage.getItem("userId") || ""]: {
-                  userId: userId,
+    if (!auction) {
+      return;
+    }
+    const auctionRef = ref(db, `auctions/${auction.reasId}`);
+    const usersRef = ref(db, `auctions/${auction.reasId}/users`);
+    const currentBidRef = ref(db, `auctions/${auction.reasId}/currentBid`);
+    const statusRef = ref(db, `auctions/${realEstateId}/status`);
+    const userId = localStorage.getItem("userId");
+
+    var userAlreadyRegistered = false;
+
+    if (userId && userRegisterList) {
+      userAlreadyRegistered = userRegisterList.includes(parseInt(userId));
+    }
+
+    get(child(auctionRef, "auction"))
+      .then((snapshot) => {
+        const auctionData = snapshot.exists() ? snapshot.val() : null;
+        const status = userAlreadyRegistered ? (snapshot.exists() ? 2 : 1) : 0;
+
+        if (!auctionData) {
+          update(auctionRef, {
+            auction,
+            currentBid: auction.floorBid,
+            status,
+            lastBid: auction.dateStart,
+            statusChangeTime: Date.now(),
+          });
+        }
+
+        if (!userId) return;
+
+        if (!userAlreadyRegistered) return;
+
+        get(statusRef).then((statusSnapshot) => {
+          if (statusSnapshot.exists()) {
+            if (statusSnapshot.val() == 4) {
+              return;
+            }
+          }
+        });
+
+        get(usersRef)
+          .then((usersSnapshot) => {
+            if (!usersSnapshot.hasChild(userId)) {
+              update(usersRef, {
+                [userId]: {
+                  userId,
                   currentUserBid: 0,
                 },
-              },
-              currentBid: auction.floorBid,
-            });
+              });
+              if (totalUsers == 0) {
+                update(auctionRef, {
+                  status: 1,
+                  statusChangeTime: Date.now(),
+                });
+              }
+              if (totalUsers == 1) {
+                update(auctionRef, {
+                  status: 2,
+                  statusChangeTime: Date.now(),
+                });
+              }
+              setIsUserRegistered(true);
+            }
+          })
+          .catch((error) => {
+            console.error(
+              "Error checking user existence in the auction:",
+              error
+            );
+          });
+
+        get(currentBidRef)
+          .then((currentBidValue) => {
+            if (currentBidValue.exists()) {
+              const value = currentBidValue.val();
+              setCurrentBid(value);
+              setCurrentInputBid(value);
+            }
+          })
+          .catch((error) => {
+            console.error("Error checking current bid in the auction:", error);
+          });
+      })
+      .catch((error) => {
+        console.error("Error checking auction existence:", error);
+      });
+  };
+
+  //identify the user win the bid
+  const identifyWinner = async () => {
+    try {
+      const usersRef = ref(db, `auctions/${realEstateId}/users`);
+
+      // Get all users and their bids
+      const usersSnapshot = await get(usersRef);
+      const usersData = usersSnapshot.val();
+
+      let highestBid = 0;
+      let winningUserId = 0;
+      const userList: userHistory[] = [];
+      // Iterate over users to find the highest bid and winning user
+      if (usersData) {
+        Object.keys(usersData).forEach((userId) => {
+          userList.push({
+            accountId: parseInt(usersData[userId].userId, 10),
+            lastBidAmount: usersData[userId].currentUserBid,
+          });
+          const userBid = usersData[userId].currentUserBid;
+          if (userBid > highestBid) {
+            highestBid = userBid;
+            winningUserId = parseInt(userId, 10);
           }
-        })
-        .catch((error) => {
-          console.error("Error checking auction existence:", error);
         });
-    } else {
-      console.log("not found");
+      }
+
+      console.log(userList);
+      if (auction) {
+        const auctionDetailDto = {
+          auctionId: auction.auctionId,
+          accountWinId: winningUserId,
+          winAmount: highestBid,
+        };
+        await auctionSuccess(auctionDetailDto, userList);
+      }
+    } catch (error) {
+      console.error("Error identifying winner:", error);
     }
   };
+
   // Tab button status
   const getActiveTab = (index: string) => {
     return `${
@@ -284,34 +382,146 @@ const RealEstateDetailModal = ({
 
   const handleBid = async () => {
     try {
+      const userId = localStorage.getItem("userId");
       // Update the currentBid attribute in Firebase
       const auctionRef = ref(db, `auctions/${auction?.reasId}`);
       await update(auctionRef, {
         currentBid: currentInputBid,
+        lastBid: Date.now(),
       });
 
-      // Optionally, you can also update the currentInputBid state locally if needed
-      setCurrentBid(currentInputBid);
+      const userBidRef = ref(db, `auctions/${auction?.reasId}/users/${userId}`);
+      await update(userBidRef, {
+        currentUserBid: currentInputBid,
+      });
 
-      // Optionally, you can perform any other actions after the bid is successfully updated in Firebase
+      setCurrentBid(currentInputBid);
+      setIsBidded(true);
     } catch (error) {
       console.error("Error updating bid in Firebase:", error);
     }
   };
 
+  //subcribe the lastBid and then plus 60 seconds when lastbid updated
   useEffect(() => {
-    // Set up listener for changes to currentBid attribute in Firebase
-    const auctionRef = ref(db, `auctions/${realEstateId}/currentBid`);
-    const unsubscribe = onValue(auctionRef, (snapshot) => {
-      const newBid = snapshot.val();
-      setCurrentBid(newBid);
+    const lastBidRef = ref(db, `auctions/${realEstateId}/lastBid`);
+    const unsubscribe = onValue(lastBidRef, (snapshot) => {
+      const lastBid = snapshot.val();
+      const newCountdownValue = lastBid + 60000;
+      setCountdownValue(newCountdownValue);
     });
 
-    // Clean up the listener when component unmounts
     return () => {
-      unsubscribe(); // Unsubscribe from updates to prevent memory leaks
+      unsubscribe();
     };
   }, [realEstateId]);
+
+  //set count down for status change
+  useEffect(() => {
+    const lastStatusChangeRef = ref(
+      db,
+      `auctions/${realEstateId}/statusChangeTime`
+    );
+    const unsubscribe = onValue(lastStatusChangeRef, (snapshot) => {
+      const lastChange = snapshot.val();
+      const newCountdownValue = lastChange + 5 * 60000;
+      setCountdownValue(newCountdownValue);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [realEstateId]);
+
+  //subcribe for the new bid
+  useEffect(() => {
+    const currentBidRef = ref(db, `auctions/${realEstateId}/currentBid`);
+    const unsubscribe = onValue(currentBidRef, (snapshot) => {
+      const newBid = snapshot.val();
+      setCurrentBid(newBid);
+      setCurrentInputBid(newBid);
+      setIsBidded(true);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [realEstateId]);
+
+  //subcribe the user registered join the auction
+  useEffect(() => {
+    const usersRef = ref(db, `auctions/${realEstateId}/users`);
+    const unsubscribe = onValue(usersRef, (snapshot) => {
+      let usersList = 0;
+      snapshot.forEach(() => {
+        usersList++;
+      });
+      setTotalUsers(usersList);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [realEstateId]);
+
+  //subcribe the status of the auction
+  useEffect(() => {
+    const statusRef = ref(db, `auctions/${realEstateId}/status`);
+    const unsubscribe = onValue(statusRef, (snapshot) => {
+      const statusValue = snapshot.val();
+      if (statusValue == 0) {
+        setIsUserRegistered(false);
+        setIsAuctionOpen(false);
+        setIsOneParticipant(false);
+        setIsUserAttend(false);
+      } else if (statusValue == 1) {
+        setIsUserRegistered(true);
+        setIsOneParticipant(true);
+      } else if (statusValue == 2) {
+        setIsOneParticipant(false);
+        setIsUserAttend(false);
+      } else if (statusValue == 3) {
+        setIsOneParticipant(false);
+        setIsUserAttend(true);
+        setIsAuctionOpen(true);
+      } else if (statusValue == 4) {
+        setIsUserRegistered(true);
+        setIsAuctionOpen(false);
+        setIsOneParticipant(false);
+        setIsUserAttend(true);
+        setIsBidded(false);
+        identifyWinner();
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [realEstateId]);
+
+  const handleOnFinish = () => {
+    if (auction) {
+      if (currentBid > auction?.floorBid) {
+        const auctionRef = ref(db, `auctions/${realEstateId}`);
+        update(auctionRef, {
+          status: 4,
+        });
+        setIsAuctionOpen(false);
+      }
+    }
+  };
+
+  const handleOnFinishWaiting10Mins = () => {
+    const auctionRef = ref(db, `auctions/${realEstateId}`);
+    update(auctionRef, {
+      status: 4,
+    });
+  };
+
+  const handleOnFinishWaiting5Mins = () => {
+    const auctionRef = ref(db, `auctions/${realEstateId}`);
+    update(auctionRef, {
+      status: 3,
+    });
+  };
 
   const toggleChecked = () => {
     if (checked == true) {
@@ -596,300 +806,208 @@ const RealEstateDetailModal = ({
             </div>
           </div>
           <div className={getActiveTabDetail("auction")}>
-            {userId ? (
-              auctionStatus === 0 ? ( // Not available for selling
-                <div className="flex justify-center p-10">
-                  <div className="text-4xl text-red-700">
-                    Real Estate Is Currently Not Available For Selling
-                  </div>
-                </div>
-              ) : auctionStatus === 1 ? (
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => handleRegister()}
-                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    Register
-                  </button>
-                </div>
-              ) : auctionStatus === 2 ? (
-                <div className="flex justify-center flex-col items-center py-10">
-                  <div className="text-xl text-gray-500">
-                    Payment is currently pending, please check your history in
-                    the profile section for more information
-                  </div>
-                  <button
-                    onClick={() => handleRegister()}
-                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    Register
-                  </button>
-                </div>
-              ) : auctionStatus === 3 ? (
+            {auction ? (
+              <>
                 <div>
                   <Typography variant="h3" className="text-center">
                     Current bid: {NumberFormat(currentBid)}
                   </Typography>
-                  <div className="grid grid-cols-5 gap-4">
-                    {!isAuthenticated ? (
-                      <div className="col-span-3">
-                        <Typography variant="h5">
-                          Auction ends:{" "}
-                          {dayjs(auction?.dateEnd).format(
-                            "DD/MM/YYYY HH:mm:ss"
-                          )}
-                        </Typography>
-                        <div className="font-semibold flex items-center">
-                          <ButtonAnt
-                            type="default"
-                            shape="circle"
-                            icon={<EyeOutlined />}
-                          ></ButtonAnt>
-                          Add to watch list
-                        </div>
-                        <Countdown
-                          value={auction?.dateEnd}
-                          format="D [days] H [hours] m [minutes] s [secs]"
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <div className="col-span-3">
-                          <Typography variant="h5">
-                            Auction ends:{" "}
-                            {dayjs(auction?.dateEnd).format(
-                              "DD/MM/YYYY HH:mm:ss"
-                            )}
-                          </Typography>
-                          <div className="font-semibold flex items-center">
-                            <ButtonAnt
-                              type="default"
-                              shape="circle"
-                              icon={<EyeOutlined />}
-                            ></ButtonAnt>
-                            Add to watch list
-                          </div>
-                          <Countdown
-                            value={auction?.dateEnd}
-                            format="D [days] H [hours] m [minutes] s [secs]"
-                          />
-                        </div>
-                        <div className="col-span-2 flex flex-col space-y-4">
-                          <div className="flex space-x-4">
-                            <div className="flex">
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setCurrentInputBid(currentInputBid - 1000);
-                                }}
-                              >
-                                -
-                              </Button>
-                              <InputNumber
-                                style={{
-                                  width: "auto",
-                                }}
-                                value={NumberFormat(currentInputBid)}
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setCurrentInputBid(currentInputBid + 1000);
-                                }}
-                              >
-                                +
-                              </Button>
-                            </div>
+                  {isBidded ? (
+                    <>
+                      <Countdown
+                        value={countdownValue}
+                        format=" m [minutes] s [secs]"
+                        onFinish={() => handleOnFinish()}
+                      />
+                    </>
+                  ) : null}
+                </div>
 
-                            <Button onClick={handleBid}>Bid</Button>
-                          </div>
-                          <div className="flex flex-row justify-center w-full items-center space-x-4">
-                            <Button onClick={showModal}>Set auto bid</Button>
-                            <Typography variant="h6">
-                              {NumberFormat(currentAutoBidValue)}
-                            </Typography>
-                            <Modal
-                              title="Auto Bid"
-                              open={isModalOpen}
-                              onOk={handleOk}
-                              okType={"default"}
-                              onCancel={handleCancel}
-                              width={300}
-                            >
-                              <div className="space-y-4">
-                                <div className="flex">
-                                  <Button size="sm" onClick={handleDecrease}>
-                                    -
-                                  </Button>
-                                  <InputNumber
-                                    className="w-full"
-                                    value={NumberFormat(currentAutoBidValue)}
-                                  />
-                                  <Button size="sm" onClick={handleIncrease}>
-                                    +
-                                  </Button>
-                                </div>
-                                <div>
-                                  <ButtonAnt
-                                    type="default"
-                                    size="small"
-                                    onClick={toggleChecked}
-                                  >
-                                    {!checked ? "Enable" : "Unable"}
-                                  </ButtonAnt>
-                                </div>
-                                {!isInputValid && (
-                                  <div className="text-red-500">
-                                    Input must be larger than 0!
-                                  </div>
-                                )}
-                              </div>
-                            </Modal>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                <div className="grid grid-cols-5 gap-4">
+                  <div className="col-span-3">
+                    <Typography variant="h5">
+                      Auction start:{" "}
+                      {dayjs(auction?.dateStart).format("DD/MM/YYYY HH:mm:ss")}
+                    </Typography>
+                    <div className="font-semibold flex items-center">
+                      Total user: {totalUsers}
+                    </div>
+                    <Countdown
+                      value={dayjs(auction.dateEnd).toDate().toString()}
+                      format="m [minutes] s [secs]"
+                      prefix="Remain time"
+                    />
                   </div>
+                  {!isAuthenticated ? (
+                    <>
+                      <Typography>Please login first</Typography>
+                    </>
+                  ) : (
+                    <>
+                      {isUserRegistered ? (
+                        <>
+                          {!isOneParticipant ? (
+                            <>
+                              {isUsersAttend ? (
+                                <>
+                                  {isAuctionOpen ? (
+                                    <>
+                                      {" "}
+                                      <div className="col-span-2 flex flex-col space-y-4">
+                                        <div className="flex space-x-4">
+                                          <div className="flex">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => {
+                                                setCurrentInputBid(
+                                                  currentInputBid - 1000000
+                                                );
+                                              }}
+                                              disabled={
+                                                currentInputBid === currentBid
+                                              }
+                                            >
+                                              -
+                                            </Button>
+                                            <InputNumber
+                                              style={{
+                                                width: "auto",
+                                              }}
+                                              value={NumberFormat(
+                                                currentInputBid
+                                              )}
+                                            />
+                                            <Button
+                                              size="sm"
+                                              onClick={() => {
+                                                setCurrentInputBid(
+                                                  currentInputBid + 1000000
+                                                );
+                                              }}
+                                            >
+                                              +
+                                            </Button>
+                                          </div>
+                                          <Button
+                                            onClick={handleBid}
+                                            disabled={
+                                              currentInputBid === currentBid
+                                            }
+                                          >
+                                            Bid
+                                          </Button>
+                                        </div>
+                                        <div className="flex flex-row justify-center w-full items-center space-x-4">
+                                          <Button onClick={showModal}>
+                                            Set auto bid
+                                          </Button>
+                                          <Typography variant="h6">
+                                            {NumberFormat(currentAutoBidValue)}
+                                          </Typography>
+                                          <Modal
+                                            title="Auto Bid"
+                                            open={isModalOpen}
+                                            onOk={handleOk}
+                                            okType={"default"}
+                                            onCancel={handleCancel}
+                                            width={300}
+                                          >
+                                            <div className="space-y-4">
+                                              <div className="flex">
+                                                <Button
+                                                  size="sm"
+                                                  onClick={handleDecrease}
+                                                >
+                                                  -
+                                                </Button>
+                                                <InputNumber
+                                                  className="w-full"
+                                                  value={NumberFormat(
+                                                    currentAutoBidValue
+                                                  )}
+                                                />
+                                                <Button
+                                                  size="sm"
+                                                  onClick={handleIncrease}
+                                                >
+                                                  +
+                                                </Button>
+                                              </div>
+                                              <div>
+                                                <ButtonAnt
+                                                  type="default"
+                                                  size="small"
+                                                  onClick={toggleChecked}
+                                                >
+                                                  {!checked
+                                                    ? "Enable"
+                                                    : "Unable"}
+                                                </ButtonAnt>
+                                              </div>
+                                              {!isInputValid && (
+                                                <div className="text-red-500">
+                                                  Input must be larger than 0!
+                                                </div>
+                                              )}
+                                            </div>
+                                          </Modal>
+                                        </div>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Typography>Auction complete</Typography>
+                                    </>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <Countdown
+                                    value={countdownValue}
+                                    format=" m [minutes] s [secs]"
+                                    onFinish={() =>
+                                      handleOnFinishWaiting5Mins()
+                                    }
+                                  />
+                                  <Typography>
+                                    Auction will start in 5 minutes
+                                  </Typography>
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <Countdown
+                                value={dayjs(auction.dateStart)
+                                  .add(10, "minutes")
+                                  .toString()}
+                                onFinish={() => handleOnFinishWaiting10Mins()}
+                              />
+                              <Typography>
+                                Waiting for users in 10 minutes.
+                              </Typography>
+                              <Typography>
+                                After 10 minutes, no more users. You win
+                              </Typography>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Typography>
+                            You didn't register this auction
+                          </Typography>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
-              ) : (
-                <div>Users List</div>
-              )
+              </>
             ) : (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => toggleLogin()}
-                  className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
-                  Sign In
-                </button>
-              </div>
+              <>
+                <Empty />
+              </>
             )}
-          </div>
-          <div className={getActiveTabDetail("ownership")}>
-            <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-2">
-              <div>
-                <div className="text-center text-lg">Front Certificate</div>
-                <div className="flex items-center justify-center w-full h-64">
-                  {realEstateDetail?.detail &&
-                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front ? (
-                    <img
-                      className="text-transparent w-full h-full object-fill rounded-lg"
-                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front}
-                    />
-                  ) : (
-                    <div
-                      className="flex justify-center items-center text-4xl text-gray-200
-                    "
-                    >
-                      No Image
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="text-center text-lg">Back Certificate</div>
-                <div className="flex items-center justify-center w-full h-64">
-                  {realEstateDetail?.detail &&
-                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_After ? (
-                    <img
-                      className="text-transparent w-full h-full object-fill rounded-lg"
-                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_After}
-                    />
-                  ) : (
-                    <div
-                      className="flex justify-center items-center text-4xl text-gray-200
-                    "
-                    >
-                      No Image
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="text-center text-lg">Ownership Certificate</div>
-                <div className="flex items-center justify-center w-full h-64">
-                  {realEstateDetail?.detail &&
-                  realEstateDetail?.detail.reas_Cert_Of_Home_Ownership ? (
-                    <img
-                      className="text-transparent w-full h-full object-fill rounded-lg"
-                      src={realEstateDetail?.detail.reas_Cert_Of_Home_Ownership}
-                    />
-                  ) : (
-                    <div
-                      className="flex justify-center items-center text-4xl text-gray-200
-                    "
-                    >
-                      No Image
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="text-center text-lg">Registration Book</div>
-                <div className="flex items-center justify-center w-full h-64">
-                  {realEstateDetail?.detail &&
-                  realEstateDetail?.detail.reas_Registration_Book ? (
-                    <img
-                      className="text-transparent w-full h-full object-fill rounded-lg"
-                      src={realEstateDetail?.detail.reas_Registration_Book}
-                    />
-                  ) : (
-                    <div
-                      className="flex justify-center items-center text-4xl text-gray-200
-                    "
-                    >
-                      No Image
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="text-center text-lg">Relationship Document</div>
-                <div className="flex items-center justify-center w-full h-64">
-                  {realEstateDetail?.detail &&
-                  realEstateDetail?.detail
-                    .documents_Proving_Marital_Relationship ? (
-                    <img
-                      className="text-transparent w-full h-full object-fill rounded-lg"
-                      src={
-                        realEstateDetail?.detail
-                          .documents_Proving_Marital_Relationship
-                      }
-                    />
-                  ) : (
-                    <div
-                      className="flex justify-center items-center text-4xl text-gray-200
-                    "
-                    >
-                      No Image
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="text-center text-lg">
-                  Authorization Contract
-                </div>
-                <div className="flex items-center justify-center w-full h-64">
-                  {realEstateDetail?.detail &&
-                  realEstateDetail?.detail.sales_Authorization_Contract ? (
-                    <img
-                      className="text-transparent w-full h-full object-fill rounded-lg"
-                      src={
-                        realEstateDetail?.detail.sales_Authorization_Contract
-                      }
-                    />
-                  ) : (
-                    <div
-                      className="flex justify-center items-center text-4xl text-gray-200
-                    "
-                    >
-                      No Image
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         {showLogin && (

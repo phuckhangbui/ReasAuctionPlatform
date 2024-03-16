@@ -1,12 +1,37 @@
 import { Card } from "antd";
-import AuctionCard from "../AuctionCard";
+import { useState, useEffect , useContext} from "react";
+import { getTotal, getNews } from "../../../../api/admindashboard";
+import { UserContext } from "../../../../context/userContext";
+import NewsCard from "../AuctionCard";
 
 const gridStyle: React.CSSProperties = {
   width: "33.333%",
   textAlign: "center",
 };
 
-const RandomAuction: React.FC = () => {
+const Total: React.FC = () => {
+  const { token } = useContext(UserContext);
+  const [totalData, setTotalData] = useState<Total | undefined>(undefined);
+  const [newsData, setNewsData] = useState<news[] | undefined>(undefined);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (token) {
+          const total: Total | undefined = await getTotal(token);
+          setTotalData(total);
+
+          const news: news[] | undefined = await getNews(token);
+          setNewsData(news);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
   return (
     <>
       <Card
@@ -14,21 +39,21 @@ const RandomAuction: React.FC = () => {
           <div className="flex justify-between">
             <span
               style={{
-                color: "#bdc3c9",
+                color: "burlywood",
                 fontSize: "30px",
                 fontWeight: "bold",
               }}
             >
-              Auction
+              Users: {<span className="text-black">{totalData?.numberOfUser}</span>}
             </span>
             <span
               style={{
-                color: "#bdc3c9",
+                color: "limegreen",
                 fontSize: "30px",
                 fontWeight: "bold",
               }}
             >
-              Total Auction: {<span className="text-black">30</span>}
+              Total Auction: {<span className="text-black">{totalData?.numberOfAuction}</span>}
             </span>
             <span
               style={{
@@ -37,23 +62,23 @@ const RandomAuction: React.FC = () => {
                 fontWeight: "bold",
               }}
             >
-              See all
+              Real Estate: {<span className="text-black">{totalData?.numberOfReas}</span>}
             </span>
           </div>
         }
       >
         <Card.Grid style={gridStyle} hoverable={false}>
-          <AuctionCard />
+          <NewsCard newsItem={newsData?.[0]} />
         </Card.Grid>
         <Card.Grid style={gridStyle} hoverable={false}>
-          <AuctionCard />
+          <NewsCard newsItem={newsData?.[1]} />
         </Card.Grid>
         <Card.Grid style={gridStyle} hoverable={false}>
-          <AuctionCard />
+          <NewsCard newsItem={newsData?.[2]} />
         </Card.Grid>
       </Card>
     </>
   );
 };
 
-export default RandomAuction;
+export default Total;

@@ -21,8 +21,9 @@ namespace API.Helper.VnPay
 
             string vnp_ResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
             string vnp_TransactionStatus = vnpay.GetResponseData("vnp_TransactionStatus");
-            String vnp_SecureHash = vnpayData["vnp_SecureHash"];
+            string vnp_SecureHash = vnpayData["vnp_SecureHash"];
             bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
+            //bool checkSignature = vnpay.ValidateSignature("c85ad2998d07545289cce3c8085f78174cfdfdc5cf6a218945254f0161cedb166c25b89e08006b6d7dc59879a12594ca3be283cd62eae2741eb0dbb695846ddd", "BGNVMWIUSMXPEGVRMMGXTGWSFUMOJZEU");
 
             if (checkSignature)
             {

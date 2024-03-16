@@ -2,6 +2,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, DatePicker, Descriptions, Table, TableProps, Tag } from "antd";
 import React, { useCallback, useContext, useEffect, useState } from "react";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import { UserContext } from "../../../../context/userContext";
 import dayjs from "dayjs";
 import {
@@ -10,13 +11,13 @@ import {
 } from "../../../../api/transaction";
 
 const statusStringMap: { [key: number]: string } = {
-  1: "Received",
-  2: "Sent",
+  0: "Success",
+  1: "Error",
 };
 
 const statusTransactionColorMap: { [key: string]: string } = {
-  Received: "green",
-  Sent: "blue",
+  Success: "green",
+  Error: "red",
 };
 
 const TransactionList: React.FC = () => {
@@ -111,7 +112,6 @@ const TransactionList: React.FC = () => {
       dataIndex: "transactionStatus",
       width: "5%",
       render: (transactionStatus: number) => {
-        if (transactionStatus) {
           const color =
             statusTransactionColorMap[statusStringMap[transactionStatus]];
           return (
@@ -119,15 +119,12 @@ const TransactionList: React.FC = () => {
               {statusStringMap[transactionStatus]}
             </Tag>
           );
-        } else {
-          return null;
-        }
       },
     },
     {
       title: "Money",
       dataIndex: "money",
-      // render: (reasArea: string) => `${reasArea} m²`,
+      render: (money: number) => NumberFormat(money),
       width: "20%",
     },
     {
@@ -216,7 +213,7 @@ const TransactionList: React.FC = () => {
       {
         key: "6",
         label: "Money",
-        children: transactionDetail?.money || "",
+        children: transactionDetail?.money ? NumberFormat(transactionDetail?.money) : "",
       },
       {
         key: "7",
@@ -233,7 +230,7 @@ const TransactionList: React.FC = () => {
     ];
     return items.map((item) => (
       <Descriptions.Item key={item.key} label={item.label}>
-        {item.render ? item.render(item.children) : item.children}
+        {item.children}
       </Descriptions.Item>
     ));
   };

@@ -10,6 +10,7 @@ import {
 } from "../../../../api/adminAuction";
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 
 const AuctionAllList: React.FC = () => {
   const { token } = useContext(UserContext);
@@ -86,6 +87,7 @@ const AuctionAllList: React.FC = () => {
     {
       title: "Floor Bid",
       dataIndex: "floorBid",
+      render: (floorBid: number) => NumberFormat(floorBid),
       width: "15%",
     },
     {
@@ -154,7 +156,7 @@ const AuctionAllList: React.FC = () => {
       {
         key: "6",
         label: "Foor Bid",
-        children: auctionDetailData?.floorBid || 0,
+        children: auctionDetailData?.floorBid ? NumberFormat(auctionDetailData?.floorBid) : "",
       },
       {
         key: "7",
