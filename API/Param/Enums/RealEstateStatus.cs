@@ -12,6 +12,6 @@
         ReUp = 7,
         DeclineAfterAuction = 8,
         Block = 9,
-        WaitingForAuction = 10,
+        WaitingAuction = 10,
     }
 }

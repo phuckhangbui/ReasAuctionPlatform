@@ -95,7 +95,6 @@ using (var scope = app.Services.CreateScope())
     var backgroundTaskService = serviceProvider.GetRequiredService<IBackgroundTaskService>();
 
     RecurringJob.AddOrUpdate("ScheduleAuction", () => backgroundTaskService.ScheduleAuction(), Cron.MinuteInterval(1));
-    RecurringJob.AddOrUpdate("ScheduleSendEmailNoticeAttenders", () => backgroundTaskService.ScheduleSendEmailNoticeAttenders(), Cron.MinuteInterval(10));
 }
 
 app.Run();

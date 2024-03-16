@@ -10,5 +10,9 @@
         public string? ReasName { get; set; }
         public int? DepositId { get; set; }
         public string? TxnRef { get; set; }
+        public string? AccountSendBankingNumber { get; set; }
+        public string? AccountSendBankingCode { get; set; }
+        public string? AccountReceiveBankingNumber { get; set; }
+        public string? AccountReceiveBankingCode { get; set; }
     }
 }

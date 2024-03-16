@@ -22,8 +22,6 @@ namespace API.Helper
             CreateMap<Rule, Rule>();
             CreateMap<RealEstate, RealEstateDto>();
             CreateMap<RealEstatePhoto, RealEstatePhotoDto>();
-            CreateMap<Entity.Task, TaskDto>();
-            CreateMap<Entity.Task, TaskDetailDto>();
             CreateMap<MoneyTransaction, MoneyTransactionDto>()
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
             CreateMap<DepositAmount, DepositAmountDto>();
@@ -32,7 +30,11 @@ namespace API.Helper
                 .ForMember(dest => dest.AccountSendName, opt => opt.MapFrom(src => src.AccountSend.AccountName))
                 .ForMember(dest => dest.AccountReceiveName, opt => opt.MapFrom(src => src.AccountReceive.AccountName))
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
-                .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
+                .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName))
+                .ForMember(dest => dest.AccountSendBankingNumber, opt => opt.MapFrom(src => src.AccountSend.BankingNumber))
+                .ForMember(dest => dest.AccountSendBankingCode, opt => opt.MapFrom(src => src.AccountSend.BankingCode))
+                .ForMember(dest => dest.AccountReceiveBankingNumber, opt => opt.MapFrom(src => src.AccountReceive.BankingNumber))
+                .ForMember(dest => dest.AccountReceiveBankingCode, opt => opt.MapFrom(src => src.AccountReceive.BankingCode));
             CreateMap<Auction, AuctionDto>()
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
             CreateMap<Account, UserProfileDto>()

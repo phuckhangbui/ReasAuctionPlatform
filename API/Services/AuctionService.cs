@@ -42,17 +42,10 @@ namespace API.Services
             return await _auctionRepository.GetAuctionHistoryForOwnerAsync(auctionAccountingParam);
         }
 
-        public async Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam)
+        public async Task<Auction> CreateAuction(AuctionCreateParam auctionCreateParam)
         {
-            bool check = await _auctionRepository.CreateAuction(auctionCreateParam);
-            if (check)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            var auction = await _auctionRepository.CreateAuction(auctionCreateParam);
+            return auction;
         }
 
         public async Task<IEnumerable<DepositAmountUserDto>> GetAllUserForDeposit(int id)
