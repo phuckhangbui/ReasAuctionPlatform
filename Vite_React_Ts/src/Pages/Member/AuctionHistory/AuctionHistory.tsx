@@ -7,8 +7,9 @@ import {
   Chip,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
-import { NumberFormat } from "../../../utils/numbetFormat";
+import { NumberFormat } from "../../../Utils/numbetFormat";
 import { DatePicker, Pagination, Select } from "antd";
+
 
 const AuctionHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -18,6 +19,7 @@ const AuctionHistory: React.FC = () => {
   const [auctionAccounting, setAuctionAccounting] = useState<
     AuctionAccounting[] | undefined
   >([]);
+
   useEffect(() => {
     const fetchedAuctions: AuctionAccounting[] = [];
     for (let i = 1; i <= 10; i++) {
@@ -38,6 +40,8 @@ const AuctionHistory: React.FC = () => {
     }
     setAuctionAccounting(fetchedAuctions);
   }, []);
+
+  
 
   // Update displayed auctions when currentPage or auctionAccounting changes
   useEffect(() => {

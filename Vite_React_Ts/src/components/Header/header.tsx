@@ -8,7 +8,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const currentUrl = useLocation();
   const [showModal, setShowModal] = useState(false);
-  const { userRole, logout } = useContext(UserContext);
+  const { userRole } = useContext(UserContext);
 
   const getActiveLink = (url: string) => {
     return `${
@@ -59,7 +59,7 @@ const Header = () => {
           className="flex items-center space-x-3 rtl:space-x-reverse"
         >
           <img
-            src="../../public/REAS-removebg-preview.png"
+            src="./REAS-removebg-preview.png"
             className="h-8"
             alt="Flowbite Logo"
           />

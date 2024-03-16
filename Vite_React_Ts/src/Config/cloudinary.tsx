@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState, FC } from "react";
+import { createContext, useEffect, useState, FC } from "react";
 
 // Define types for Cloudinary configuration and the setPublicId function
 type CloudinaryConfig = {

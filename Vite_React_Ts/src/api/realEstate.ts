@@ -1,4 +1,5 @@
 import axios from "axios";
+import realEstate from "../interface/RealEstate/realEstate";
 const baseUrl = process.env.REACT_APP_BACK_END_URL;
 
 export const getRealEstateHome = async () => {

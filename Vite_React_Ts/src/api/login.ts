@@ -1,11 +1,14 @@
 import axios from "axios";
 const baseUrl = process.env.REACT_APP_BACK_END_URL;
 
-export const googleLogIn = async (idTokenString: string) => {
+export const googleLogIn = async (
+  idTokenString: string,
+  firebaseRegisterToken: string
+) => {
   try {
     const response = await axios.post(
       `${baseUrl}/api/Account/login/google`,
-      { idTokenString },
+      { idTokenString, firebaseRegisterToken },
       {
         headers: {
           Authorization: `Bearer ${idTokenString}`,

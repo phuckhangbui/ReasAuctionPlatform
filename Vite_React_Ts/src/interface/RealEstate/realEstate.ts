@@ -1,10 +1,10 @@
-interface realEstate {
+export default interface realEstate {
   reasId: number;
   reasName: string;
   reasPrice: string;
   reasArea: number;
   reasTypeName: string;
-  reasStatus: number;
+  reasStatus: string;
   uriPhotoFirst: string
   dateStart: Date;
   dateEnd: Date;

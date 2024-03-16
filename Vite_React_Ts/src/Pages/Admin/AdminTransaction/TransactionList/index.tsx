@@ -21,7 +21,7 @@ const statusTransactionColorMap: { [key: string]: string } = {
 };
 
 const TransactionList: React.FC = () => {
-  const [search, setSearch] = useState<searchTransaction>({
+  const [search, _setSearch] = useState<searchTransaction>({
     dateExecutionFrom: "",
     dateExecutionTo: "",
   });
@@ -67,7 +67,6 @@ const TransactionList: React.FC = () => {
     const [dateExecutionFrom, setDateExecutionFrom] = useState<string | undefined>();
     const [dateExecutionTo, setDateExecutionTo] = useState<string | undefined>();
     const { RangePicker } = DatePicker;
-    const dateFormat = "YYYY-MM-DD";
 
     const handleDateRange = (
       dates: [dayjs.Dayjs | null, dayjs.Dayjs | null],
