@@ -1,7 +1,7 @@
 import { Button, Carousel, Typography } from "@material-tailwind/react";
 import { useContext, useEffect, useState } from "react";
 import { getRealEstateById } from "../../api/realEstate";
-import { NumberFormat } from "../../utils/numbetFormat";
+import { NumberFormat } from "../../Utils/numbetFormat";
 import { Empty, InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
 import { UserContext } from "../../context/userContext";
@@ -11,8 +11,12 @@ import { db } from "../../Config/firebase-config";
 import {
   auctionSuccess,
   getAuctionHome,
+  getAuctionStatus,
   getAuctionUserList,
 } from "../../api/memberAuction";
+import { DepositContext } from "../../context/depositContext";
+import { registerParticipateAuction } from "../../api/transaction";
+import LoginModal from "../LoginModal/loginModal";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -35,7 +39,6 @@ const RealEstateDetailModal = ({
   const [isAuctionOpen, setIsAuctionOpen] = useState(true);
   const [checked, setChecked] = useState(false);
   const [isInputValid, setIsInputValid] = useState(false);
-  const { isAuth } = useContext(UserContext);
   const [dateEnd, setDateEnd] = useState<any>();
   const [auction, setAuction] = useState<memberAuction | undefined>();
   const [totalUsers, setTotalUsers] = useState(0);
@@ -47,15 +50,9 @@ const RealEstateDetailModal = ({
   >();
   const [isUserRegistered, setIsUserRegistered] = useState(false);
   const [isBidded, setIsBidded] = useState(false);
-
-  // Use the isAuth function to determine if the user is authenticated
-  const isAuthenticated = isAuth();
-
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
-  const [dateEnd, setDateEnd] = useState<any>();
-  const [auction, setAuction] = useState<memberAuction | undefined>();
   const [showLogin, setShowLogin] = useState(false);
   const [auctionStatus, setAuctionStatus] = useState<number>();
   // 0: RealEstate not in selling status
@@ -806,208 +803,403 @@ const RealEstateDetailModal = ({
             </div>
           </div>
           <div className={getActiveTabDetail("auction")}>
-            {auction ? (
-              <>
-                <div>
-                  <Typography variant="h3" className="text-center">
-                    Current bid: {NumberFormat(currentBid)}
-                  </Typography>
-                  {isBidded ? (
-                    <>
-                      <Countdown
-                        value={countdownValue}
-                        format=" m [minutes] s [secs]"
-                        onFinish={() => handleOnFinish()}
-                      />
-                    </>
-                  ) : null}
-                </div>
-
-                <div className="grid grid-cols-5 gap-4">
-                  <div className="col-span-3">
-                    <Typography variant="h5">
-                      Auction start:{" "}
-                      {dayjs(auction?.dateStart).format("DD/MM/YYYY HH:mm:ss")}
-                    </Typography>
-                    <div className="font-semibold flex items-center">
-                      Total user: {totalUsers}
-                    </div>
-                    <Countdown
-                      value={dayjs(auction.dateEnd).toDate().toString()}
-                      format="m [minutes] s [secs]"
-                      prefix="Remain time"
-                    />
+            {userId ? (
+              auctionStatus === 0 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    Real Estate Is Currently Not Available For Selling
                   </div>
-                  {!isAuthenticated ? (
-                    <>
-                      <Typography>Please login first</Typography>
-                    </>
-                  ) : (
-                    <>
-                      {isUserRegistered ? (
+                </div>
+              ) : auctionStatus === 1 ? (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    You have not register to take part in auction yet
+                  </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 2 ? (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    You have not register to take part in auction yet
+                  </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 3 ? (
+                auction ? (
+                  <>
+                    <div>
+                      <Typography variant="h3" className="text-center">
+                        Current bid: {NumberFormat(currentBid)}
+                      </Typography>
+                      {isBidded ? (
                         <>
-                          {!isOneParticipant ? (
+                          <Countdown
+                            value={countdownValue}
+                            format=" m [minutes] s [secs]"
+                            onFinish={() => handleOnFinish()}
+                          />
+                        </>
+                      ) : null}
+                    </div>
+
+                    <div className="grid grid-cols-5 gap-4">
+                      <div className="col-span-3">
+                        <Typography variant="h5">
+                          Auction start:{" "}
+                          {dayjs(auction?.dateStart).format(
+                            "DD/MM/YYYY HH:mm:ss"
+                          )}
+                        </Typography>
+                        <div className="font-semibold flex items-center">
+                          Total user: {totalUsers}
+                        </div>
+                        <Countdown
+                          value={dayjs(auction.dateEnd).toDate().toString()}
+                          format="m [minutes] s [secs]"
+                          prefix="Remain time"
+                        />
+                      </div>
+                      {!isAuthenticated ? (
+                        <>
+                          <Typography>Please login first</Typography>
+                        </>
+                      ) : (
+                        <>
+                          {isUserRegistered ? (
                             <>
-                              {isUsersAttend ? (
+                              {!isOneParticipant ? (
                                 <>
-                                  {isAuctionOpen ? (
+                                  {isUsersAttend ? (
                                     <>
-                                      {" "}
-                                      <div className="col-span-2 flex flex-col space-y-4">
-                                        <div className="flex space-x-4">
-                                          <div className="flex">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => {
-                                                setCurrentInputBid(
-                                                  currentInputBid - 1000000
-                                                );
-                                              }}
-                                              disabled={
-                                                currentInputBid === currentBid
-                                              }
-                                            >
-                                              -
-                                            </Button>
-                                            <InputNumber
-                                              style={{
-                                                width: "auto",
-                                              }}
-                                              value={NumberFormat(
-                                                currentInputBid
-                                              )}
-                                            />
-                                            <Button
-                                              size="sm"
-                                              onClick={() => {
-                                                setCurrentInputBid(
-                                                  currentInputBid + 1000000
-                                                );
-                                              }}
-                                            >
-                                              +
-                                            </Button>
-                                          </div>
-                                          <Button
-                                            onClick={handleBid}
-                                            disabled={
-                                              currentInputBid === currentBid
-                                            }
-                                          >
-                                            Bid
-                                          </Button>
-                                        </div>
-                                        <div className="flex flex-row justify-center w-full items-center space-x-4">
-                                          <Button onClick={showModal}>
-                                            Set auto bid
-                                          </Button>
-                                          <Typography variant="h6">
-                                            {NumberFormat(currentAutoBidValue)}
-                                          </Typography>
-                                          <Modal
-                                            title="Auto Bid"
-                                            open={isModalOpen}
-                                            onOk={handleOk}
-                                            okType={"default"}
-                                            onCancel={handleCancel}
-                                            width={300}
-                                          >
-                                            <div className="space-y-4">
+                                      {isAuctionOpen ? (
+                                        <>
+                                          {" "}
+                                          <div className="col-span-2 flex flex-col space-y-4">
+                                            <div className="flex space-x-4">
                                               <div className="flex">
                                                 <Button
                                                   size="sm"
-                                                  onClick={handleDecrease}
+                                                  onClick={() => {
+                                                    setCurrentInputBid(
+                                                      currentInputBid - 1000000
+                                                    );
+                                                  }}
+                                                  disabled={
+                                                    currentInputBid ===
+                                                    currentBid
+                                                  }
                                                 >
                                                   -
                                                 </Button>
                                                 <InputNumber
-                                                  className="w-full"
+                                                  style={{
+                                                    width: "auto",
+                                                  }}
                                                   value={NumberFormat(
-                                                    currentAutoBidValue
+                                                    currentInputBid
                                                   )}
                                                 />
                                                 <Button
                                                   size="sm"
-                                                  onClick={handleIncrease}
+                                                  onClick={() => {
+                                                    setCurrentInputBid(
+                                                      currentInputBid + 1000000
+                                                    );
+                                                  }}
                                                 >
                                                   +
                                                 </Button>
                                               </div>
-                                              <div>
-                                                <ButtonAnt
-                                                  type="default"
-                                                  size="small"
-                                                  onClick={toggleChecked}
-                                                >
-                                                  {!checked
-                                                    ? "Enable"
-                                                    : "Unable"}
-                                                </ButtonAnt>
-                                              </div>
-                                              {!isInputValid && (
-                                                <div className="text-red-500">
-                                                  Input must be larger than 0!
-                                                </div>
-                                              )}
+                                              <Button
+                                                onClick={handleBid}
+                                                disabled={
+                                                  currentInputBid === currentBid
+                                                }
+                                              >
+                                                Bid
+                                              </Button>
                                             </div>
-                                          </Modal>
-                                        </div>
-                                      </div>
+                                            <div className="flex flex-row justify-center w-full items-center space-x-4">
+                                              <Button onClick={showModal}>
+                                                Set auto bid
+                                              </Button>
+                                              <Typography variant="h6">
+                                                {NumberFormat(
+                                                  currentAutoBidValue
+                                                )}
+                                              </Typography>
+                                              <Modal
+                                                title="Auto Bid"
+                                                open={isModalOpen}
+                                                onOk={handleOk}
+                                                okType={"default"}
+                                                onCancel={handleCancel}
+                                                width={300}
+                                              >
+                                                <div className="space-y-4">
+                                                  <div className="flex">
+                                                    <Button
+                                                      size="sm"
+                                                      onClick={handleDecrease}
+                                                    >
+                                                      -
+                                                    </Button>
+                                                    <InputNumber
+                                                      className="w-full"
+                                                      value={NumberFormat(
+                                                        currentAutoBidValue
+                                                      )}
+                                                    />
+                                                    <Button
+                                                      size="sm"
+                                                      onClick={handleIncrease}
+                                                    >
+                                                      +
+                                                    </Button>
+                                                  </div>
+                                                  <div>
+                                                    <ButtonAnt
+                                                      type="default"
+                                                      size="small"
+                                                      onClick={toggleChecked}
+                                                    >
+                                                      {!checked
+                                                        ? "Enable"
+                                                        : "Unable"}
+                                                    </ButtonAnt>
+                                                  </div>
+                                                  {!isInputValid && (
+                                                    <div className="text-red-500">
+                                                      Input must be larger than
+                                                      0!
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </Modal>
+                                            </div>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Typography>
+                                            Auction complete
+                                          </Typography>
+                                        </>
+                                      )}
                                     </>
                                   ) : (
                                     <>
-                                      <Typography>Auction complete</Typography>
+                                      <Countdown
+                                        value={countdownValue}
+                                        format=" m [minutes] s [secs]"
+                                        onFinish={() =>
+                                          handleOnFinishWaiting5Mins()
+                                        }
+                                      />
+                                      <Typography>
+                                        Auction will start in 5 minutes
+                                      </Typography>
                                     </>
                                   )}
                                 </>
                               ) : (
                                 <>
                                   <Countdown
-                                    value={countdownValue}
-                                    format=" m [minutes] s [secs]"
+                                    value={dayjs(auction.dateStart)
+                                      .add(10, "minutes")
+                                      .toString()}
                                     onFinish={() =>
-                                      handleOnFinishWaiting5Mins()
+                                      handleOnFinishWaiting10Mins()
                                     }
                                   />
                                   <Typography>
-                                    Auction will start in 5 minutes
+                                    Waiting for users in 10 minutes.
+                                  </Typography>
+                                  <Typography>
+                                    After 10 minutes, no more users. You win
                                   </Typography>
                                 </>
                               )}
                             </>
                           ) : (
                             <>
-                              <Countdown
-                                value={dayjs(auction.dateStart)
-                                  .add(10, "minutes")
-                                  .toString()}
-                                onFinish={() => handleOnFinishWaiting10Mins()}
-                              />
                               <Typography>
-                                Waiting for users in 10 minutes.
-                              </Typography>
-                              <Typography>
-                                After 10 minutes, no more users. You win
+                                You didn't register this auction
                               </Typography>
                             </>
                           )}
                         </>
-                      ) : (
-                        <>
-                          <Typography>
-                            You didn't register this auction
-                          </Typography>
-                        </>
                       )}
-                    </>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Empty />
+                  </>
+                )
+              ) : (
+                // Status 4: Owner of the auction
+                <div className="col-span-3">
+                  <Typography variant="h5">
+                    Auction start:{" "}
+                    {dayjs(auction?.dateStart).format("DD/MM/YYYY HH:mm:ss")}
+                  </Typography>
+                  <div className="font-semibold flex items-center">
+                    Total user: {totalUsers}
+                  </div>
+                  <Countdown
+                    value={dayjs(auction?.dateEnd).toDate().toString()}
+                    format="m [minutes] s [secs]"
+                    prefix="Remain time"
+                  />
+                </div>
+              )
+            ) : (
+              <div className="flex justify-center">
+                <button
+                  onClick={() => toggleLogin()}
+                  className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
+          </div>
+          <div className={getActiveTabDetail("ownership")}>
+            <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-2">
+              <div>
+                <div className="text-center text-lg">Front Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
                   )}
                 </div>
-              </>
-            ) : (
-              <>
-                <Empty />
-              </>
-            )}
+              </div>
+              <div>
+                <div className="text-center text-lg">Back Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_After ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_After}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Ownership Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Home_Ownership ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Home_Ownership}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Registration Book</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Registration_Book ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Registration_Book}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Relationship Document</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail
+                    .documents_Proving_Marital_Relationship ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={
+                        realEstateDetail?.detail
+                          .documents_Proving_Marital_Relationship
+                      }
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">
+                  Authorization Contract
+                </div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.sales_Authorization_Contract ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={
+                        realEstateDetail?.detail.sales_Authorization_Contract
+                      }
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         {showLogin && (
