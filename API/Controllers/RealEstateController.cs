@@ -1,65 +1,35 @@
-﻿using API.Data;
-using API.DTOs;
-using API.Entity;
-using API.Enums;
+﻿using API.DTOs;
 using API.Errors;
-using API.Interfaces;
+using API.Extension;
+using API.Helper;
+using API.Interface.Service;
 using API.MessageResponse;
-using API.Repository;
-using API.Validate;
-using Microsoft.AspNetCore.Http.HttpResults;
+using API.Param;
+using API.Param.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     public class RealEstateController : BaseApiController
     {
-        private readonly DataContext _context;
-        private readonly IRealEstateRepository _real_estate_repository;
+        private readonly IRealEstateService _realEstateService;
+        private readonly IDepositAmountService _depositAmountService;
+        private const string BaseUri = "/api/home/";
 
-        public RealEstateController(IRealEstateRepository real_estate_repository, DataContext context)
+        public RealEstateController(IRealEstateService realEstateService, IDepositAmountService depositAmountService)
         {
-            _real_estate_repository = real_estate_repository;
-            _context = context;
+            _realEstateService = realEstateService;
+            _depositAmountService = depositAmountService;
         }
 
-        [HttpGet("/home/real_estate")]
-        public async Task<ActionResult<List<ListRealEstateDto>>> ManageRealEstate()
+        [HttpGet(BaseUri + "real_estate")]
+        public async Task<IActionResult> ListRealEstate([FromQuery] PaginationParams paginationParams)
         {
-            var _real_estate_list = _real_estate_repository.GetAll().Where(x => new[] { (int)RealEstateEnum.Selling, (int)RealEstateEnum.Re_up, (int)RealEstateEnum.Auctioning }.Contains(x.ReasStatus)).Select(x => new ListRealEstateDto
-            {
-                ReasId = x.ReasId,
-                ReasName = x.ReasName,
-                ReasPrice = x.ReasPrice,
-                ReasStatus = x.ReasStatus,
-                DateStart = x.DateStart,
-                DateEnd = x.DateEnd,
-            });
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            return Ok(_real_estate_list);
-        }
-
-        [HttpPost("searchRealEstate")]
-        public async Task<ActionResult<List<ListRealEstateDto>>> SearchRealEstateForMember(SearchRealEstateForMemerDto searchRealEstateForMemerDto)
-        {
-            ParseValidate parseValidate = new ParseValidate();
-            var _real_estate_list = _real_estate_repository.GetAll().Where(x =>
-                ((new[] { 2, 4, 7 }.Contains(x.ReasStatus) && searchRealEstateForMemerDto.ReasStatus == -1) || searchRealEstateForMemerDto.ReasStatus == x.ReasStatus) &&
-                (searchRealEstateForMemerDto.ReasName == null || x.ReasName.Contains(searchRealEstateForMemerDto.ReasName)) &&
-                ((string.IsNullOrEmpty(searchRealEstateForMemerDto.ReasPriceFrom) && string.IsNullOrEmpty(searchRealEstateForMemerDto.ReasPriceTo)) ||
-                (parseValidate.ParseStringToInt(x.ReasPrice) >= parseValidate.ParseStringToInt(searchRealEstateForMemerDto.ReasPriceFrom) &&
-                parseValidate.ParseStringToInt(x.ReasPrice) <= parseValidate.ParseStringToInt(searchRealEstateForMemerDto.ReasPriceTo))))
-                .Select(x => new ListRealEstateDto
-                {
-                ReasId = x.ReasId,
-                ReasName = x.ReasName,
-                ReasPrice = x.ReasPrice,
-                ReasStatus = x.ReasStatus,
-                DateStart = x.DateStart,
-                DateEnd = x.DateEnd,
-            });
-            if (!_real_estate_list.Any())
+            var reals = await _realEstateService.ListRealEstate();
+            Response.AddPaginationHeader(new PaginationHeader(reals.CurrentPage, reals.PageSize,
+            reals.TotalCount, reals.TotalPages));
+            if (reals.PageSize == 0)
             {
                 var apiResponseMessage = new ApiResponseMessage("MSG01");
                 return Ok(new List<ApiResponseMessage> { apiResponseMessage });
@@ -68,31 +38,114 @@ namespace API.Controllers
             {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
-                return Ok(_real_estate_list);
-            }
-        }
-        [HttpGet("/home/my_real_estate")]
-        public async Task<ActionResult<List<ListRealEstateDto>>> GetOnwerRealEstate(UserDto userDto)
-        {
-            if(userDto != null)
-            {
-                var list_owner_real_estate = _real_estate_repository.GetAll().Where(x => x.AccountOwnerId == userDto.AccountId).Select(x => new ListRealEstateDto
-                {
-                    ReasId = x.ReasId,
-                    ReasName = x.ReasName,
-                    ReasPrice = x.ReasPrice,
-                    ReasStatus = x.ReasStatus,
-                    DateStart = x.DateStart,
-                    DateEnd = x.DateEnd,
-                });
-                return list_owner_real_estate.ToList();
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
+                return Ok(reals);
             }
         }
 
-           
+        [HttpPost(BaseUri + "real_estate/search")]
+        public async Task<IActionResult> SearchRealEstateForMember(SearchRealEstateParam searchRealEstateDto)
+        {
+            var reals = await _realEstateService.SearchRealEstateForMember(searchRealEstateDto);
+            Response.AddPaginationHeader(new PaginationHeader(reals.CurrentPage, reals.PageSize,
+            reals.TotalCount, reals.TotalPages));
+            if (reals.PageSize == 0)
+            {
+                var apiResponseMessage = new ApiResponseMessage("MSG01");
+                return Ok(new List<ApiResponseMessage> { apiResponseMessage });
+            }
+            else
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                return Ok(reals);
+            }
+        }
+
+        [HttpGet(BaseUri + "real_estate/detail/{id}")]
+        public async Task<ActionResult<RealEstateDetailDto>> ViewRealEstateDetail(int id)
+        {
+            var _real_estate_detail = await _realEstateService.ViewRealEstateDetail(id);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            return Ok(_real_estate_detail);
+        }
+
+        [Authorize(policy: "Member")]
+        [HttpGet(BaseUri + "customer/auction/status")]
+        public async Task<ActionResult<object>> CheckStatusOfUserWithTheRealEstate([FromQuery] string customerId, string reasId)
+        {
+            //
+            // 5 statuses: 
+            // 0: RealEstate not in selling status
+            // 1: Not register in auction
+            // 2: Register but pending payment
+            // 3: Register success
+            // 4: User is the owner of real estate
+
+            if (GetLoginAccountId() != int.Parse(customerId))
+            {
+                return BadRequest(new ApiResponse(400));
+            }
+
+            var realEsateDetail = await _realEstateService.ViewRealEstateDetail(int.Parse(reasId));
+
+            if (realEsateDetail == null)
+            {
+                return BadRequest(new ApiResponse(401));
+            }
+
+            if (realEsateDetail.AccountOwnerId == int.Parse(customerId))
+            {
+                return Ok(new
+                {
+                    message = "User is the onwer of real estate",
+                    status = 4,
+                });
+            }
+
+            if (realEsateDetail.ReasStatus != (int)RealEstateStatus.Selling)
+            {
+                return Ok(new
+                {
+                    message = "Real Estate is not for sale",
+                    status = 0,
+                });
+            }
+
+            var depositAmount = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
+
+            if (depositAmount == null)
+            {
+                return Ok(new
+                {
+                    message = "User have not yet registered in auction",
+                    status = 1
+                });
+            }
+
+            if (depositAmount.Status == (int)(UserDepositEnum.Pending))
+            {
+                return Ok(new
+                {
+                    message = "Auction register is pending",
+                    status = 2,
+                    depositAmount = depositAmount
+                });
+            }
+
+            if (depositAmount.Status == (int)(UserDepositEnum.Deposited))
+            {
+                return Ok(new
+                {
+                    message = "Auction register is success",
+                    status = 3,
+                    depositAmount = depositAmount
+                });
+            }
+
+            return NoContent();
+
+
+        }
     }
 }

@@ -1,0 +1,3 @@
+interface searchNewsAdmin{
+    KeyWord : string
+}

@@ -6,5 +6,5 @@ public class Rule
     public string Content { get; set; }
     public string Title { get; set; }
     public DateTime DateCreated { get; set; }
-    public DateTime DateUpdated { get; set; }
+    public DateTime? DateUpdated { get; set; }
 }

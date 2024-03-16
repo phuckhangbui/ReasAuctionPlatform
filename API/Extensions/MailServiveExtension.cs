@@ -14,7 +14,7 @@ namespace API.Extensions
         {
             services.AddOptions();
             var mailSetting = _configuration.GetSection("MailSetting");
-            services.Configure<MailSetting> (mailSetting);
+            services.Configure<MailSetting>(mailSetting);
 
             services.AddTransient<SendMailService>();
         }

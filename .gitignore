@@ -115,6 +115,10 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 
+### dotenv ###
+.env
+
+
 # Visual Studio profiler
 *.psess
 *.vsp

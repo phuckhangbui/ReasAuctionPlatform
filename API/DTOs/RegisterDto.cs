@@ -8,7 +8,6 @@ namespace API.DTOs
         public string Username { get; set; }
         [Required]
         public string AccountName { get; set; }
-        [Required]
         [EmailAddress]
         public string AccountEmail { get; set; }
         [Required]

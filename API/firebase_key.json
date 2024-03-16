@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "swd-reas",
+  "private_key_id": "859da715ef81b509d30bc9c2de90daae6079ae46",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEugIBADANBgkqhkiG9w0BAQEFAASCBKQwggSgAgEAAoIBAQCu2GWtJ9JjUu1a\nE1hR2uQDm/DDq6P7I4YBelhFDmhNf176UWDpaFdfhftoiX+XPfmHHPtaUZzHLc5j\n68aRkNzDmqXaoR0Y5KjEtZT6Q47FYs8xueHtKRBPiEZKTR+92ijQlIOYMAiDNVGd\n2jXulDnmaSaSWyrSa7wioJEz5C0+/UVO9gUYRQOojVQ/uz0hAqhmq8yyJqS1vDNx\neBXThQyox8Kb8lMcYXPgNgiA527fN3Nda1WxX/q/xKhabdSXaz57hExva5Aa1D2E\n97HOy/xUR6nrPDU3Ppr2oa1pwbkf+XAE0ESwk7s2RxuTqD0xG85XIENvsmPbO2cA\nY1I6QbdnAgMBAAECgf8X2j8b/z9bLm06qiriVSyuxbo9c4YtU+090gJ+kAgfBosB\n4Pks7ewz0i6NdUvXkFrqstcL1HtFLQY1LtnzpLwrtRfrO4upQnE4B50Y5EVMM+Tx\nLWbADwx8Cy6i7IV7bJkVT8iUifj8aXwhpAQr4TtaN3J0XiJePRZCuldiVCdMZLGv\n2dBnOP3odjylTo0+luVAbmGoglHtxhyHaEOveL890S31lxOwRfMEyeSs/Co5P2QT\nF6A9Hxy9vVfvJeP2oE1QxCsH6zZ2R84StPSa7Kjfi+wEun+760B3ItJ9G4cKwsL4\nKlN5mRkxo4nFstzHbrbCoU0XYcGN2J43Qj8pDnkCgYEA42C2C3JCPQrb8rgmwoK8\n84FW1HvwDQAuKq3V7tPJAfDU7zKxLTgvDyRQ3j3Vz/pqM9spCzDtjNStxh5yCmGn\nR7qoGRzd1g7Faf+jpsbnNyRitR8jWUXLDYhVA2KMheFHUB3jiQSmd8LaTr9CiMFX\nO7zgqNr3tVNGZsMts+IxFUkCgYEAxNrRWWkZ+ttzO944vMTGn7ye2ZHBBnM6cSo6\ntnqd4ixRB+qqR/Gfjq+Znwc1qZTPoRqJyiE6qDuyMglKQ5AMbj2HBkYIcSzCkWaz\nA77qtuYxF4cGEqNrqNKiS7XCIZmnPGyDgDlPkkaX9+hRgPSoovWvqQ/jrAB9A1ao\nSaPrVy8CgYB0b1nJksEIsT7glByFDp3jtB/av3y1q5n4kPw0SI9uRv1DYBoKpfKz\nNk2TAOc0kW9BDsF90ZhTvbUe9wg++LLIsHTUJ0wSCY5eMWKETOap/h/tz/wyAuNw\nEpg2G4kKJcp25FdYGuGEAmv4V0ii7x7UoGwLC9Y9LF+oz9nfe7zWwQKBgCos23d1\nfhxx0eF8vdkrq4ZjqgDhKmLQYzAFpSidYqAncIDqtOrPCKlQU/BvYf7gJA/XGLhW\noDOU/pubw+5vuUoRIpGkhYCB33m5cBcYWz8uWEw7IIDzxEgaQK1J1rrOKbdXZGEf\nZj3no/14J6YiRNMNIkJtZhDe1enWMh384Zn/AoGAbwDihclrwlkv6tbTI8gitGzj\n4btnXf7+ElRFBMeSIP3WLNeCIbK4GGIiamZWvBwGvsYY4df04rSIdOlQwTFj5/Bf\nV20QIIsERXCaMihMAh+l0VCtUMjyfgrwvVqK3j3PruPwsw38FrzHfBvLVZ6MhpzH\nqADLxaYKULdS23iqA9w=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-d8m2l@swd-reas.iam.gserviceaccount.com",
+  "client_id": "114157566677884276856",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-d8m2l%40swd-reas.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

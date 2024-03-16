@@ -1,5 +1,5 @@
 ﻿using API.Data;
-using API.Interfaces;
+using API.Interface.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repository
@@ -13,18 +13,25 @@ namespace API.Repository
             _context = context;
         }
 
-        public ICollection<T> GetAll()
+        public async Task<List<T>> GetAllAsync()
         {
-            return _context.Set<T>().ToList();
+            return await _context.Set<T>().ToListAsync();
         }
 
-        public void Create(T entity)
+        public async Task<bool> CreateAsync(T entity)
         {
-            _context.Set<T>().Add(entity);
-            _context.SaveChanges();
+            try
+            {
+                _context.Set<T>().Add(entity);
+                await _context.SaveChangesAsync();
+                return true;
+            }catch (Exception ex)
+            {
+                return false;
+            }
         }
 
-        public void Delete(ICollection<T> entity)
+        public async Task DeleteAsync(ICollection<T> entity)
         {
             try
             {
@@ -32,7 +39,7 @@ namespace API.Repository
                 {
                     _context.Set<T>().Remove(t);
                 }
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -41,11 +48,18 @@ namespace API.Repository
 
         }
 
-        public void Update(T entity)
+        public async Task<bool> UpdateAsync(T entity)
         {
-            var tracker = _context.Attach(entity);
-            tracker.State = EntityState.Modified;
-            _context.SaveChanges();
+            try
+            {
+                var tracker = _context.Attach(entity);
+                tracker.State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return true;
+            }catch(Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

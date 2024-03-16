@@ -19,14 +19,23 @@
         public const string MSG15 = "MSG15";
         public const string MSG16 = "MSG16";
         public const string MSG17 = "MSG17";
+        public const string MSG18 = "MSG18";
+        public const string MSG19 = "MSG19";
+        public const string MSG20 = "MSG20";
+        public const string MSG21 = "MSG21";
+        public const string MSG22 = "MSG22";
+        public const string MSG23 = "MSG23";
+        public const string MSG24 = "MSG24";
+        public const string MSG25 = "MSG25";
+        public const string MSG26 = "MSG26";
 
 
-        public string MessageCode { get; set; }
+        public string StatusCode { get; set; }
         public string Message { get; set; }
-        public ApiResponseMessage(string messageCode, string message = null)
+        public ApiResponseMessage(string statusCode, string message = null)
         {
-            MessageCode = messageCode;
-            Message = message ?? GetMessageForMessageCode(messageCode);
+            StatusCode = statusCode;
+            Message = message ?? GetMessageForMessageCode(statusCode);
         }
 
         private string GetMessageForMessageCode(string messageCode) => messageCode switch
@@ -48,6 +57,15 @@
             MSG15 => "The system has recorded your successful registration to participate in the auction.",
             MSG16 => "Your real estate has been recorded in the system, please wait for admin to confirm.",
             MSG17 => "Change status account successfully. ",
+            MSG18 => "Create new rule successfully",
+            MSG19 => "Your real estate has uploaded on website.",
+            MSG20 => "The amount you entered to pay does not match the suggested amount.",
+            MSG21 => "Create new news successfully",
+            MSG22 => "Username already exists",
+            MSG23 => "Email already exists",
+            MSG24 => "Create task successfully.",
+            MSG25 => "Update task successfully.",
+            MSG26 => "Refund money successfully.",
             _ => null
         };
     }
