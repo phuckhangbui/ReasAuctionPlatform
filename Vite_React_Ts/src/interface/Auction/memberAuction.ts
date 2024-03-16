@@ -2,8 +2,8 @@ interface memberAuction {
   auctionId: number;
   reasId: number;
   reasName: string;
-  dateStart: any;
-  dateEnd: any;
+  dateStart: Date;
+  dateEnd: Date;
   floorBid: number;
   status: string;
 }

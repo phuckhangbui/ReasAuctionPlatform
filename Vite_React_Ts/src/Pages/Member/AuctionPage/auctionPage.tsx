@@ -61,7 +61,7 @@ const AuctionPage = () => {
         <form action="">
           <div className="w-full relative">
             <img
-              src="../../public/Search-bar-bg.jpg"
+              src="./Search-bar-bg.jpg"
               alt=""
               className="w-full md:h-96 sm:h-72 object-cover"
             />
@@ -75,7 +75,7 @@ const AuctionPage = () => {
                   placeHolder="Search for the auction you want to see"
                   inputName="autionName"
                   nameValue={searchParams?.keyword || ""}
-                  onSearchChange={function (value: string): void {
+                  onSearchChange={function (_value: string): void {
                     throw new Error("Function not implemented.");
                   }}
                 />

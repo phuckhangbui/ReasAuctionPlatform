@@ -95,7 +95,7 @@ const CompleteList: React.FC = () => {
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (index: number) => index + 1,
     },
     {
       title: "Reas Name",
