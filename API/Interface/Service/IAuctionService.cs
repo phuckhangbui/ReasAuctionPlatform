@@ -24,5 +24,6 @@ namespace API.Interface.Service
         Task<List<int>> GetAuctionAttenders(int reasId);
         Task<Auction> UpdateAuctionWhenStart(int auctionId);
         Task<List<int>> GetUserInAuction(int reasId);
+        Task<Auction> GetAuctionByAuctionId(int auctionId);
     }
 }

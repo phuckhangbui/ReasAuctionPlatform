@@ -32,7 +32,7 @@ namespace API.Services
             _mapper = mapper;
         }
 
-        public async System.Threading.Tasks.Task<AuctionAccountingDto> UpdateAuctionAccounting(AuctionDetailDto auctionDetailDto)
+        public async System.Threading.Tasks.Task<AuctionAccountingDto> CreateAuctionAccounting(AuctionDetailDto auctionDetailDto)
         {
             //get auction accounting
             AuctionAccounting auctionAccountingOld = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionDetailDto.AuctionId);
@@ -89,12 +89,32 @@ namespace API.Services
         public async Task<AuctionAccountingDto> GetAuctionAccounting(int auctionId)
         {
             var auctionAccouting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
-            if (auctionAccouting == null) 
+            if (auctionAccouting == null)
             {
                 throw new BaseNotFoundException($"AuctionAccounting with auction ID {auctionId} not found.");
             }
-            
+
             return _mapper.Map<AuctionAccountingDto>(auctionAccouting);
+        }
+
+        public async Task<AuctionAccountingDto> UpdateAuctionAccountingWinner(AuctionDetailDto auctionUpdateInformation)
+        {
+            AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionUpdateInformation.AuctionId);
+
+            Account accountWin = await _accountRepository.GetAccountByAccountIdAsync(auctionUpdateInformation.AccountWinId);
+
+            auctionAccounting.AccountWinId = accountWin.AccountId;
+            auctionAccounting.AccountWinName = accountWin.AccountName;
+            auctionAccounting.MaxAmount = auctionUpdateInformation.WinAmount;
+            auctionAccounting.EstimatedPaymentDate = DateTime.Now.AddDays(DATE_UNTIL_PAY);
+            auctionAccounting.CommissionAmount = auctionUpdateInformation.WinAmount * COMMISSION_PERCENT;
+            auctionAccounting.AmountOwnerReceived = auctionUpdateInformation.WinAmount - auctionAccounting.CommissionAmount;
+
+            await _auctionAccountingRepository.UpdateAsync(auctionAccounting);
+
+            AuctionAccountingDto auctionAccountingDto = _mapper.Map<AuctionAccounting, AuctionAccountingDto>(auctionAccounting);
+            return auctionAccountingDto;
+
         }
     }
 }

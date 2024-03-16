@@ -149,5 +149,11 @@ namespace API.Services
         {
             return await _auctionRepository.GetUserIdInAuctionUsingReasId(reasId);
         }
+
+        public async Task<Auction> GetAuctionByAuctionId(int auctionId)
+        {
+            return await _auctionRepository.GetAuctionByAuctionId(auctionId);
+        }
+
     }
 }
