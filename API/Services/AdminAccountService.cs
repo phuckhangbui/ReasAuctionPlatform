@@ -2,6 +2,7 @@
 using API.Interface.Repository;
 using API.Interface.Service;
 using API.Param;
+using API.Param.Enums;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -55,7 +56,7 @@ namespace API.Services
                 newaccount.RoleId = 2;
                 newaccount.Date_Created = DateTime.UtcNow;
                 newaccount.Date_End = DateTime.MaxValue;
-                newaccount.Account_Status = 1;
+                newaccount.Account_Status = (int)AccountStatus.Active;
                 bool flag = await _accountRepository.CreateAsync(newaccount);
                 if (flag)
                 {

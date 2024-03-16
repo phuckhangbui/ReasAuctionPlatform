@@ -32,7 +32,7 @@ namespace API.Services
 
         public IAccountRepository AccountRepository => _account_repository;
 
-        public async Task<bool> CreateNewRealEstate(NewRealEstateParam newRealEstateParam, int userMember)
+        public async Task<RealEstate> CreateNewRealEstate(NewRealEstateParam newRealEstateParam, int userMember)
         {
             var newRealEstate = new RealEstate();
             var newPhotoList = new RealEstatePhoto();
@@ -72,16 +72,17 @@ namespace API.Services
                     newDetail.Documents_Proving_Marital_Relationship = newRealEstateParam.Detail.Documents_Proving_Marital_Relationship;
                     newDetail.ReasId = newRealEstate.ReasId;
                     bool flag = await _real_estate_detail_repository.CreateAsync(newDetail);
-                    if (flag) return true;
-                    else return false;
+                    if (flag) return newRealEstate;
+                    else return null;
                 }
                 catch (Exception ex)
                 {
-                    return false;
+                    return null;
                 }
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                return false;
+                return null;
             }
         }
 

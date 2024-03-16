@@ -165,7 +165,7 @@ namespace API.Repository
             if (account != null)
             {
                 account.Account_Status = changeStatusAccountDto.AccountStatus;
-                if (changeStatusAccountDto.AccountStatus == 0)
+                if (changeStatusAccountDto.AccountStatus == (int)AccountStatus.Block)
                 {
                     account.Date_End = DateTime.UtcNow;
                 }
@@ -232,5 +232,10 @@ namespace API.Repository
             return account;
         }
 
+        public async Task<List<Account>> GetAllStaffAndAdminAccounts()
+        {
+            return _context.Account.Where(a => (a.RoleId == (int)RoleEnum.Staff || a.RoleId == (int)RoleEnum.Admin)
+                                        && a.Account_Status == (int)AccountStatus.Active).ToList();
+        }
     }
 }
