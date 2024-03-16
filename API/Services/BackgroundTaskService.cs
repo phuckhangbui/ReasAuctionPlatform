@@ -109,9 +109,9 @@ namespace API.Services
 
                 if (realEstateToBeUpdated != null && realEstateToBeUpdated.ReasStatus == (int)RealEstateStatus.Selling)
                 {
-                    realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.WaitingForAuction;
+                    realEstateToBeUpdated.ReasStatus = (int)RealEstateStatus.WaitingAuction;
                     await _realEstateRepository.UpdateAsync(realEstateToBeUpdated);
-                    _logger.LogInformation($"Real estate id: {realEstateToBeUpdated.ReasId} status updated to 'WaitingForAuction' successfully at {DateTime.Now}.");
+                    _logger.LogInformation($"Real estate id: {realEstateToBeUpdated.ReasId} status updated to 'WaitingAuction' successfully at {DateTime.Now}.");
                 }
             }
             catch (Exception ex)
