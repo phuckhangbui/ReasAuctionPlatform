@@ -834,7 +834,7 @@ const RealEstateDetailModal = ({
                     Register
                   </button>
                 </div>
-              ) : auctionStatus === 3 ? (
+              ) : auctionStatus === 3 || auctionStatus === 4 ? (
                 auction ? (
                   <>
                     <div>
@@ -1043,26 +1043,16 @@ const RealEstateDetailModal = ({
                     </div>
                   </>
                 ) : (
-                  <>
-                    <Empty />
-                  </>
+                  <div className="flex justify-center p-10">
+                    <div className="text-4xl text-gray-500">
+                      Auction Is Currently Not Available
+                    </div>
+                  </div>
                 )
               ) : (
-                // Status 4: Owner of the auction
-                <div className="col-span-3">
-                  <Typography variant="h5">
-                    Auction start:{" "}
-                    {dayjs(auction?.dateStart).format("DD/MM/YYYY HH:mm:ss")}
-                  </Typography>
-                  <div className="font-semibold flex items-center">
-                    Total user: {totalUsers}
-                  </div>
-                  <Countdown
-                    value={dayjs(auction?.dateEnd).toDate().toString()}
-                    format="m [minutes] s [secs]"
-                    prefix="Remain time"
-                  />
-                </div>
+                <>
+                  <Empty />
+                </>
               )
             ) : (
               <div className="flex justify-center">
