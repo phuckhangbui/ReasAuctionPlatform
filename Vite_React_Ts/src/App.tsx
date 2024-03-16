@@ -28,7 +28,6 @@ import { useEffect } from "react";
 import { onMessage } from "firebase/messaging";
 import { messaging } from "./Config/firebase-config";
 import toast from "react-hot-toast";
-import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
 import SuccessPage from "./Pages/Member/SuccessPage/successPage";
 import MemberRealEstatePage from "./Pages/Member/MemberRealEstatePage/memberRealEstatePage";
 import AdminCreateNews from "./Pages/Admin/AdminCreateNews";
@@ -36,6 +35,8 @@ import NewsList from "./components/News/newsList";
 import DepositList from "./Pages/Admin/AdminCreateAuction";
 import AddRule from "./Pages/Admin/AdminAddRule";
 import AdminRule from "./Pages/Admin/AdminRule";
+import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
+import TransactionHistory from "./Pages/Member/TransactionHistory";
 
 const roles = {
   Admin: 1,
@@ -65,8 +66,9 @@ function App() {
             <Route path="/news" element={<NewsPage />} />
 
             <Route element={<RequiredAuth allowedRoles={[roles.Member]} />}>
-              <Route path="/sell" element={<SellPage />} />
               <Route path="/history" element={<AuctionHistory />} />
+              <Route path="/transaction" element={<TransactionHistory />} />
+              <Route path="/sell" element={<SellPage />} />
               <Route path="/memberReas" element={<MemberRealEstatePage />} />
               <Route path="/success" element={<SuccessPage />} />
             </Route>
@@ -79,19 +81,19 @@ function App() {
               <Route index element={<AdminDashboard />} />
 
               <Route element={<RequiredAuth allowedRoles={[roles.Admin]} />}>
-              <Route path="term" element={<AdminRule/>}/>
-              <Route path="term/create" element={<AddRule/>}/>
+                <Route path="term" element={<AdminRule />} />
+                <Route path="term/create" element={<AddRule />} />
 
                 <Route path="task" element={<Task />} />
                 <Route path="task/create" element={<TaskCreate />} />
               </Route>
 
-              <Route path="news" element={<NewsList/>}/>
-              <Route path="news/create" element={<AdminCreateNews/>}/>
+              <Route path="news" element={<NewsList />} />
+              <Route path="news/create" element={<AdminCreateNews />} />
 
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
               <Route path="auction/complete" element={<AuctionComplete />} />
-              <Route path= "auction/create" element ={<DepositList/>}/>
+              <Route path="auction/create" element={<DepositList />} />
 
               <Route path="user/staff" element={<AdminStaffList />} />
               <Route path="user/member" element={<AdminMemberList />} />

@@ -26,6 +26,10 @@ const profileMenuItems = [
     path: "history",
   },
   {
+    label: "Transaction history",
+    path: "transaction",
+  },
+  {
     label: "Sign Out",
     path: "signout",
   },
@@ -53,6 +57,9 @@ export function AvatarDropdown() {
           break;
         case "realEstate":
           navigate("/memberReas");
+          break;
+        case "transaction":
+          navigate("/transaction");
           break;
       }
     }
