@@ -37,7 +37,7 @@ namespace API.Services
             var newRealEstate = new RealEstate();
             var newPhotoList = new RealEstatePhoto();
             var newDetail = new RealEstateDetail();
-            //ConvertStringToFile convertStringToFile = new ConvertStringToFile();
+            bool checkProcess = false;
             newRealEstate.ReasName = newRealEstateParam.ReasName;
             newRealEstate.ReasPrice = newRealEstateParam.ReasPrice;
             newRealEstate.ReasAddress = newRealEstateParam.ReasAddress;
@@ -56,43 +56,29 @@ namespace API.Services
                 await _real_estate_repository.CreateAsync(newRealEstate);
                 foreach (PhotoFileDto photos in newRealEstateParam.Photos)
                 {
-                    try
-                    {
-                        //newPhotoList.ReasPhotoUrl = result.SecureUrl.AbsoluteUri;
-                        newPhotoList.ReasId = newRealEstate.ReasId;
-                        newPhotoList.ReasPhotoUrl = photos.ReasPhotoUrl;
-                        bool check = await _real_estate_photo_repository.CreateAsync(newPhotoList);
-                        if (check)
-                        {
-                            try
-                            {
-                                newDetail.Reas_Cert_Of_Land_Img_Front = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_Front;
-                                newDetail.Reas_Cert_Of_Land_Img_After = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_After;
-                                newDetail.Reas_Cert_Of_Home_Ownership = newRealEstateParam.Detail.Reas_Cert_Of_Home_Ownership;
-                                newDetail.Reas_Registration_Book = newRealEstateParam.Detail.Reas_Registration_Book;
-                                newDetail.Sales_Authorization_Contract = newRealEstateParam.Detail.Sales_Authorization_Contract;
-                                newDetail.Documents_Proving_Marital_Relationship = newRealEstateParam.Detail.Documents_Proving_Marital_Relationship;
-                                newDetail.ReasId = newRealEstate.ReasId;
-                                bool flag = await _real_estate_detail_repository.CreateAsync(newDetail);
-                                if (flag) return newRealEstate;
-                                else return null;
-                            }
-                            catch (Exception ex)
-                            {
-                                return null;
-                            }
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        return null;
-                    }
+                    newPhotoList.ReasPhotoId = 0;
+                    newPhotoList.ReasId = newRealEstate.ReasId;
+                    newPhotoList.ReasPhotoUrl = photos.ReasPhotoUrl;
+                    await _real_estate_photo_repository.CreateAsync(newPhotoList);
                 }
-                return newRealEstate;
+                try
+                {
+                    newDetail.ReasDetailId = 0;
+                    newDetail.Reas_Cert_Of_Land_Img_Front = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_Front;
+                    newDetail.Reas_Cert_Of_Land_Img_After = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_After;
+                    newDetail.Reas_Cert_Of_Home_Ownership = newRealEstateParam.Detail.Reas_Cert_Of_Home_Ownership;
+                    newDetail.Reas_Registration_Book = newRealEstateParam.Detail.Reas_Registration_Book;
+                    newDetail.Sales_Authorization_Contract = newRealEstateParam.Detail.Sales_Authorization_Contract;
+                    newDetail.Documents_Proving_Marital_Relationship = newRealEstateParam.Detail.Documents_Proving_Marital_Relationship;
+                    newDetail.ReasId = newRealEstate.ReasId;
+                    bool flag = await _real_estate_detail_repository.CreateAsync(newDetail);
+                    if (flag) return newRealEstate;
+                    else return null;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
             }
             catch (Exception ex)
             {

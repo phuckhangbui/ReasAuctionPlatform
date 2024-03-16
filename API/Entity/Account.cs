@@ -25,14 +25,9 @@ public class Account
 
 
     public List<RealEstate> RealEstate { get; set; }
-    public List<Task> TasksCreated { get; set; }
-    public List<Task> TasksAssigned { get; set; }
-    public List<Log> LogWrote { get; set; }
     public List<Auction> Auctions { get; set; }
     public List<MoneyTransaction> MoneyTransactionsSent { get; set; }
     public List<MoneyTransaction> MoneyTransactionsReceived { get; set; }
-    public List<Message> MessagesSent { get; set; }
-    public List<Message> MessagesReceived { get; set; }
     public List<News> NewsCreated { get; set; }
     public List<DepositAmount> DepositAmount { get; set; }
     public List<AuctionAccounting> WonAuctionAccountings { get; set; }

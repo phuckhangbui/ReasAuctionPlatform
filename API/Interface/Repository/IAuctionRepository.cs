@@ -18,7 +18,7 @@ namespace API.Interface.Repository
         Task<IEnumerable<ReasForAuctionDto>> GetAuctionsReasForCreate();
         Task<IEnumerable<DepositAmountUserDto>> GetAllUserForDeposit(int id);
         Task<bool> EditAuctionStatus(string autionId, string statusCode);
-        Task<bool> CreateAuction(AuctionCreateParam auctionCreateParam);
+        Task<Auction> CreateAuction(AuctionCreateParam auctionCreateParam);
         Auction GetAuction(int auctionId);
         Task<PageList<AttenderAuctionHistoryDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam);
         Task<PageList<AuctionDto>> GetAuctionHistoryForOwnerAsync(AuctionHistoryParam auctionAccountingParam);
@@ -27,5 +27,6 @@ namespace API.Interface.Repository
         Task<List<int>> GetAuctionAttenders(int reasId);
         Task<List<string>> GetAuctionAttendersEmail(int auctionId);
         Task<List<int>> GetUserIdInAuctionUsingReasId(int reasId);
+        Task<List<Account>> GetAccoutnDepositedInAuctionUsingReasId(int reasId);
     }
 }

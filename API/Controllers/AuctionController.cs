@@ -26,10 +26,11 @@ namespace API.Controllers
         private readonly IMoneyTransactionService _moneyTransactionService;
         private readonly IRealEstateService _realEstateService;
         private readonly IParticipantHistoryService _participantHistoryService;
+        private readonly INotificatonService _notificatonService;
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
 
-        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService)
+        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService, INotificatonService notificatonService)
         {
             _auctionService = auctionService;
             _auctionAccountingService = auctionAccountingService;
@@ -39,6 +40,7 @@ namespace API.Controllers
             _vnPayService = vnPayService;
             _realEstateService = realEstateService;
             _participantHistoryService = participantHistoryService;
+            _notificatonService = notificatonService;
         }
 
         [HttpGet("/auctions/{reasId}")]
@@ -230,6 +232,18 @@ namespace API.Controllers
                 {
                     //send email
                     await _auctionAccountingService.SendWinnerEmail(auctionAccountingDto);
+
+                    //send notification
+                    _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
+
+                    _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AccountWinId);
+
+                    _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
+
+                    userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
+
+                    _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
+
                 }
             }
             catch (Exception ex)
@@ -472,9 +486,12 @@ namespace API.Controllers
         [HttpPost("admin/create")]
         public async Task<ActionResult<ApiResponseMessage>> CreateAuction(AuctionCreateParam auctionCreateParam)
         {
-            bool check = await _auctionService.CreateAuction(auctionCreateParam);
-            if (check)
+            var auction = await _auctionService.CreateAuction(auctionCreateParam);
+            if (auction != null)
             {
+                //send noti here
+                await _notificatonService.SendNotificationWhenCreateAuction(auction.AuctionId);
+
                 return new ApiResponseMessage("MSG05");
             }
             else
