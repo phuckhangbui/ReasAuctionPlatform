@@ -1,7 +1,7 @@
-import { Button, Carousel, Input, Typography } from "@material-tailwind/react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { Button, Carousel, Typography } from "@material-tailwind/react";
+import { useContext, useEffect, useState } from "react";
 import { getRealEstateById } from "../../api/realEstate";
-import { NumberFormat } from "../../utils/numbetFormat";
+import { NumberFormat } from "../../Utils/numbetFormat";
 import { InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
@@ -9,12 +9,14 @@ import { UserContext } from "../../context/userContext";
 import dayjs from "dayjs";
 import { set, ref, get, child, update, onValue } from "firebase/database";
 import { db } from "../../Config/firebase-config";
-import { getAuctionHome } from "../../api/memberAuction";
+import { getAuctionHome, getAuctionStatus } from "../../api/memberAuction";
+import LoginModal from "../LoginModal/loginModal";
+import { DepositContext } from "../../context/depositContext";
+import { registerParticipateAuction } from "../../api/transaction";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
   closeModal: () => void;
-  address: string;
   index: string;
 }
 
@@ -32,16 +34,23 @@ const RealEstateDetailModal = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checked, setChecked] = useState(false);
   const [isInputValid, setIsInputValid] = useState(false);
-  const { isAuth } = useContext(UserContext);
-  const [dateEnd, setDateEnd] = useState<any>();
-  const [auction, setAuction] = useState<memberAuction | undefined>();
-
-  // Use the isAuth function to determine if the user is authenticated
-  const isAuthenticated = isAuth();
-
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
+  const [dateEnd, setDateEnd] = useState<any>();
+  const [auction, setAuction] = useState<memberAuction | undefined>();
+  const [showLogin, setShowLogin] = useState(false);
+  const [auctionStatus, setAuctionStatus] = useState<number>();
+  // 0: RealEstate not in selling status
+  // 1: Not register in auction
+  // 2: Register but pending payment
+  // 3: Register success
+  // 4: User is the owner of real estate
+
+  const { getDeposit } = useContext(DepositContext);
+  const { isAuth, token, userId } = useContext(UserContext);
+  // Use the isAuth function to determine if the user is authenticated
+  const isAuthenticated = isAuth();
 
   useEffect(() => {
     try {
@@ -49,11 +58,32 @@ const RealEstateDetailModal = ({
         const response = await getRealEstateById(realEstateId);
         setRealEstateDetail(response);
       };
+
       fetchRealEstateDetail();
     } catch (error) {
       console.log(error);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      const fetchAuctionStatus = async () => {
+        if (userId && token) {
+          if (realEstateDetail?.reasId) {
+            const response = await getAuctionStatus(
+              userId,
+              realEstateDetail.reasId,
+              token
+            );
+            if (response) {
+              setAuctionStatus(response?.status);
+            }
+          }
+        }
+      };
+      fetchAuctionStatus();
+    } catch (error) {}
+  }, [realEstateDetail]);
 
   useEffect(() => {
     try {
@@ -92,6 +122,7 @@ const RealEstateDetailModal = ({
           console.error("Error fetching auction data:", error);
         }
       };
+
       fetchRealEstates();
     } catch (error) {
       console.log(error);
@@ -110,6 +141,21 @@ const RealEstateDetailModal = ({
       console.log(error);
     }
   }, [realEstateDetail?.dateEnd]);
+
+  function formatVietnameseDong(price: string) {
+    // Convert the string to a number
+    const numberPrice = parseInt(price, 10);
+    // Check if the conversion was successful
+    if (isNaN(numberPrice)) {
+      // Return the original string if it's not a valid number
+      return price;
+    }
+    // Format the number
+    const formattedNumber = numberPrice
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return formattedNumber;
+  }
 
   // Change the tab index
   const toggleTab = (index: string) => {
@@ -221,6 +267,21 @@ const RealEstateDetailModal = ({
     setCurrentAutoBidValue(currentAutoBidValue + 1000); // Increase currentBid by 1
   };
 
+  const toggleLogin = () => {
+    setShowLogin((prevLogIn) => !prevLogIn);
+  };
+
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      // If the click occurs on the overlay (not on the modal content), close the modal
+      closeLogin();
+    }
+  };
+
+  const closeLogin = () => {
+    setShowLogin(!showLogin);
+  };
+
   const handleBid = async () => {
     try {
       // Update the currentBid attribute in Firebase
@@ -264,6 +325,32 @@ const RealEstateDetailModal = ({
       }
     }
   };
+
+  const handleRegister = () => {
+    try {
+      const fetchPaymentUrl = async () => {
+        if (userId && token) {
+          if (realEstateDetail?.reasId) {
+            const response = await registerParticipateAuction(
+              userId,
+              realEstateDetail?.reasId,
+              token
+            );
+            if (response) {
+              const depositId = response?.depositAmountDto.depositId;
+              console.log(depositId);
+              getDeposit(depositId);
+              window.location.href = response?.paymentUrl;
+            }
+          }
+        }
+      };
+      fetchPaymentUrl();
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  };
+
   return (
     <div className="relative w-full max-w-7xl max-h-full ">
       <div className="relative bg-white rounded-lg shadow md:px-10 md:pb-5 sm:px-0 sm:pb-0 ">
@@ -331,6 +418,18 @@ const RealEstateDetailModal = ({
                     Auction
                   </button>
                 </li>
+                {userId === realEstateDetail?.accountOwnerId ? (
+                  <li>
+                    <button
+                      className={getActiveTab("ownership")}
+                      onClick={() => toggleTab("ownership")}
+                    >
+                      Ownership
+                    </button>
+                  </li>
+                ) : (
+                  <></>
+                )}
               </ul>
             </div>
           </div>
@@ -347,16 +446,19 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M8 17.3a5 5 0 0 0 2.6 1.7c2.2.6 4.5-.5 5-2.3.4-2-1.3-4-3.6-4.5-2.3-.6-4-2.7-3.5-4.5.5-1.9 2.7-3 5-2.3 1 .2 1.8.8 2.5 1.6m-3.9 12v2m0-18v2.2"
                     />
                   </svg>
                 </div>
                 <div>
                   <div className="text-xl font-bold ">
-                    {realEstateDetail?.reasPrice},000 VND
+                    {realEstateDetail?.reasPrice
+                      ? formatVietnameseDong(realEstateDetail?.reasPrice)
+                      : realEstateDetail?.reasPrice}{" "}
+                    VND
                   </div>
                   <div className="text-xs text-gray-700">Starting Price</div>
                 </div>
@@ -372,9 +474,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M9 7H7m2 3H7m2 3H7m4 2v2m3-2v2m3-2v2M4 5v14c0 .6.4 1 1 1h14c.6 0 1-.4 1-1v-3c0-.6-.4-1-1-1h-9a1 1 0 0 1-1-1V5c0-.6-.4-1-1-1H5a1 1 0 0 0-1 1Z"
                     />
                   </svg>
@@ -397,7 +499,7 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-width="2"
+                      strokeWidth="2"
                       d="M7 17v1c0 .6.4 1 1 1h8c.6 0 1-.4 1-1v-1a3 3 0 0 0-3-3h-4a3 3 0 0 0-3 3Zm8-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                     />
                   </svg>
@@ -420,9 +522,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M6 4h12M6 4v16M6 4H5m13 0v16m0-16h1m-1 16H6m12 0h1M6 20H5M9 7h1v1H9V7Zm5 0h1v1h-1V7Zm-5 4h1v1H9v-1Zm5 0h1v1h-1v-1Zm-3 4h2a1 1 0 0 1 1 1v4h-4v-4a1 1 0 0 1 1-1Z"
                     />
                   </svg>
@@ -445,9 +547,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="m4 12 8-8 8 8M6 10.5V19c0 .6.4 1 1 1h3v-3c0-.6.4-1 1-1h2c.6 0 1 .4 1 1v3h3c.6 0 1-.4 1-1v-8.5"
                     />
                   </svg>
@@ -470,9 +572,9 @@ const RealEstateDetailModal = ({
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14c.6 0 1-.4 1-1V7c0-.6-.4-1-1-1H5a1 1 0 0 0-1 1v12c0 .6.4 1 1 1Zm3-7h0v0h0v0Zm4 0h0v0h0v0Zm4 0h0v0h0v0Zm-8 4h0v0h0v0Zm4 0h0v0h0v0Zm4 0h0v0h0v0Z"
                     />
                   </svg>
@@ -494,127 +596,313 @@ const RealEstateDetailModal = ({
             </div>
           </div>
           <div className={getActiveTabDetail("auction")}>
-            <Typography variant="h3" className="text-center">
-              Current bid: {NumberFormat(currentBid)}
-            </Typography>
-            <div className="grid grid-cols-5 gap-4">
-              {!isAuthenticated ? (
-                <div className="col-span-3">
-                  <Typography variant="h5">
-                    Auction ends:{" "}
-                    {dayjs(auction?.dateEnd).format("DD/MM/YYYY HH:mm:ss")}
-                  </Typography>
-                  <div className="font-semibold flex items-center">
-                    <ButtonAnt
-                      type="default"
-                      shape="circle"
-                      icon={<EyeOutlined />}
-                    ></ButtonAnt>
-                    Add to watch list
+            {userId ? (
+              auctionStatus === 0 ? ( // Not available for selling
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    Real Estate Is Currently Not Available For Selling
                   </div>
-                  <Countdown
-                    value={auction?.dateEnd}
-                    format="D [days] H [hours] m [minutes] s [secs]"
-                  />
                 </div>
-              ) : (
-                <>
-                  <div className="col-span-3">
-                    <Typography variant="h5">
-                      Auction ends:{" "}
-                      {dayjs(auction?.dateEnd).format("DD/MM/YYYY HH:mm:ss")}
-                    </Typography>
-                    <div className="font-semibold flex items-center">
-                      <ButtonAnt
-                        type="default"
-                        shape="circle"
-                        icon={<EyeOutlined />}
-                      ></ButtonAnt>
-                      Add to watch list
-                    </div>
-                    <Countdown
-                      value={auction?.dateEnd}
-                      format="D [days] H [hours] m [minutes] s [secs]"
-                    />
+              ) : auctionStatus === 1 ? (
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 2 ? (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    Payment is currently pending, please check your history in
+                    the profile section for more information
                   </div>
-                  <div className="col-span-2 flex flex-col space-y-4">
-                    <div className="flex space-x-4">
-                      <div className="flex">
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setCurrentInputBid(currentInputBid - 1000);
-                          }}
-                        >
-                          -
-                        </Button>
-                        <InputNumber
-                          style={{
-                            width: "auto",
-                          }}
-                          value={NumberFormat(currentInputBid)}
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 3 ? (
+                <div>
+                  <Typography variant="h3" className="text-center">
+                    Current bid: {NumberFormat(currentBid)}
+                  </Typography>
+                  <div className="grid grid-cols-5 gap-4">
+                    {!isAuthenticated ? (
+                      <div className="col-span-3">
+                        <Typography variant="h5">
+                          Auction ends:{" "}
+                          {dayjs(auction?.dateEnd).format(
+                            "DD/MM/YYYY HH:mm:ss"
+                          )}
+                        </Typography>
+                        <div className="font-semibold flex items-center">
+                          <ButtonAnt
+                            type="default"
+                            shape="circle"
+                            icon={<EyeOutlined />}
+                          ></ButtonAnt>
+                          Add to watch list
+                        </div>
+                        <Countdown
+                          value={auction?.dateEnd}
+                          format="D [days] H [hours] m [minutes] s [secs]"
                         />
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setCurrentInputBid(currentInputBid + 1000);
-                          }}
-                        >
-                          +
-                        </Button>
                       </div>
-
-                      <Button onClick={handleBid}>Bid</Button>
-                    </div>
-                    <div className="flex flex-row justify-center w-full items-center space-x-4">
-                      <Button onClick={showModal}>Set auto bid</Button>
-                      <Typography variant="h6">
-                        {NumberFormat(currentAutoBidValue)}
-                      </Typography>
-                      <Modal
-                        title="Auto Bid"
-                        open={isModalOpen}
-                        onOk={handleOk}
-                        okType={"default"}
-                        onCancel={handleCancel}
-                        width={300}
-                      >
-                        <div className="space-y-4">
-                          <div className="flex">
-                            <Button size="sm" onClick={handleDecrease}>
-                              -
-                            </Button>
-                            <InputNumber
-                              className="w-full"
-                              value={NumberFormat(currentAutoBidValue)}
-                            />
-                            <Button size="sm" onClick={handleIncrease}>
-                              +
-                            </Button>
-                          </div>
-                          <div>
+                    ) : (
+                      <>
+                        <div className="col-span-3">
+                          <Typography variant="h5">
+                            Auction ends:{" "}
+                            {dayjs(auction?.dateEnd).format(
+                              "DD/MM/YYYY HH:mm:ss"
+                            )}
+                          </Typography>
+                          <div className="font-semibold flex items-center">
                             <ButtonAnt
                               type="default"
-                              size="small"
-                              onClick={toggleChecked}
-                            >
-                              {!checked ? "Enable" : "Unable"}
-                            </ButtonAnt>
+                              shape="circle"
+                              icon={<EyeOutlined />}
+                            ></ButtonAnt>
+                            Add to watch list
                           </div>
-                          {!isInputValid && (
-                            <div className="text-red-500">
-                              Input must be larger than 0!
-                            </div>
-                          )}
+                          <Countdown
+                            value={auction?.dateEnd}
+                            format="D [days] H [hours] m [minutes] s [secs]"
+                          />
                         </div>
-                      </Modal>
-                    </div>
+                        <div className="col-span-2 flex flex-col space-y-4">
+                          <div className="flex space-x-4">
+                            <div className="flex">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setCurrentInputBid(currentInputBid - 1000);
+                                }}
+                              >
+                                -
+                              </Button>
+                              <InputNumber
+                                style={{
+                                  width: "auto",
+                                }}
+                                value={NumberFormat(currentInputBid)}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setCurrentInputBid(currentInputBid + 1000);
+                                }}
+                              >
+                                +
+                              </Button>
+                            </div>
+
+                            <Button onClick={handleBid}>Bid</Button>
+                          </div>
+                          <div className="flex flex-row justify-center w-full items-center space-x-4">
+                            <Button onClick={showModal}>Set auto bid</Button>
+                            <Typography variant="h6">
+                              {NumberFormat(currentAutoBidValue)}
+                            </Typography>
+                            <Modal
+                              title="Auto Bid"
+                              open={isModalOpen}
+                              onOk={handleOk}
+                              okType={"default"}
+                              onCancel={handleCancel}
+                              width={300}
+                            >
+                              <div className="space-y-4">
+                                <div className="flex">
+                                  <Button size="sm" onClick={handleDecrease}>
+                                    -
+                                  </Button>
+                                  <InputNumber
+                                    className="w-full"
+                                    value={NumberFormat(currentAutoBidValue)}
+                                  />
+                                  <Button size="sm" onClick={handleIncrease}>
+                                    +
+                                  </Button>
+                                </div>
+                                <div>
+                                  <ButtonAnt
+                                    type="default"
+                                    size="small"
+                                    onClick={toggleChecked}
+                                  >
+                                    {!checked ? "Enable" : "Unable"}
+                                  </ButtonAnt>
+                                </div>
+                                {!isInputValid && (
+                                  <div className="text-red-500">
+                                    Input must be larger than 0!
+                                  </div>
+                                )}
+                              </div>
+                            </Modal>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                </>
-              )}
+                </div>
+              ) : (
+                <div>Users List</div>
+              )
+            ) : (
+              <div className="flex justify-center">
+                <button
+                  onClick={() => toggleLogin()}
+                  className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
+          </div>
+          <div className={getActiveTabDetail("ownership")}>
+            <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-2">
+              <div>
+                <div className="text-center text-lg">Front Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_Front}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Back Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Land_Img_After ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Land_Img_After}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Ownership Certificate</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Cert_Of_Home_Ownership ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Cert_Of_Home_Ownership}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Registration Book</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.reas_Registration_Book ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={realEstateDetail?.detail.reas_Registration_Book}
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">Relationship Document</div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail
+                    .documents_Proving_Marital_Relationship ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={
+                        realEstateDetail?.detail
+                          .documents_Proving_Marital_Relationship
+                      }
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="text-center text-lg">
+                  Authorization Contract
+                </div>
+                <div className="flex items-center justify-center w-full h-64">
+                  {realEstateDetail?.detail &&
+                  realEstateDetail?.detail.sales_Authorization_Contract ? (
+                    <img
+                      className="text-transparent w-full h-full object-fill rounded-lg"
+                      src={
+                        realEstateDetail?.detail.sales_Authorization_Contract
+                      }
+                    />
+                  ) : (
+                    <div
+                      className="flex justify-center items-center text-4xl text-gray-200
+                    "
+                    >
+                      No Image
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
+        {showLogin && (
+          <div
+            id="login-modal"
+            tabIndex={-1}
+            aria-hidden="true"
+            className="fixed top-0 left-0 right-0 inset-0 overflow-x-hidden overflow-y-auto z-50 flex items-center justify-center bg-black bg-opacity-50 w-full max-h-full md:inset-0 "
+            onMouseDown={handleOverlayClick}
+          >
+            <LoginModal closeModal={closeModal} />
+          </div>
+        )}
         <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8 " />
         <footer>
           <div className="w-full max-w-screen-xl">
