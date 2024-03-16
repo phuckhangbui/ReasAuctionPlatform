@@ -28,6 +28,7 @@ const statusDepositColorMap: { [key: string]: string } = {
 const statusDepositUserColorMap: { [key: string]: string } = {
   Pending: "yellow",
   Deposited: "green",
+  Winner: "green",
   Waiting_for_refund: "orange",
   Refunded: "red",
 };
@@ -185,7 +186,7 @@ const AllDepositsList: React.FC = () => {
 
           return (
             <Tag color={color} key={statusStringMap[status]}>
-              {statusStringMap[status]}
+              {statusStringMap[status].toUpperCase()}
             </Tag>
           );
         } else {

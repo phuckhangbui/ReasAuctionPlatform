@@ -131,7 +131,7 @@ export const addAuction = async ({
     }
   };
 
-  export const getPaticipateUser = async (token : string, idAuction : number) => {
+  export const getPaticipateUser = async (token : string, idAuction : number | undefined) => {
     try {
       const fetchData = await axios.get<ParticipateAccount[]>(`${baseUrl}/api/Auction/auctions/complete/participate/${idAuction}`, 
       {
@@ -148,31 +148,28 @@ export const addAuction = async ({
   };
 
 
-//   export const updateNews = async ({
-//     newsContent,
-//     newsSumary,
-//     newsTitle,
-//     thumbnail,
-//     dateCreated,
-//     newsId
-// }:newsUpdate, token: string) => {
-//     try {
-//         const param ={
-//             newsContent, newsSumary, newsTitle, thumbnail, dateCreated, newsId
-//         }
-//       const fetchData = await axios.post<Message>(
-//         `${baseUrl}/api/admin/news/update`,
-//         param,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//             "Content-Type": "application/json",
-//           },
-//         }
-//       );
-//       const response = fetchData.data;
-//       return response;
-//     } catch (error) {
-//       console.log("Error: " + error);
-//     }
-//   };
+  export const changeMemberWin = async ({
+    auctionId,
+    note
+}:AuctionChangeMember, token: string) => {
+    try {
+        const param ={
+          auctionId,
+          note
+        }
+      const fetchData = await axios.post<Message>(
+        `${baseUrl}/api/Auction/admin/create`,
+        param,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const response = fetchData.data;
+      return response;
+    } catch (error) {
+      console.log("Error: " + error);
+    }
+  };
