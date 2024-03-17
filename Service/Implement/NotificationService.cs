@@ -365,8 +365,8 @@ namespace Service.Implement
                 case RealEstateStatus.DeclineAfterAuction:
                     statusText = "Decline After Auction";
                     break;
-                case RealEstateStatus.Block:
-                    statusText = "Blocked";
+                case RealEstateStatus.Success:
+                    statusText = "Success";
                     break;
                 case RealEstateStatus.WaitingAuction:
                     statusText = "Waiting for Auction";

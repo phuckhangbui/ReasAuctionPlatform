@@ -19,7 +19,7 @@ namespace Service.Implement
             return await _accountRepository.GetMemberProfileDetail(id);
         }
 
-        public async Task<bool?> UpdateUserProfile(UserUpdateProfileInfo userProfileDto)
+        public async Task<bool?> UpdateUserProfile(UserProfileDto userProfileDto)
         {
             Account oldAccountInfo = await _accountRepository.GetAccountOnId(userProfileDto.AccountId);
 
