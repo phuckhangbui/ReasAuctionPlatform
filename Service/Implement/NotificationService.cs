@@ -219,6 +219,40 @@ namespace Service.Implement
 
         }
 
+        public async Task SendNotificationWhenWinnerLoseContactUsingOldAuctionAccounting(int auctionId)
+        {
+            AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
+            Account winnerAccount = await _accountRepository.GetAccountOnId(auctionAccounting.AccountWinId);
+            RealEstate realEstate = _realEstateRepository.GetRealEstate(auctionAccounting.ReasId);
+
+
+            string title = "Fail to contact, your winning auction have be move to the next bidder!";
+            string body = $"You was the highest bidder for real estate at {realEstate.ReasAddress}. Since our staff could not contact you, you will be deemed as loser and lost your deposit";
+
+            int type = (int)NotificationTypeEnum.AuctionWinnerNoContact;
+            Notification notification = new Notification
+            {
+                NotificationType = type,
+                Title = title,
+                Body = body,
+                DateCreated = DateTime.Now,
+                AccountReceiveId = winnerAccount.AccountId
+            };
+
+            Dictionary<string, string> data = new Dictionary<string, string>
+            {
+                { "type", type.ToString() }
+            };
+
+            await _notificationRepository.CreateAsync(notification);
+
+            if (!winnerAccount.FirebaseToken.IsNullOrEmpty())
+            {
+                await _messagingService.SendPushNotification(winnerAccount.FirebaseToken, title, body, data);
+            }
+
+        }
+
 
 
         public async Task SendNotificationWhenLoseAuction(List<int> accountIdParticipateInAuction, int auctionId)
@@ -299,6 +333,78 @@ namespace Service.Implement
             }
         }
 
+        public async Task SendNotificationToOwnerWhenChangeStatusOfRealEstate(int reasId, int status)
+        {
+            RealEstate realEstate = _realEstateRepository.GetRealEstate(reasId);
+
+            string title = "Your Real Estate status has been change";
+            string statusText;
+            switch ((RealEstateStatus)status)
+            {
+                case RealEstateStatus.InProgress:
+                    statusText = "In Progress";
+                    break;
+                case RealEstateStatus.Approved:
+                    statusText = "Approved";
+                    break;
+                case RealEstateStatus.Selling:
+                    statusText = "Selling";
+                    break;
+                case RealEstateStatus.Cancel:
+                    statusText = "Cancelled";
+                    break;
+                case RealEstateStatus.Auctioning:
+                    statusText = "Auctioning";
+                    break;
+                case RealEstateStatus.Sold:
+                    statusText = "Sold";
+                    break;
+                case RealEstateStatus.Rollback:
+                    statusText = "Rollback";
+                    break;
+                case RealEstateStatus.DeclineAfterAuction:
+                    statusText = "Decline After Auction";
+                    break;
+                case RealEstateStatus.Block:
+                    statusText = "Blocked";
+                    break;
+                case RealEstateStatus.WaitingAuction:
+                    statusText = "Waiting for Auction";
+                    break;
+                // Add cases for other status values as needed
+                default:
+                    statusText = "Unknown";
+                    break;
+            }
+
+
+            string body = $"The status of real estate at {realEstate.ReasAddress} has changed! Current status is {statusText}";
+
+            int type = (int)NotificationTypeEnum.RealEstateStatusChangeNotiToOwner;
+            Notification notification = new Notification
+            {
+                NotificationType = type,
+                Title = title,
+                Body = body,
+                DateCreated = DateTime.Now,
+            };
+
+            Dictionary<string, string> data = new Dictionary<string, string>
+            {
+                { "type", type.ToString() }
+            };
+
+            Account owner = await _accountRepository.GetAccountByAccountIdAsync(realEstate.AccountOwnerId);
+
+            notification.AccountReceiveId = owner.AccountId;
+            notification.NotificationId = 0;
+            await _notificationRepository.CreateAsync(notification);
+
+            if (!owner.FirebaseToken.IsNullOrEmpty())
+            {
+                await _messagingService.SendPushNotification(owner.FirebaseToken, title, body, data);
+            }
+        }
 
 
         public async Task SendNotificationWhenNotWinAuction(List<Account> accounts, int auctionId, bool isNotAttendAuction)

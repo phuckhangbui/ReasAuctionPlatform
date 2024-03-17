@@ -1,4 +1,6 @@
 ﻿using API.MessageResponse;
+using BusinessObject.Entity;
+using BusinessObject.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Paging;
@@ -148,6 +150,27 @@ namespace API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             return Ok(reasName);
+        }
+
+        [Authorize(policy: "AdminAndStaff")]
+        [HttpGet(BaseUri + "real-estate/sucess/{reasId}")]
+        public async Task<IActionResult> UpdateToRealEstateSuccess(int reasId)
+        {
+            RealEstate realEstate = _realEstateService.GetRealEstate(reasId);
+
+            if (realEstate == null)
+            {
+                return BadRequest(new ApiResponse(400, "No matching real estate"));
+            }
+
+            bool result = await _realEstateService.UpdateRealEstateStatus(reasId, (int)RealEstateStatus.Success);
+
+            if (!result)
+            {
+                return BadRequest(new ApiResponse(400, "Fail to update real estate status"));
+            }
+
+            return Ok();
         }
     }
 }

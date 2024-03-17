@@ -16,5 +16,7 @@ namespace Service.Interface
         Task<RealEstateDetailDto> ViewOwnerRealEstateDetail(int id);
         //Task<bool> PaymentAmountToUpRealEstaeAfterApprove(TransactionMoneyCreateParam transactionMoneyCreateParam, int userMember);
         Task<bool> UpdateRealEstateStatus(RealEstateDetailDto realEstateDetailDto, string message);
+
+        Task<bool> ReupRealEstate(RealEstate realEstate, DateTime dateEnd);
     }
 }

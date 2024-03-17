@@ -14,6 +14,8 @@ namespace Service.Interface
         Task SendNotificationWhenWinAuction(int auctionId);
         Task SendNotificationWhenLoseAuction(List<int> accountIdParticipateInAuction, int auctionId);
         Task SendNotificationWhenNotAttendAuction(List<int> accountIdParticipateInAuction, int auctionId);
+        Task SendNotificationToOwnerWhenChangeStatusOfRealEstate(int reasId, int status);
+        Task SendNotificationWhenWinnerLoseContactUsingOldAuctionAccounting(int auctionId);
 
     }
 }
