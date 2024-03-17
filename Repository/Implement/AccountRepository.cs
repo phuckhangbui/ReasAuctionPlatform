@@ -207,9 +207,7 @@ namespace Repository.Implement
         public async Task<UserProfileDto> GetMemberProfileDetail(int accountId)
         {
             Account account = await _context.Account.Include(a => a.Major).FirstOrDefaultAsync(a => a.AccountId == accountId);
-            List<Major> majors = await _context.Major.ToListAsync();
 
-            Dictionary<int, string> majorIdNameMap = majors.ToDictionary(major => major.MajorId, major => major.MajorName);
 
             if (account == null)
             {
@@ -217,12 +215,11 @@ namespace Repository.Implement
             }
 
             UserProfileDto userDto = _mapper.Map<UserProfileDto>(account);
-            userDto.Major = majorIdNameMap;
 
             return userDto;
         }
 
-        public async Task<bool> UpdateMemberProfileDetail(UserUpdateProfileInfo userProfileDto)
+        public async Task<bool> UpdateMemberProfileDetail(UserProfileDto userProfileDto)
         {
             Account account = _mapper.Map<Account>(userProfileDto);
 
