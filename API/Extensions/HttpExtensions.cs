@@ -1,7 +1,7 @@
+using Repository.Paging;
 using System.Text.Json;
-using API.Helper;
 
-namespace API.Extension;
+namespace API.Extensions;
 
 public static class HttpExtensions
 {

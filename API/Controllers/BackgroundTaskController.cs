@@ -1,7 +1,7 @@
-﻿using API.Errors;
-using API.Interface.Repository;
-using API.Interface.Service;
+﻿using API.MessageResponse;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Interface;
+using Service.Interface;
 
 namespace API.Controllers
 {

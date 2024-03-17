@@ -1,16 +1,15 @@
-﻿using API.DTOs;
-using API.Entity;
-using API.Errors;
-using API.Extension;
-using API.Helper;
-using API.Helper.VnPay;
-using API.Interface.Service;
+﻿using API.Extensions;
 using API.MessageResponse;
-using API.Param;
-using API.Param.Enums;
+using BusinessObject.Entity;
+using BusinessObject.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Repository.DTOs;
+using Repository.Paging;
+using Repository.Param;
+using Service.Interface;
+using Service.VnPay;
 using System.Collections.Specialized;
 using System.Web;
 

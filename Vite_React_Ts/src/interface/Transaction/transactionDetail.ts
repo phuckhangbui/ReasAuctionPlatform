@@ -1,11 +1,11 @@
 interface transactionDetail {
   accountSendId: number;
-  sendBankCode: string;
-  sendBankAccount: string;
+  accountSendBankingCode: string;
+  accountSendBankingNumber: string;
   accountSendName: string;
   accountReceiveId: number;
-  receivedBankCode: string;
-  receiveBankAccount: string;
+  accountReceiveBankingCode: string;
+  accountReceiveBankingNumber: string;
   accountReceiveName: string;
   reasId: number;
   reasName: string;

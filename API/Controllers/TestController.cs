@@ -1,9 +1,9 @@
-﻿using API.DTOs;
-using API.Helper.VnPay;
-using API.Interface.Service;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Repository.DTOs;
+using Service.Interface;
+using Service.VnPay;
 
 namespace API.Controllers
 {
