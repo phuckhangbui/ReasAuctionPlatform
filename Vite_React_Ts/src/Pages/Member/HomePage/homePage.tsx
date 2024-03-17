@@ -6,12 +6,21 @@ import { useEffect, useState } from "react";
 import { getRealEstateHome } from "../../../api/realEstate.ts";
 import { getNewsHome } from "../../../api/news.ts";
 import realEstate from "../../../interface/RealEstate/realEstate.ts";
+import { getAuctionHome } from "../../../api/auctions.ts";
 
 const HomePage = () => {
   const [realEstateList, setRealEstateList] = useState<
     realEstate[] | undefined
   >([]);
+  const [smallRealEstateList, setSmallRealEstateList] = useState<
+    realEstate[] | undefined
+  >([]);
   const [newsList, setNewsList] = useState<news[] | undefined>([]);
+  const [smallNewsList, setSmallNewsList] = useState<news[] | undefined>([]);
+  const [auctionsList, setAuctionsList] = useState<auction[] | undefined>([]);
+  const [smallAuctionsList, setSmallAuctionsList] = useState<
+    auction[] | undefined
+  >([]);
 
   useEffect(() => {
     try {
@@ -23,13 +32,42 @@ const HomePage = () => {
         const response = await getNewsHome();
         setNewsList(response);
       };
+      const fetchAuctions = async () => {
+        const response = await getAuctionHome();
+        setAuctionsList(response);
+      };
 
       fetchRealEstates();
       fetchNews();
+      fetchAuctions();
     } catch (error) {
       console.log(error);
     }
   }, []);
+
+  useEffect(() => {
+    if (realEstateList && realEstateList.length > 8) {
+      setSmallRealEstateList(realEstateList.slice(0, 8));
+    } else {
+      setSmallRealEstateList(realEstateList);
+    }
+  }, [realEstateList]);
+
+  useEffect(() => {
+    if (auctionsList && auctionsList.length > 4) {
+      setSmallAuctionsList(auctionsList.slice(0, 4));
+    } else {
+      setSmallAuctionsList(auctionsList);
+    }
+  }, [auctionsList]);
+
+  useEffect(() => {
+    if (newsList && newsList.length > 4) {
+      setSmallNewsList(newsList.slice(0, 4));
+    } else {
+      setSmallNewsList(newsList);
+    }
+  }, [newsList]);
 
   return (
     <div>
@@ -46,7 +84,7 @@ const HomePage = () => {
               See the latest news about the current real estates market
             </div>
           </div>
-          <NewsList newsList={newsList} />
+          <NewsList newsList={smallNewsList} />
         </div>
       </div>
       <div className="pt-8">
@@ -60,7 +98,7 @@ const HomePage = () => {
               Participate and try your best to win your dream home
             </div>
           </div>
-          <AuctionList realEstatesList={realEstateList} />
+          <AuctionList auctionsList={smallAuctionsList} />
         </div>
       </div>
       <div className="pt-8">
@@ -75,7 +113,7 @@ const HomePage = () => {
             </div>
           </div>
           <RealEstateList
-            realEstatesList={realEstateList}
+            realEstatesList={smallRealEstateList}
             ownRealEstates={false}
           />
         </div>

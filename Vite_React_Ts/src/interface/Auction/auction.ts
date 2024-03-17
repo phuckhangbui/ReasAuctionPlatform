@@ -1,12 +1,9 @@
 interface auction {
   auctionId: number;
-  reasName: string;
-  reasPrice: string;
   reasId: number;
+  reasName: string;
   dateStart: Date;
   dateEnd: Date;
-  accountCreateId: number;
-  accountCreateName: string;
+  floorBid: string;
   status: number;
-  auctionAccountingId: number;
 }

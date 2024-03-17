@@ -15,7 +15,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <UserProvider>
         <DepositProvider>
           <ReasProvider>
-            <Toaster position="top-right" reverseOrder={true} />
+            <Toaster position="top-right" reverseOrder={true} containerStyle={{marginTop: "80px"}}/>
             <App />
           </ReasProvider>
         </DepositProvider>

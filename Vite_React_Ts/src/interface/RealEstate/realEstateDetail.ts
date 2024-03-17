@@ -2,7 +2,7 @@ interface realEstateDetail {
   reasId: number;
   reasName: string;
   reasAddress: string;
-  reasPrice: string;
+  reasPrice: number;
   reasArea: number;
   reasDescription: string;
   reasStatus: number;
@@ -11,17 +11,16 @@ interface realEstateDetail {
   dateEnd: any;
   accountOwnerId: number;
   accountOwnerName: string;
+  type_Id: number;
   type_REAS_Name: string;
   dateCreated: Date;
   photos: [
     {
-      reasPhotoId: number;
       reasPhotoUrl: string;
-      reasId: number;
     }
   ];
   detail: {
-    reasId: string;
+    reasId: number;
     reas_Cert_Of_Land_Img_Front: string;
     reas_Cert_Of_Land_Img_After: string;
     reas_Cert_Of_Home_Ownership: string;
