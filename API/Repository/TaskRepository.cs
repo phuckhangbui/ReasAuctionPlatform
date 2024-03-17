@@ -26,7 +26,7 @@ namespace API.Repository
             return _context.Account.AnyAsync(c => c.AccountId.Equals(accountId) && c.RoleId.Equals((int)RoleEnum.Staff)); 
         }
 
-        public async Task<TaskDto> CreateTaskAsync(CreateUpdateTaskDto taskDto, int adminId)
+        public async Task CreateTaskAsync(CreateUpdateTaskDto taskDto, int adminId)
         {
             var accountCreate = _context.Account.SingleOrDefault(c => c.AccountId.Equals(adminId));
             var accountAssigned = _context.Account.SingleOrDefault(c => c.AccountId.Equals(taskDto.AccountAssignedId));
@@ -40,15 +40,13 @@ namespace API.Repository
             newTask.TaskContent = taskDto.TaskContent;
             newTask.Status = taskDto.Status;
             newTask.TaskNotes = taskDto.TaskNotes;
-            newTask.DateCreated = taskDto.DateCreated != null ? taskDto.DateCreated : DateTime.Now;
+            newTask.DateCreated = DateTime.Now;
 
             _context.Set<Entity.Task>().Add(newTask);
             await _context.SaveChangesAsync();
-
-            return _mapper.Map<TaskDto>(newTask);
         }
 
-        public async Task<TaskDto> EditTaskAsync(CreateUpdateTaskDto taskDto, int adminId, int taskId)
+        public async Task EditTaskAsync(CreateUpdateTaskDto taskDto, int adminId, int taskId)
         {
             var existingTask = await _context.Task.FindAsync(taskId);
 
@@ -67,26 +65,41 @@ namespace API.Repository
 
             _context.Entry(existingTask).State = EntityState.Modified;
             await _context.SaveChangesAsync();
-
-            return _mapper.Map<TaskDto>(existingTask);
         }
 
-        public async Task<TaskDto?> GetTaskAdminRoleAsync(int adminId, int taskId)
+        public async Task<TaskDetailDto> GetTaskDetailAsync(int accountId, int taskId, string role)
         {
-            var task = await _context.Task.SingleOrDefaultAsync(t => t.AccountCreateId == adminId &&
-                                    t.TaskId == taskId);
-            if (task != null)
-            {
-                return _mapper.Map<TaskDto>(task);
-            }
 
-            return null;
+            if (role.Equals("ADMIN"))
+            {
+                var task = await _context.Task.SingleOrDefaultAsync(t => t.AccountCreateId == accountId &&
+                                    t.TaskId == taskId);
+                return _mapper.Map<TaskDetailDto>(task);
+            }
+            else
+            {
+                var task = await _context.Task.SingleOrDefaultAsync(t => t.AccountAssignedId == accountId &&
+                                    t.TaskId == taskId);
+                return _mapper.Map<TaskDetailDto>(task);
+            }
         }
 
-        public async Task<PageList<TaskDto>> GetTasksAsync(TaskParam taskParam, int adminId)
+        public async Task<PageList<TaskDto>> GetTasksAsync(
+            PaginationParams paginationParams, 
+            TaskRequest taskParam, 
+            int accountId,
+            string role)
         {
             var query = _context.Task.AsQueryable();
-            query = query.Where(t => t.AccountCreateId == adminId);
+
+            if (role.Equals("ADMIN"))
+            {
+                query = query.Where(t => t.AccountCreateId == accountId);
+            }
+            else
+            {
+                query = query.Where(t => t.AccountAssignedId == accountId);
+            }
 
             if (taskParam.Status != -1)
             {
@@ -109,61 +122,11 @@ namespace API.Repository
 
             return await PageList<TaskDto>.CreateAsync(
             query.AsNoTracking().ProjectTo<TaskDto>(_mapper.ConfigurationProvider),
-            taskParam.PageNumber,
-            taskParam.PageSize);
+            paginationParams.PageNumber,
+            paginationParams.PageSize);
         }
 
-        public async Task<PageList<TaskDto>> GetTasksStaffRoleAsync(TaskParam taskParam, int staffId)
-        {
-            var staff = await _context.Account.SingleOrDefaultAsync(a => a.AccountId.Equals(staffId));
-            if (staff != null)
-            {
-                var query = _context.Task.AsQueryable();
-                query = query.Where(t => t.AccountAssignedId.Equals(staffId));
-
-                if (taskParam.Status != -1)
-                {
-                    query = query.Where(t => t.Status == taskParam.Status);
-                }
-
-                if (!string.IsNullOrEmpty(taskParam.AccountAssignedName))
-                {
-                    query = query.Where(t =>
-                        t.AccountAssignedName.ToLower().Contains(taskParam.AccountAssignedName.ToLower()));
-                }
-
-                if (!string.IsNullOrEmpty(taskParam.AccountCreateName))
-                {
-                    query = query.Where(t =>
-                        t.AccountCreateName.ToLower().Contains(taskParam.AccountCreateName.ToLower()));
-                }
-
-                query = query.OrderByDescending(r => r.DateCreated);
-
-                return await PageList<TaskDto>.CreateAsync(
-                query.AsNoTracking().ProjectTo<TaskDto>(_mapper.ConfigurationProvider),
-                taskParam.PageNumber,
-                taskParam.PageSize);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public async Task<TaskDto?> GetTaskStaffRoleAsync(int staffId, int taskId)
-        {
-            var task = await _context.Task.SingleOrDefaultAsync(t => t.TaskId.Equals(taskId) && 
-            t.AccountAssignedId.Equals(staffId));
-            if (task != null)
-            {
-                return _mapper.Map<TaskDto>(task);
-            }
-
-            return null;
-        }
-
-        public async Task<TaskDto> UpdateTaskStatus(int taskId, int taskStatus)
+        public async Task UpdateTaskStatus(int taskId, int taskStatus)
         {
             var existingTask = await _context.Task.FindAsync(taskId);
             if (existingTask != null)
@@ -171,10 +134,7 @@ namespace API.Repository
                 existingTask.Status = taskStatus;
                 _context.Entry(existingTask).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-                return _mapper.Map<TaskDto>(existingTask);
             }
-
-            return null;
         }
     }
 }

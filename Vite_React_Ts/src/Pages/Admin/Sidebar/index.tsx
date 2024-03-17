@@ -8,6 +8,8 @@ import {
   MenuFoldOutlined,
   GlobalOutlined,
   BookOutlined,
+  DollarOutlined,
+  SnippetsOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Col, Layout, Menu, Row, theme } from "antd";
@@ -45,7 +47,7 @@ const items: MenuItem[] = [
     getItem("Create New Staff", "7"),
   ]),
   getItem("Real Estate", "sub3", <HomeOutlined />, [
-    getItem("All Real Estate", "8"),
+    getItem("All Real Estates", "8"),
     getItem("Pending Real Estate", "9"),
   ]),
   getItem("News", "sub4", <GlobalOutlined />, [
@@ -56,12 +58,18 @@ const items: MenuItem[] = [
     getItem("Term", "12"),
     getItem("Add Term", "13"),
   ]),
-  getItem("Logout", "14"),
+  getItem("Task", "sub6", <SnippetsOutlined />, [
+    getItem("Task", "14"),
+    getItem("Add Task", "15"),
+  ]),
+  getItem("Transaction", "16", <DollarOutlined />),
+  getItem("Deposit", "17", <PieChartOutlined />),
+  getItem("Logout", 18),
 ];
 
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, logout } = useContext(UserContext);
+  const { logout } = useContext(UserContext);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -110,6 +118,18 @@ const Sidebar: React.FC = () => {
         navigate("/admin/term/create");
         break;
       case "14":
+        navigate("/admin/task");
+        break;
+      case "15":
+        navigate("/admin/task/create");
+        break;
+      case "16":
+        navigate("/admin/transaction");
+        break;
+      case "17":
+        navigate("/admin/deposit");
+        break;
+      case "18":
         logout();
         navigate("/");
         break;

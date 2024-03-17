@@ -12,7 +12,6 @@ interface LoginModalProps {
 const LoginModal = ({ closeModal }: LoginModalProps) => {
   const [tabStatus, setTabStatus] = useState("user");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { register, handleSubmit } = useForm<loginStaff>();
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
@@ -63,7 +62,7 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
           username: responseData?.username,
         } as loginUser;
         if (responseData?.token) {
-          login(user, responseData?.token, responseData?.id);
+          login(user, responseData?.token);
         }
       };
       loginStaff();
@@ -138,7 +137,7 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:outline-none focus:ring-mainBlue focus:border-mainBlue block w-full p-2.5"
                   {...register("password")}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       handleSubmit(onSubmit)();
                     }
                   }}

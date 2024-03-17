@@ -2,6 +2,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { googleLogIn } from "../../api/login";
 import { useContext } from "react";
 import { UserContext } from "../../context/userContext";
+import { generateToken } from "../../Config/firebase-config";
 
 interface GoogleLogInProps {
   closeModal: () => void;
@@ -14,18 +15,20 @@ const GoogleLogIn = ({ closeModal }: GoogleLogInProps) => {
   const handleOnSuccess = async (credentialResponse: any) => {
     try {
       // console.log(credentialResponse);
+      const firebaseToken = await generateToken();
       const idTokenString = String(credentialResponse.credential);
-      const response = await googleLogIn(idTokenString);
-      const responseData = response?.data;
-      const user = {
-        id: responseData.id,
-        accountName: responseData.accountName,
-        email: responseData.email,
-        roleId: responseData.roleId,
-        // username: responseData.username,
-      } as loginUser;
-      login(user, responseData.token, responseData.id);
-      closeModal();
+      if (firebaseToken || firebaseToken === "") {
+        const response = await googleLogIn(idTokenString, firebaseToken);
+        const responseData = response?.data;
+        const user = {
+          id: responseData?.id,
+          accountName: responseData.accountName,
+          email: responseData.email,
+          roleId: responseData.roleId,
+        } as loginUser;
+        login(user, responseData.token);
+        closeModal();
+      }
     } catch (error) {
       console.log(error);
     }

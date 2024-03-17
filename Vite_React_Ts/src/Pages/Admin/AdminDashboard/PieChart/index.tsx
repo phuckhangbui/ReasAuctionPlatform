@@ -1,37 +1,40 @@
 import { Pie } from "@ant-design/plots";
+import { useState, useEffect , useContext} from "react";
+import {
+  getTypeReal
+} from "../../../../api/admindashboard";
+import { UserContext } from "../../../../context/userContext";
+
 
 const PropertiesPie: React.FC = () => {
-  const data = [
-    {
-      type: "Residential",
-      value: 27,
-    },
-    {
-      type: "Commercial",
-      value: 25,
-    },
-    {
-      type: "Land",
-      value: 18,
-    },
-    {
-      type: "Investment",
-      value: 15,
-    },
-    {
-      type: "Farmland",
-      value: 10,
-    },
-    {
-      type: "Special Purpose",
-      value: 5,
-    },
-  ];
+  const { token } = useContext(UserContext);
+  const [typeData, settypeData] = useState<TypeReas[]| undefined>(undefined);
+  
+  useEffect(() => {
+    const fetchGetTypeReas = async () => {
+      try {
+        if (token) {
+          const data: TypeReas[] | undefined = await getTypeReal(token);
+          settypeData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching type list:", error);
+      }
+    };
+
+    fetchGetTypeReas();
+  }, [token]); // Thêm token vào dependencies của useEffect
+
+  // Nếu dữ liệu chưa được tải, hiển thị một thông báo hoặc một loại loading indicator
+  if (!typeData) {
+    return <div>Loading...</div>;
+  }
+
   const config = {
     appendPadding: 10,
-    data,
-    angleField: "value",
-    colorField: "type",
+    data: typeData,
+    angleField: "numberOfReas", 
+    colorField: "typeName", 
     radius: 0.8,
     label: {
       type: "outer",
@@ -42,6 +45,7 @@ const PropertiesPie: React.FC = () => {
       },
     ],
   };
+
   return <Pie {...config} />;
 };
 

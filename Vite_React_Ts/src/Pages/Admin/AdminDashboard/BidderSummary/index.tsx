@@ -1,7 +1,6 @@
 import { Card } from "antd";
 import ListBidder from "../ListBidder";
 import { useState } from "react";
-import { Tabs, TabsHeader, Tab } from "@material-tailwind/react";
 import "./style.css";
 const gridStyle: React.CSSProperties = {
   width: "100%",
@@ -15,21 +14,6 @@ const Bidder: React.FC = () => {
     setActiveTabKey(key);
     console.log(key);
   };
-
-  const data = [
-    {
-      label: "Week",
-      value: "week",
-    },
-    {
-      label: "Month",
-      value: "month",
-    },
-    {
-      label: "Year",
-      value: "year",
-    },
-  ];
 
   return (
     <>
@@ -50,19 +34,6 @@ const Bidder: React.FC = () => {
           style={{ width: "100%", textAlign: "center", padding: 0 }}
           hoverable={false}
         >
-          <Tabs value={activeTabKey}>
-            <TabsHeader>
-              {data.map(({ label, value }) => (
-                <Tab
-                  key={value}
-                  value={value}
-                  onClick={() => handleTabChange(value)}
-                >
-                  {label}
-                </Tab>
-              ))}
-            </TabsHeader>
-          </Tabs>
         </Card.Grid>
         <Card.Grid style={gridStyle} hoverable={false}>
           <ListBidder />

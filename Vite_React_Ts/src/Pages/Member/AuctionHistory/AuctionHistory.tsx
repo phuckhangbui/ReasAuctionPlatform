@@ -7,11 +7,12 @@ import {
   Chip,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
-import { NumberFormat } from "../../../utils/numbetFormat";
+import { NumberFormat } from "../../../Utils/numbetFormat";
 import { DatePicker, Pagination, Select } from "antd";
 import { useContext } from "react";
 import { UserContext } from "../../../context/userContext";
 import { GetAuctionHistory } from "../../../api/memberAuction";
+
 
 const AuctionHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -38,6 +39,8 @@ const AuctionHistory: React.FC = () => {
       console.log(error);
     }
   }, []);
+
+  
 
   // Update displayed auctions when currentPage or auctionAccounting changes
   useEffect(() => {

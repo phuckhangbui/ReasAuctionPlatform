@@ -19,7 +19,7 @@ namespace API.Services
             _accountRepository = accountRepository;
         }
 
-        public async Task<TaskDto> CreateTaskAsync(CreateUpdateTaskDto taskDto, int accountCreateId)
+        public async Task CreateTaskAsync(CreateUpdateTaskDto taskDto, int accountCreateId)
         {
             var account = await _accountRepository.GetAccountByAccountIdAsync(accountCreateId);
             if (account == null)
@@ -35,10 +35,10 @@ namespace API.Services
                 throw new AccountAssignedTaskException($"Account assigned with id {taskDto.AccountAssignedId} is invalid");
             }
 
-            return await _taskRepository.CreateTaskAsync(taskDto, accountCreateId);
+            await _taskRepository.CreateTaskAsync(taskDto, accountCreateId);
         }
 
-        public async Task<TaskDto> EditTaskAsync(CreateUpdateTaskDto taskDto, int accountCreateId, int taskId)
+        public async Task EditTaskAsync(CreateUpdateTaskDto taskDto, int accountCreateId, int taskId)
         {
             var account = await _accountRepository.GetAccountByAccountIdAsync(accountCreateId);
             if (account == null)
@@ -48,7 +48,7 @@ namespace API.Services
 
             AuthorizeAdminRole(account.RoleId);
 
-            var task = await _taskRepository.GetTaskAdminRoleAsync(accountCreateId, taskId);
+            var task = await _taskRepository.GetTaskDetailAsync(accountCreateId, taskId, "ADMIN");
             if (task == null)
             {
                 throw new BaseNotFoundException($"Task with ID {taskId} not found.");
@@ -60,10 +60,10 @@ namespace API.Services
                 throw new AccountAssignedTaskException($"Account assigned with id {taskDto.AccountAssignedId} is invalid");
             }
 
-            return await _taskRepository.EditTaskAsync(taskDto, accountCreateId, taskId);
+            await _taskRepository.EditTaskAsync(taskDto, accountCreateId, taskId);
         }
 
-        public async Task<TaskDto> UpdateTaskStatus(int accountId, int taskId, int taskStatus, string role)
+        public async Task UpdateTaskStatus(int accountId, int taskId, int taskStatus, string role)
         {
             var account = await _accountRepository.GetAccountByAccountIdAsync(accountId);
             if (account == null)
@@ -75,13 +75,13 @@ namespace API.Services
             if (role.Equals("ADMIN"))
             {
                 AuthorizeAdminRole(account.RoleId);
-                task = await _taskRepository.GetTaskAdminRoleAsync(accountId, taskId);
+                task = await _taskRepository.GetTaskDetailAsync(accountId, taskId, "ADMIN");
             }
 
             if (role.Equals("STAFF"))
             {
                 AuthorizeStaffRole(account.RoleId);
-                task = await _taskRepository.GetTaskStaffRoleAsync(accountId, taskId);
+                task = await _taskRepository.GetTaskDetailAsync(accountId, taskId, "STAFF");
             }
 
             if (task == null)
@@ -89,10 +89,10 @@ namespace API.Services
                 throw new BaseNotFoundException($"Task with ID {taskId} not found.");
             }
 
-            return await _taskRepository.UpdateTaskStatus(taskId, taskStatus);
+            await _taskRepository.UpdateTaskStatus(taskId, taskStatus);
         }
 
-        public async Task<TaskDto?> GetTaskAsync(int accountId, int taskId, string role)
+        public async Task<TaskDetailDto> GetTaskAsync(int accountId, int taskId, string role)
         {
             var account = await _accountRepository.GetAccountByAccountIdAsync(accountId);
             if (account == null)
@@ -100,18 +100,18 @@ namespace API.Services
                 throw new BaseNotFoundException($"Account with ID {accountId} not found.");
             }
 
-            TaskDto taskDto = null; 
+            TaskDetailDto taskDto = null; 
             if (role.Equals("ADMIN"))
             {
                 AuthorizeAdminRole(account.RoleId);
 
-                taskDto =  await _taskRepository.GetTaskAdminRoleAsync(accountId, taskId);
+                taskDto =  await _taskRepository.GetTaskDetailAsync(accountId, taskId, "ADMIN");
             }
             else if (role.Equals("STAFF"))
             {
                 AuthorizeStaffRole(account.RoleId);
 
-                taskDto = await _taskRepository.GetTaskStaffRoleAsync(accountId, taskId);
+                taskDto = await _taskRepository.GetTaskDetailAsync(accountId, taskId, "STAFF");
             }
             
             if (taskDto == null)
@@ -122,30 +122,29 @@ namespace API.Services
             return taskDto;
         }
 
-        public async Task<PageList<TaskDto>> GetTasksAsync(TaskParam taskParam, int accountId, string role)
+        public async Task<PageList<TaskDto>> GetTasksAsync(PaginationParams paginationParams,TaskRequest taskParam, int accountId, string role)
         {
             var account = await _accountRepository.GetAccountByAccountIdAsync(accountId);
             if (account == null)
             {
                 throw new BaseNotFoundException($"Account with ID {accountId} not found.");
             }
-
-            PageList<TaskDto> tasks = null;
+            
             if (role.Equals("ADMIN"))
             {
                 AuthorizeAdminRole(account.RoleId);
 
-                tasks = await _taskRepository.GetTasksAsync(taskParam, accountId);
+                return await _taskRepository.GetTasksAsync(paginationParams, taskParam, accountId, "ADMIN");
             }
 
             if (role.Equals("STAFF"))
             {
                 AuthorizeStaffRole(account.RoleId);
                 
-                tasks = await _taskRepository.GetTasksStaffRoleAsync(taskParam, accountId);
+                return await _taskRepository.GetTasksAsync(paginationParams, taskParam, accountId, "STAFF");
             }
 
-            return tasks;
+            return null;
         }
 
         private void AuthorizeAdminRole(int role)

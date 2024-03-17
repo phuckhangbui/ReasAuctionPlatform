@@ -6,18 +6,11 @@ namespace API.Interface.Repository
 {
     public interface ITaskRepository : IBaseRepository<Entity.Task>
     {
-        //Admin
-        Task<PageList<TaskDto>> GetTasksAsync(TaskParam taskParam, int adminId);
-        Task<TaskDto> CreateTaskAsync(CreateUpdateTaskDto taskDto, int adminId);
-        Task<TaskDto> EditTaskAsync(CreateUpdateTaskDto taskDto, int adminId, int taskId);
+        Task<PageList<TaskDto>> GetTasksAsync(PaginationParams paginationParams,TaskRequest taskRequest, int account, string role);
+        Task CreateTaskAsync(CreateUpdateTaskDto taskDto, int adminId);
+        Task EditTaskAsync(CreateUpdateTaskDto taskDto, int adminId, int taskId);
         Task<bool> CheckAccountAssignedValid(int accountId);
-        Task<TaskDto?> GetTaskAdminRoleAsync(int adminId, int taskId);
-        
-        //Staff
-        Task<PageList<TaskDto>> GetTasksStaffRoleAsync(TaskParam taskParam, int staffId);
-        Task<TaskDto?> GetTaskStaffRoleAsync(int staffId, int taskId);
-
-        //Admin and staff
-        Task<TaskDto> UpdateTaskStatus(int taskId, int taskStatus);
+        Task<TaskDetailDto> GetTaskDetailAsync(int adminId, int taskId, string role);
+        Task UpdateTaskStatus(int taskId, int taskStatus);
     }
 }

@@ -7,11 +7,11 @@ namespace API.Interface.Repository
 {
     public interface IMoneyTransactionRepository : IBaseRepository<MoneyTransaction>
     {
-        Task<bool> CreateNewMoneyTransaction(TransactionMoneyCreateParam transactionMoneyCreateDto, int idAccount);
+        //Task<bool> CreateNewMoneyTransaction(TransactionMoneyCreateParam transactionMoneyCreateDto, int idAccount);
         Task<int> GetIdTransactionWhenCreateNewTransaction();
         Task<PageList<MoneyTransactionDto>> GetMoneyTransactionsAsync(MoneyTransactionRequest moneyTransactionRequest);
         Task<MoneyTransactionDetailDto> GetMoneyTransactionDetailAsync(int transactionId);
-
-        //System.Threading.Tasks.Task CreateMoneyTransactionAndMoneyTransactionDetail(MoneyTransaction moneyTransaction, MoneyTransactionDetail moneyTransactionDetail);
+        Task<bool> InsertTransactionWhenRefund(RefundTransactionParam refundTransactionParam);
+        Task<PageList<MoneyTransactionDto>> GetMemberMoneyTransactionsAsync(MemberMoneyTransactionParam memberMoneyTransactionParam, int accountId);
     }
 }

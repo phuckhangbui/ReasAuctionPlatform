@@ -16,6 +16,7 @@ namespace API.Extensions
         public static IServiceCollection ApplicationServices(this IServiceCollection services
             , IConfiguration config)
         {
+            services.AddScoped<IDashboardRepository, DashboardRepository>();
             services.AddScoped<IRealEstateRepository, RealEstateRepository>();
             services.AddScoped<IRealEstateDetailRepository, RealEstateDetailRepository>();
             services.AddScoped<IRealEstatePhotoRepository, RealEstatePhotoRepository>();
@@ -28,6 +29,9 @@ namespace API.Extensions
             services.AddScoped<ITypeReasRepository, TypeReasRepository>();
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<IAuctionAccountingRepository, AuctionAccountingRepository>();
+            services.AddScoped<IParticipantHistoryRepository, ParticipantHistoryRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+
             services.AddScoped<IRealEstateService, RealEstateService>();
             services.AddScoped<IRuleService, RuleService>();
             services.AddScoped<IAccountService, AccountService>();
@@ -43,9 +47,21 @@ namespace API.Extensions
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IMoneyTransactionService, MoneyTransactionService>();
             services.AddScoped<IDepositAmountService, DepositAmountService>();
+            services.AddScoped<IParticipantHistoryService, ParticipantHistoryService>();
+            services.AddScoped<IMemberAccountService, MemberAccountService>();
+            services.AddScoped<INotificatonService, NotificationService>();
             services.AddScoped<IVnPayService, VnPayService>();
+            services.AddScoped<IDashboardService, DashboardService>();
+
 
             services.AddScoped<IAuctionAccountingService, AuctionAccountingService>();
+
+            services.AddSingleton<IFirebaseMessagingService>(provider =>
+            {
+                // Assuming jsonCredentialsPath is configured elsewhere, possibly in appsettings.json
+                var jsonCredentialsPath = config["Firebase:CredentialsPath"];
+                return new FirebaseMessagingService(jsonCredentialsPath);
+            });
 
             services.AddDbContext<DataContext>(opt =>
             {

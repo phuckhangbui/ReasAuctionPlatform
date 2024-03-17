@@ -16,7 +16,7 @@ namespace API.Services
 
             vnPayPaymentUrlDto.Amount = (long)dto.Amount;
             vnPayPaymentUrlDto.CreateDate = DateTime.Now;
-            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(10);
+            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(1);
             vnPayPaymentUrlDto.Locale = "vn";
             vnPayPaymentUrlDto.OrderInfo = "Auction Deposit Fee";
             vnPayPaymentUrlDto.ReturnUrl = returnUrl;
@@ -35,9 +35,9 @@ namespace API.Services
             vnPayPaymentUrlDto.Version = vnPayProperties.Version;
             vnPayPaymentUrlDto.HashSecret = vnPayProperties.HashSecret;
 
-            vnPayPaymentUrlDto.Amount = 100000 * 100;
+            vnPayPaymentUrlDto.Amount = 100000;
             vnPayPaymentUrlDto.CreateDate = DateTime.Now;
-            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(10);
+            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(1);
             vnPayPaymentUrlDto.Locale = "vn";
             vnPayPaymentUrlDto.OrderInfo = "Real Estate Fee";
             vnPayPaymentUrlDto.ReturnUrl = returnUrl;

@@ -132,7 +132,7 @@ const AdminRuleList: React.FC = () => {
           <CKEditor
             editor={ClassicEditor}
             data={initialContent}
-            onChange={(e, editor) => setUpdatedContent(editor.getData())}
+            onChange={(_e, editor) => setUpdatedContent(editor.getData())}
           />
         ) : (
           <div dangerouslySetInnerHTML={{ __html: initialContent }}></div>

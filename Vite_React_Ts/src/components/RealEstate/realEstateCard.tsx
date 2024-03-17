@@ -1,11 +1,22 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import realEstate from "../../interface/RealEstate/realEstate";
+import { UserContext } from "../../context/userContext";
+import { payRealEstatePostingFee } from "../../api/transaction";
+import { ReasContext } from "../../context/reasContext";
 interface RealEstateProps {
   realEstate: realEstate;
+  ownRealEstatesStatus?: boolean;
 }
 
-const RealEstateCard = ({ realEstate }: RealEstateProps) => {
+const RealEstateCard = ({
+  realEstate,
+  ownRealEstatesStatus,
+}: RealEstateProps) => {
   const [estate, setEstate] = useState<realEstate | undefined>(realEstate);
   const [formattedDateEnd, setFormattedDateEnd] = useState<string>("");
+  const [showStatus, setShowStatus] = useState<boolean>();
+  const { token, userId } = useContext(UserContext);
+  const { getReas } = useContext(ReasContext);
 
   useEffect(() => {
     setEstate(realEstate || undefined);
@@ -19,6 +30,52 @@ const RealEstateCard = ({ realEstate }: RealEstateProps) => {
       setFormattedDateEnd(formattedDate);
     }
   }, []);
+
+  useEffect(() => {
+    setShowStatus(ownRealEstatesStatus);
+  }, [ownRealEstatesStatus]);
+
+  function formatVietnameseDong(price: string) {
+    // Convert the string to a number
+    const numberPrice = parseInt(price, 10);
+    // Check if the conversion was successful
+    if (isNaN(numberPrice)) {
+      // Return the original string if it's not a valid number
+      return price;
+    }
+    // Format the number
+    const formattedNumber = numberPrice
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return formattedNumber;
+  }
+
+  const handlePayingFee = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    try {
+      e.preventDefault();
+      const fetchPaymentUrl = async () => {
+        if (userId && token) {
+          if (estate?.reasId) {
+            const response = await payRealEstatePostingFee(
+              userId,
+              estate?.reasId,
+              token
+            );
+            if (response) {
+              getReas(estate?.reasId);
+              window.location.href = response?.paymentUrl as string;
+            }
+          }
+        }
+      };
+      fetchPaymentUrl();
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  };
+
   return (
     <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow mx-auto sm:my-2 md:my-0">
       <div className="">
@@ -46,10 +103,15 @@ const RealEstateCard = ({ realEstate }: RealEstateProps) => {
           <span> sqrt</span>
         </div>
 
-        <div className="flex xl:justify-between sm:justify-between xl:items-center sm:items-center md:items-start xl:flex-row sm:flex-row md:flex-col text-gray-700">
+        <div className="flex text-gray-700">
           <div className="text-xl font-bold tracking-tight text-gray-900 ">
-            {estate?.reasPrice},000 VND
+            {estate?.reasPrice
+              ? formatVietnameseDong(estate?.reasPrice)
+              : estate?.reasPrice}
+            <span className="pl-1">VND</span>
           </div>
+        </div>
+        <div className="flex justify-end text-gray-700">
           <div className=" tracking-tight">
             Due:{" "}
             <span className="text-gray-900 font-semibold">
@@ -57,6 +119,28 @@ const RealEstateCard = ({ realEstate }: RealEstateProps) => {
             </span>
           </div>
         </div>
+        {showStatus ? (
+          estate?.reasStatus === "Approved" ? (
+            <div className="flex justify-center">
+              <button
+                onClick={handlePayingFee}
+                className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Pay Posting Fee
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-end text-gray-700">
+              <div className=" tracking-tight">
+                <span className="text-gray-900 font-semibold">
+                  {estate?.reasStatus}
+                </span>
+              </div>
+            </div>
+          )
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );

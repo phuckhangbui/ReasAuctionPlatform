@@ -60,6 +60,12 @@ namespace API.Services
             return realEstateDetailDto;
         }
 
+        public async Task<string> GetRealEstateName(int id)
+        {
+            var nameReas = await _realEstateRepository.GetRealEstateName(id);
+            return nameReas;
+        }
+
         public async Task<IEnumerable<ManageRealEstateDto>> GetRealEstateOnGoingByAdmin()
         {
             var reals = await _realEstateRepository.GetRealEstateOnGoing();

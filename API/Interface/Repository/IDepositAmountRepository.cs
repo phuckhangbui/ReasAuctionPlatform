@@ -9,11 +9,14 @@ namespace API.Interface.Repository
     {
         Task<PageList<DepositAmountDto>> GetDepositAmoutForMember(int id);
         Task<PageList<DepositAmountDto>> GetDepositAmoutForMemberBySearch(SearchDepositAmountParam searchDepositAmountDto, int id);
-        Task<PageList<DepositDto>> GetDepositAmountsAsync(DepositAmountParam depositAmountParam);
+        Task<IEnumerable<DepositDto>> GetRealEstateForDepositAsync();
         List<DepositAmount> GetDepositAmounts(int accountSignId, int reasId);
         DepositAmount GetDepositAmount(int accountSignId, int reasId);
         DepositAmount GetDepositAmount(int depositId);
-        DepositDetailDto GetDepositDetailAsync(int depositId);
+        Task<bool> ChangeStatusWaiting(int id);
+
         Task<PageList<AccountDepositedDto>> GetAccountsHadDeposited(PaginationParams paginationParams, int reasId);
+        System.Threading.Tasks.Task UpdateDepositStatusToWaitingForRefund(int reasId);
+        System.Threading.Tasks.Task UpdateDepositStatusToLostDepositInCaseAuctionNoAttender(int reasId);
     }
 }

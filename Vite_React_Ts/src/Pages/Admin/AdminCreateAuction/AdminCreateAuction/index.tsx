@@ -2,30 +2,25 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { Input } from "@material-tailwind/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import {
-  Table,
-  TableProps,
-  Tag,
-  Button,
-  Modal,
-  DatePicker,
-  InputNumber,
-} from "antd";
-import {NumberFormat} from "../../../../Utils/numberFormat";
+import { Table, TableProps, Tag, Button, Modal, DatePicker ,notification} from "antd";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import { useState, useEffect } from "react";
 import {
   getRealForDeposit,
   getUserForDeposit,
+  addAuction
 } from "../../../../api/adminAuction";
+import {getReasName} from "../../../../api/deposit"
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
 
 const RealDepositList: React.FC = () => {
-  const { token } = useContext(UserContext);
+  const { token, userId } = useContext(UserContext);
   const [search, setSearch] = useState("");
   const [RealData, setRealData] = useState<RealForDeposit[]>();
   const [DepositData, setDepoistData] = useState<DepositAmountUser[]>();
-  const [reasID, setRealID] = useState<number>();
+  const [reasName, setReasName] = useState<string>();
+  const [reasID, setRealID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const formatDate = (dateString: Date): string => {
@@ -38,6 +33,23 @@ const RealDepositList: React.FC = () => {
     ).slice(-2)}:${("0" + dateObject.getMinutes()).slice(-2)}:${(
       "0" + dateObject.getSeconds()
     ).slice(-2)}`;
+  };
+
+  const viewReasName = (reasId: number) => {
+    try {
+      const fetchReasName = async () => {
+        if (token && reasId) {
+          const response = await getReasName(token, reasId);
+          if (response) {
+            setReasName(response);
+          }
+          setShowDetail(true);
+        }
+      };
+      fetchReasName();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const statusColorMap: { [key: string]: string } = {
@@ -80,11 +92,28 @@ const RealDepositList: React.FC = () => {
     fetchDepositUser(reasID);
   };
 
+  const fetchCreateAuction = async (Auction: AuctionCreate) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await addAuction(Auction, token);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching add auction:", error);
+    }
+  };
+
+  const setDetail = (id : number) => {
+    viewDetail(id);
+    viewReasName(id);
+  };
+
   const columns: TableProps<RealForDeposit>["columns"] = [
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (index: number) => index + 1,
     },
     {
       title: "Reas Name",
@@ -92,16 +121,28 @@ const RealDepositList: React.FC = () => {
       width: "30%",
     },
     {
+      title: "Date Start",
+      dataIndex: "dateStart",
+      width: "15%",
+      render: (dateStart: Date) => formatDate(dateStart),
+    },
+    {
+      title: "Date End",
+      dataIndex: "dateEnd",
+      width: "15%",
+      render: (dateEnd: Date) => formatDate(dateEnd),
+    },
+    {
       title: "Number of user",
       dataIndex: "numberOfUser",
-      width: "15%",
+      width: "10%",
       render: (num: number) => `${num} users`,
     },
     {
       title: "",
       dataIndex: "operation",
       render: (_: any, record: RealForDeposit) => (
-        <a onClick={() => viewDetail(record.reasId)}>View details</a>
+        <a onClick={() => setDetail(record.reasId)}>View details</a>
       ),
       width: "10%",
     },
@@ -113,24 +154,52 @@ const RealDepositList: React.FC = () => {
   };
   const handleOk = () => {
     setIsModalOpen(false);
+    createAuction();
+    setShowDetail(false);
   };
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-
-  const onChangeDate = (date: any, dateString: any) => {
-    console.log(date, dateString);
+let dateStart : Date = new Date();
+  const onChangeDate = (date: any) => {
+     dateStart = date;
   };
 
-  const onChangeInput = (value: any) => {
-    console.log("changed", value);
+  const openNotificationWithIcon = (
+    type: "success" | "error",
+    description: string
+  ) => {
+    notification[type]({
+      message: "Notification Title",
+      description: description,
+    });
+  };
+
+  const createAuction = async () => {
+    const Auction : AuctionCreate = {
+AccountCreateId : userId,
+DateStart : dateStart,
+ReasId : reasID,
+    }
+    const response = await fetchCreateAuction(Auction);
+    if (response != undefined && response) {
+      if (response.statusCode == "MSG05") {
+        openNotificationWithIcon("success", response.message);
+        fetchRealList();
+      } else {
+        openNotificationWithIcon(
+          "error",
+          "Something went wrong when executing operation. Please try again!"
+        );
+      }
+    }
   };
 
   const columnUsers: TableProps<DepositAmountUser>["columns"] = [
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (index: number) => index + 1,
     },
     {
       title: "Account Name",
@@ -151,7 +220,7 @@ const RealDepositList: React.FC = () => {
       title: "Deposit Amount",
       dataIndex: "amount",
       width: "10%",
-      render: (depositAmount: number) => NumberFormat(depositAmount)
+      render: (depositAmount: number) => NumberFormat(depositAmount),
     },
     {
       title: "Deposit Date",
@@ -199,24 +268,27 @@ const RealDepositList: React.FC = () => {
               open={isModalOpen}
               onOk={handleOk}
               onCancel={handleCancel}
+              footer={[
+                <Button key="submit" onClick={handleOk}>
+                  Create
+                </Button>,
+              ]}
             >
-              <DatePicker
-                onChange={onChangeDate}
-                showTime
-                needConfirm={false}
-              />
+              <div style={{ alignContent: "center" }}>
+                <DatePicker
+                  onChange={onChangeDate}
+                  showTime
+                  needConfirm={false}
+                />
+              </div>
               <br />
-              <InputNumber
-                defaultValue={0}
-                formatter={(value: any) =>
-                  `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
-                parser={(value: any) => value.replace(/\$\s?|(,*)/g, "")}
-                onChange={onChangeInput}
-              />
             </Modal>
           </div>
           <br />
+
+          <h5><strong>Real Estate Name: {reasName}</strong></h5><br />
+
+
           <Table columns={columnUsers} dataSource={DepositData} bordered />
         </div>
       ) : (

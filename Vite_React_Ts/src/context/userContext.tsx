@@ -6,45 +6,41 @@ interface UserProviderProps {
 
 interface UserContextType {
   userRole: number | undefined;
+  userId: number | undefined;
   token: string | undefined;
-  login: (user: loginUser, token: string, userId: number) => void;
+  userAccountName: string | undefined;
+  login: (user: loginUser, token: string) => void;
   logout: () => void;
   isAuth: () => boolean;
-  userId: number | undefined;
 }
 
 export const UserContext = createContext<UserContextType>({
   userRole: undefined,
+  userId: undefined,
   token: undefined,
+  userAccountName: undefined,
   login: () => {},
   logout: () => {},
   isAuth: () => false,
-  userId: undefined,
 });
 
 const UserProvider = ({ children }: UserProviderProps) => {
-  const [userRole, setUserRole] = useState<number | undefined>(undefined);
-  const [token, setToken] = useState<string | undefined>(undefined);
-  const [userId, setUserId] = useState<number | undefined>(undefined);
-
-  const login = (user: loginUser, token: string, userId: number) => {
-    const stringUser = JSON.stringify(user);
-    localStorage.setItem("userLogin", stringUser);
-    localStorage.setItem("token", token);
-    localStorage.setItem("userId", userId.toString());
-    setUserRole(user?.roleId);
-    setToken(token);
-    setUserId(userId);
-  };
+  const [userRole, setUserRole] = useState<number | undefined>();
+  const [userAccountName, setUserAccountName] = useState<string | undefined>();
+  const [userId, setUserId] = useState<number | undefined>();
+  const [token, setToken] = useState<string | undefined>();
 
   useEffect(() => {
     try {
       const getLocalData = async () => {
         const storageToken = localStorage.getItem("token");
         const storageUser = localStorage.getItem("user");
-        const parseStorageUser = JSON.parse(storageUser as string);
+
         if (storageToken && storageUser) {
-          setUserRole(parseStorageUser?.roleId);
+          const parseStorageUser = JSON.parse(storageUser as string);
+          setUserAccountName(parseStorageUser.accountName);
+          setUserRole(parseStorageUser.roleId);
+          setUserId(parseStorageUser.id);
           setToken(storageToken);
         }
       };
@@ -54,12 +50,24 @@ const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   console.log("User Role: ", userRole);
-  // }, [userRole]);
+  useEffect(() => {
+    console.log("User ID: ", userId);
+  }, [userId]);
+
+  const login = (user: loginUser, token: string) => {
+    const stringUser = JSON.stringify(user);
+    localStorage.setItem("user", stringUser);
+    localStorage.setItem("token", token);
+    setUserAccountName(user?.accountName);
+    setUserRole(user?.roleId);
+    setUserId(user?.id);
+    setToken(token);
+  };
 
   const logout = () => {
+    setUserAccountName(undefined);
     setUserRole(undefined);
+    setUserId(undefined);
     setToken(undefined);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
@@ -76,7 +84,15 @@ const UserProvider = ({ children }: UserProviderProps) => {
 
   return (
     <UserContext.Provider
-      value={{ userRole, token, login, logout, isAuth, userId }}
+      value={{
+        userAccountName,
+        userId,
+        userRole,
+        token,
+        login,
+        logout,
+        isAuth,
+      }}
     >
       {children}
     </UserContext.Provider>

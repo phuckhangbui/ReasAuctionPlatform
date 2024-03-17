@@ -3,6 +3,7 @@ using API.Exceptions;
 using API.Extension;
 using API.Helper;
 using API.Interface.Service;
+using API.MessageResponse;
 using API.Param;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,13 +23,15 @@ namespace API.Controllers
         private const string DetailUri = BaseUri + "/{taskId}";
         private const string ChangeStatusUri = DetailUri + "/{status}";
 
-        [HttpGet(BaseUri)]
+        [HttpPost(BaseUri)]
         [Authorize(policy: "Staff")]
-        public async Task<IActionResult> GetTasks([FromQuery] TaskParam taskParam, int staffId)
+        public async Task<IActionResult> GetTasks(
+            [FromQuery] PaginationParams paginationParams, 
+            [FromBody] TaskRequest taskParam, int staffId)
         {
             try
             {
-                var tasks = await _taskService.GetTasksAsync(taskParam, staffId, "STAFF");
+                var tasks = await _taskService.GetTasksAsync(paginationParams, taskParam, staffId, "STAFF");
 
                 Response.AddPaginationHeader(new PaginationHeader(tasks.CurrentPage, tasks.PageSize,
                 tasks.TotalCount, tasks.TotalPages));
@@ -37,7 +40,7 @@ namespace API.Controllers
             }
             catch (BaseNotFoundException ex)
             {
-                return BadRequest(new ApiResponse(404, ex.Message));
+                return NotFound(new ApiResponse(404, ex.Message));
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -57,7 +60,7 @@ namespace API.Controllers
             }
             catch (BaseNotFoundException ex)
             {
-                return BadRequest(new ApiResponse(404, ex.Message));
+                return NotFound(new ApiResponse(404, ex.Message));
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -67,17 +70,17 @@ namespace API.Controllers
 
         [HttpPut(ChangeStatusUri)]
         [Authorize(policy: "Staff")]
-        public async Task<IActionResult> UpdateTaskStatus(int staffId, int taskId, int status)
+        public async Task<ActionResult<ApiResponseMessage>> UpdateTaskStatus(int staffId, int taskId, int status)
         {
             try
             {
-                var task = await _taskService.UpdateTaskStatus(staffId, taskId, status, "STAFF");
+                await _taskService.UpdateTaskStatus(staffId, taskId, status, "STAFF");
 
-                return Ok(task);
+                return Ok(new ApiResponseMessage("MSG25"));
             }
             catch (BaseNotFoundException ex)
             {
-                return BadRequest(new ApiResponse(404, ex.Message));
+                return NotFound(new ApiResponse(404, ex.Message));
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -85,7 +88,7 @@ namespace API.Controllers
             }
             catch (AccountAssignedTaskException ex)
             {
-                return BadRequest(new ApiResponse(404, ex.Message));
+                return NotFound(new ApiResponse(404, ex.Message));
             }
         }
     }

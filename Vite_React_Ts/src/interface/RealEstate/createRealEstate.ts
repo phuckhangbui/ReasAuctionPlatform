@@ -1,13 +1,13 @@
 interface createRealEstate {
   reasName: string;
   reasAddress: string;
-  reasPrice: string;
+  reasPrice: number;
   reasArea: number;
   reasDescription: string;
   dateStart: Date;
   dateEnd: Date;
   type_Reas: number;
-  photo: [
+  photos: [
     {
       reasPhotoUrl: string;
     }

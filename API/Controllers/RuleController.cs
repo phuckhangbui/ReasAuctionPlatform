@@ -3,6 +3,7 @@ using API.Errors;
 using API.Interface.Service;
 using API.MessageResponse;
 using API.Param;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -16,12 +17,10 @@ namespace API.Controllers
             _ruleService = ruleService;
         }
 
+        [Authorize(policy: "Admin")]
         [HttpGet(BaseUri + "rule")]
         public async Task<ActionResult<Rule>> GetAllRule()
         {
-            int idAdmin = GetIdAdmin(_ruleService.AccountRepository);
-            if (idAdmin != 0)
-            {
                 var rule = await _ruleService.GetAllRule();
                 if (rule != null)
                 {
@@ -33,19 +32,13 @@ namespace API.Controllers
                 {
                     return null;
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+
+        [Authorize(policy: "Admin")]
         [HttpGet(BaseUri + "rule/detail/{id}")]
         public async Task<ActionResult<Rule>> GetDetailRule(int id)
         {
-            int idAdmin = GetIdAdmin(_ruleService.AccountRepository);
-            if (idAdmin != 0)
-            {
                 var rule = await _ruleService.GetDetailRule(id);
                 if (rule != null)
                 {
@@ -57,21 +50,13 @@ namespace API.Controllers
                 {
                     return null;
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
 
-
+        [Authorize(policy: "Admin")]
         [HttpPost(BaseUri + "rule/add")]
         public async Task<ActionResult<ApiResponseMessage>> CreateNewRule(RuleCreateParam ruleCreate)
         {
-            int idAdmin = GetIdAdmin(_ruleService.AccountRepository);
-            if (idAdmin != 0)
-            {
                 var rule = await _ruleService.CreateNewRule(ruleCreate);
                 if (rule)
                 {
@@ -81,19 +66,12 @@ namespace API.Controllers
                 {
                     return BadRequest(new ApiResponse(400, "Have any error when excute operation"));
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
 
+        [Authorize(policy: "Admin")]
         [HttpPost(BaseUri + "rule/update")]
         public async Task<ActionResult<ApiResponseMessage>> UpdateRule(RuleChangeContentParam ruleChangeContent)
         {
-            int idAdmin = GetIdAdmin(_ruleService.AccountRepository);
-            if (idAdmin != 0)
-            {
                 var rule = await _ruleService.UpdateRule(ruleChangeContent);
                 if (rule)
                 {
@@ -103,11 +81,6 @@ namespace API.Controllers
                 {
                     return BadRequest(new ApiResponse(400, "Have any error when excute operation"));
                 }
-            }
-            else
-            {
-                return BadRequest(new ApiResponse(401));
-            }
         }
     }
 }

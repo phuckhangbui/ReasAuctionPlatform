@@ -1,10 +1,11 @@
 ﻿using API.DTOs;
+using API.Entity;
 using API.Exceptions;
 using API.Helper;
 using API.Interface.Repository;
 using API.Interface.Service;
 using API.Param;
-
+using API.Param.Enums;
 
 namespace API.Services
 {
@@ -19,7 +20,7 @@ namespace API.Services
             _accountRepository = accountRepository;
         }
 
-        public async Task<PageList<AuctionDto>> GetAuctionHisotoryForAttender(AuctionHistoryParam auctionAccountingParam)
+        public async Task<PageList<AttenderAuctionHistoryDto>> GetAuctionHisotoryForAttender(AuctionHistoryParam auctionAccountingParam)
         {
             var account = await _accountRepository.GetAccountByAccountIdAsync(auctionAccountingParam.AccountId);
             if (account == null)
@@ -106,6 +107,54 @@ namespace API.Services
                 else return false;
             }
             catch (Exception ex) { return false; }
+        }
+
+        public async Task<PageList<AuctionDto>> GetNotyetAndOnGoingAuction(AuctionParam auctionParam)
+        {
+            var auctions = await _auctionRepository.GetAuctionsAsync(auctionParam);
+            var notyetAndOngoingAuctions = auctions.Where(a => int.Parse(a.Status) == (int)AuctionStatus.NotYet || int.Parse(a.Status) == (int)AuctionStatus.OnGoing);
+            return auctions;
+        }
+
+        public async Task<AuctionDto> GetAuctionDetailByReasId(int reasId)
+        {
+            var auctionDetail = await _auctionRepository.GetAuctionDetailByReasIdAsync(reasId);
+
+            if (auctionDetail == null)
+            {
+                throw new BaseNotFoundException($"Auction detail with ReasID {reasId} not found.");
+            }
+
+            return auctionDetail;
+        }
+
+        public async Task<List<int>> GetAuctionAttenders(int reasId)
+        {
+            return await _auctionRepository.GetAuctionAttenders(reasId);
+        }
+
+        public async Task<Auction> UpdateAuctionWhenStart(int auctionId)
+        {
+            Auction auction = _auctionRepository.GetAuction(auctionId);
+
+            if (auction != null && auction.Status == (int)AuctionStatus.Pending)
+            {
+                auction.Status = (int)AuctionStatus.OnGoing;
+                auction.DateEnd = DateTime.Now.AddHours(1);
+
+                bool result = await _auctionRepository.UpdateAsync(auction);
+                if (result)
+                {
+                    return auction;
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<List<int>> GetUserInAuction(int reasId)
+        {
+            return await _auctionRepository.GetUserIdInAuctionUsingReasId(reasId);
         }
     }
 }

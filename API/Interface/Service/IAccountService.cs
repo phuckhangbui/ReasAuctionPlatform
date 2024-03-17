@@ -9,5 +9,6 @@ namespace API.Interface.Service
         IAccountRepository AccountRepository { get; }
         Task<UserDto> LoginGoogleByMember(LoginGoogleParam loginGoogleDto);
         Task<UserDto> LoginByAdminOrStaff(LoginDto loginDto);
+        Task<string> GetFirebaseToken(int accountId);
     }
 }

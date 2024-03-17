@@ -18,7 +18,11 @@ const profileMenuItems = [
     path: "profile",
   },
   {
-    label: "Auction history",
+    label: "My Real Estate",
+    path: "realEstate",
+  },
+  {
+    label: "Auction History",
     path: "history",
   },
   {
@@ -42,6 +46,7 @@ export function AvatarDropdown() {
   const handleClick = (path: string) => {
     if (path === "signout") {
       logout();
+      navigate("/");
     } else {
       switch (path) {
         case "history":
@@ -49,6 +54,9 @@ export function AvatarDropdown() {
           break;
         case "profile":
           navigate("/profile");
+          break;
+        case "realEstate":
+          navigate("/memberReas");
           break;
         case "transaction":
           navigate("/transaction");

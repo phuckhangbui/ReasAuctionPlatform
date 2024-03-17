@@ -14,5 +14,6 @@ namespace API.Interface.Service
         Task<IEnumerable<ManageRealEstateDto>> GetRealEstateOnGoingByAdmin();
         Task<IEnumerable<ManageRealEstateDto>> GetAllRealEstateExceptOnGoingByAdmin();
         Task<bool> UpdateStatusRealEstateByAdmin(ReasStatusParam reasStatusParam);
+        Task<string> GetRealEstateName(int id);
     }
 }

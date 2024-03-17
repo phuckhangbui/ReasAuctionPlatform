@@ -23,6 +23,7 @@ namespace API.Helper
             CreateMap<RealEstate, RealEstateDto>();
             CreateMap<RealEstatePhoto, RealEstatePhotoDto>();
             CreateMap<Entity.Task, TaskDto>();
+            CreateMap<Entity.Task, TaskDetailDto>();
             CreateMap<MoneyTransaction, MoneyTransactionDto>()
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
             CreateMap<DepositAmount, DepositAmountDto>();
@@ -32,12 +33,13 @@ namespace API.Helper
                 .ForMember(dest => dest.AccountReceiveName, opt => opt.MapFrom(src => src.AccountReceive.AccountName))
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
-            CreateMap<DepositAmount, DepositDto>()
-                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
-                .ForMember(dest => dest.AccountSignName, opt => opt.MapFrom(src => src.AccountSign.AccountName));
-            CreateMap<DepositAmount, DepositDetailDto>()
-                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
-                .ForMember(dest => dest.AccountSignName, opt => opt.MapFrom(src => src.AccountSign.AccountName));
+            CreateMap<Auction, AuctionDto>()
+                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
+            CreateMap<Account, UserProfileDto>()
+                .ForMember(dest => dest.MajorName, opt => opt.MapFrom(src => src.Major.MajorName))
+                .ForMember(dest => dest.Major, opt => opt.Ignore())
+                .ReverseMap();
+            CreateMap<Account, AuctionAttenderDto>();
         }
     }
 
