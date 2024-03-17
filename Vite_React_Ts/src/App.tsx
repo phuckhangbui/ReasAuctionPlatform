@@ -49,7 +49,7 @@ function App() {
   const iconChooser = (status: string) => {
     console.log(status);
     switch (status) {
-      case "1":
+      case "1": // NewRealEstateCreate
         return (
           <div className="rounded-full bg-greenSuccess w-10 h-10 flex justify-center items-center">
             <svg
@@ -68,7 +68,7 @@ function App() {
             </svg>
           </div>
         );
-      case "2":
+      case "2": // NewRealEstateApproved
         return (
           <div className="rounded-full bg-greenSuccess w-10 h-10 flex justify-center items-center">
             <svg
@@ -87,7 +87,7 @@ function App() {
             </svg>
           </div>
         );
-      case "3":
+      case "3": // NewRealEstateRejected
         return (
           <div className="rounded-full bg-redFailed w-10 h-10 flex justify-center items-center">
             <svg
@@ -106,7 +106,7 @@ function App() {
             </svg>
           </div>
         );
-      case "4":
+      case "4": // NewAuctionCreate
         return (
           <div className="rounded-full bg-mainBlue w-10 h-10 flex justify-center items-center">
             <svg
@@ -125,7 +125,7 @@ function App() {
             </svg>
           </div>
         );
-      case "5":
+      case "5": // AuctionAboutToStart
         return (
           <div className="rounded-full bg-yellowWinner w-10 h-10 flex justify-center items-center">
             <svg
@@ -144,7 +144,7 @@ function App() {
             </svg>
           </div>
         );
-      case "6":
+      case "6": // AuctionFinishWinner
         return (
           <div className="rounded-full bg-yellowWinner w-10 h-10 flex justify-center items-center">
             <svg
@@ -163,7 +163,7 @@ function App() {
             </svg>
           </div>
         );
-      case "7":
+      case "7": // AuctionFinishLoser
         return (
           <div className="rounded-full bg-redFailed w-10 h-10 flex justify-center items-center">
             <svg
@@ -182,7 +182,7 @@ function App() {
             </svg>
           </div>
         );
-      case "8":
+      case "8": // AuctionFinishNotAttender
         return (
           <div className="rounded-full bg-redFailed w-10 h-10 flex justify-center items-center">
             <svg
@@ -201,8 +201,26 @@ function App() {
             </svg>
           </div>
         );
-      case "9":
-      case "10":
+      case "9": // AuctionFinishAdminAndStaff
+        return (
+          <div className="rounded-full bg-mainBlue w-10 h-10 flex justify-center items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              className="w-8 h-8 text-white font-extrabold"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46"
+              />
+            </svg>
+          </div>
+        );
+      case "10": // RealEstateStatusChangeNotiToOwner
         return (
           <div className="rounded-full bg-mainBlue w-10 h-10 flex justify-center items-center">
             <svg
@@ -221,7 +239,7 @@ function App() {
             </svg>
           </div>
         );
-      case "11":
+      case "11": // AuctionWinnerNoContact
         return (
           <div className="rounded-full bg-yellowWinner w-10 h-10 flex justify-center items-center">
             <svg
@@ -266,15 +284,6 @@ function App() {
     onMessage(messaging, (payload) => {
       console.log(payload);
       if (payload.notification?.body) {
-        // 1, 2: Good
-        // 3: Bad
-        // 4: Megaphone
-        // 5: Clock
-        // 6: Trophy
-        // 7: face frown
-        // 8: user minus
-        // 9, 10: Warning Blue
-        // 11: Warning yellow
         const { title, body } = payload.notification;
         let status: string;
         if (payload.data) {
@@ -289,28 +298,13 @@ function App() {
           >
             <div className="flex-1 w-0 p-1.5">
               <div className="flex items-center justify-center">
-                <div className="flex-shrink-0 pl-1">
-                  {/* <img
-                    className="h-10 w-10 rounded-full"
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixqx=6GHAjsWpt9&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.2&w=160&h=160&q=80"
-                    alt=""
-                  /> */}
-                  {iconChooser(status)}
-                </div>
+                <div className="flex-shrink-0 pl-1">{iconChooser(status)}</div>
                 <div className="ml-3 flex-1">
                   <p className="text-lg font-medium text-gray-900">{title}</p>
                   <p className=" text-sm text-gray-500">{body}</p>
                 </div>
               </div>
             </div>
-            {/* <div className="flex border-l border-gray-200">
-              <button
-                onClick={() => toast.dismiss(t.id)}
-                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-mainBlue hover:text-mainBlue focus:outline-none focus:ring-1 focus:ring-mainBlue"
-              >
-                X
-              </button>
-            </div> */}
           </div>
         ));
       }
