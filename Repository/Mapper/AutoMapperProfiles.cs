@@ -44,6 +44,7 @@ namespace Repository.Mapper
             CreateMap<Account, AuctionAttenderDto>();
             CreateMap<Auction, AuctionNotCancelDto>()
                 .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
+            CreateMap<Notification, NotificationDto>();
         }
     }
 
