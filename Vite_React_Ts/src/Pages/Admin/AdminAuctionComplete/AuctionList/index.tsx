@@ -18,7 +18,8 @@ import {
   getAuctionCompleteAdmin,
   getAuctionCompleteAdminById,
   getPaticipateUser,
-  changeMemberWin
+  changeMemberWin,
+  changeSuccessReal
 } from "../../../../api/adminAuction";
 import { UserContext } from "../../../../context/userContext";
 
@@ -31,6 +32,7 @@ const CompleteList: React.FC = () => {
   const [participateData, setParticipateData] =
     useState<ParticipateAccount[]>();
   const [auctionID, setAuctionID] = useState<number | undefined>();
+  const [reasID, setReasID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const formatDate = (dateString: Date): string => {
@@ -75,6 +77,7 @@ const CompleteList: React.FC = () => {
         data = await getAuctionCompleteAdminById(auctionId, token);
         setAuctionDetailData(data);
         setAuctionID(auctionId);
+        setReasID(data?.reasId);
         setShowDetail(true);
       }
     } catch (error) {
@@ -105,6 +108,18 @@ const CompleteList: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching change member:", error);
+    }
+  };
+
+  const fetchChangeContactSuccess= async (reasId: number | undefined) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await changeSuccessReal(reasId, token);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching change contact success:", error);
     }
   };
 
@@ -371,6 +386,23 @@ const CompleteList: React.FC = () => {
     }
   };
 
+  const handleChangeContactSuccess = async () => {
+    const response = await fetchChangeContactSuccess(reasID);
+    if (response != undefined && response) {
+      if (response.statusCode == "MSG30") {
+        openNotificationWithIcon("success", response.message);
+        fetchAuctionDetail(auctionID);
+        fetchParticipate(auctionID);
+      } 
+      else {
+        openNotificationWithIcon(
+          "error",
+          "Something went wrong when executing operation. Please try again!"
+        );
+      }
+    }
+  };
+
   // Generate random dates within a range of 10 years from today
 
   // Generate 100 random CompletedAuction items
@@ -383,6 +415,7 @@ const CompleteList: React.FC = () => {
             <FontAwesomeIcon icon={faArrowLeft} style={{ color: "#74C0FC" }} />
           </Button>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button onClick={handleChangeContactSuccess} style={{backgroundColor: "green"}}>Contact Success</Button>
             <Button onClick={showModal}>Change Member Win</Button>
             <Modal
               title="Fill information to create Auction"

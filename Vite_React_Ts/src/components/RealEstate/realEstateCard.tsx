@@ -128,7 +128,7 @@ const RealEstateCard = ({
     };
     const response = await reUpRealEstate(reUp, token);
     if (response != undefined && response) {
-      if (response.statusCode == "MSG27") {
+      if (response.statusCode == "MSG29") {
         openNotificationWithIcon("success", response.message);
       } 
       else {
@@ -143,7 +143,7 @@ const RealEstateCard = ({
   return (
     <div className="max-w-2lg bg-white border border-gray-200 rounded-lg shadow mx-auto sm:my-2 md:my-0">
       {showStatus && (
-        <div className="flex justify-end pt-2 pr-2">
+        <div className="flex justify-end pt-2 pr-2 pb-2">
           {estate?.reasStatus === "Approved" ? (
             <Tag color="green">Approved</Tag>
           ) : (
@@ -224,7 +224,6 @@ const RealEstateCard = ({
                       <p><strong>Date End :</strong></p>
                 <DatePicker
                   onChange={onChangeDate}
-                  showTime
                   needConfirm={false}
                 />
               </div>

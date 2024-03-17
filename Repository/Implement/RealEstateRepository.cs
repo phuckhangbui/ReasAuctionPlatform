@@ -166,7 +166,7 @@ namespace Repository.Implement
             var statusName = new GetStatusName();
             var page = new PaginationParams();
             var query = _context.RealEstate.Where(x =>
-                (new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning, (int)RealEstateStatus.ReUp }.Contains(x.ReasStatus) && searchRealEstateDto.ReasStatus == -1
+                (new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning}.Contains(x.ReasStatus) && searchRealEstateDto.ReasStatus == -1
                 || searchRealEstateDto.ReasStatus == x.ReasStatus) &&
                 (searchRealEstateDto.ReasName == null || x.ReasName.Contains(searchRealEstateDto.ReasName)) &&
                 (searchRealEstateDto.ReasPriceFrom == 0 && searchRealEstateDto.ReasPriceTo == 0 ||
@@ -195,7 +195,7 @@ namespace Repository.Implement
         {
             var statusName = new GetStatusName();
             PaginationParams page = new PaginationParams();
-            var query = _context.RealEstate.Where(x => new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.ReUp, (int)RealEstateStatus.Auctioning }.Contains(x.ReasStatus)).Select(x => new RealEstateDto
+            var query = _context.RealEstate.Where(x => new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning }.Contains(x.ReasStatus)).Select(x => new RealEstateDto
             {
                 ReasId = x.ReasId,
                 ReasName = x.ReasName,

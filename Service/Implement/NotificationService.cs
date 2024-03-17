@@ -359,14 +359,11 @@ namespace Service.Implement
                 case RealEstateStatus.Sold:
                     statusText = "Sold";
                     break;
-                case RealEstateStatus.Rollback:
-                    statusText = "Rollback";
-                    break;
                 case RealEstateStatus.DeclineAfterAuction:
                     statusText = "Decline After Auction";
                     break;
-                case RealEstateStatus.Block:
-                    statusText = "Blocked";
+                case RealEstateStatus.Success:
+                    statusText = "Success";
                     break;
                 case RealEstateStatus.WaitingAuction:
                     statusText = "Waiting for Auction";

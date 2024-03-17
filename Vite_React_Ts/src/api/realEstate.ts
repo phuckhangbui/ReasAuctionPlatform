@@ -100,7 +100,7 @@ export const reUpRealEstate = async ({reasId, dateEnd}: ReupRealEstate, token : 
       reasId, dateEnd
     }
     const fetchData = await axios.post<Message>(
-      `${baseUrl}/api/home/my_real_estate/create`,
+      `${baseUrl}/api/home/reup`,
       param,
       {
         headers: {

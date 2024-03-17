@@ -170,7 +170,7 @@ namespace API.Controllers
                 return BadRequest(new ApiResponse(400, "Fail to update real estate status"));
             }
 
-            return Ok();
+            return Ok(new ApiResponseMessage("MSG30"));
         }
     }
 }

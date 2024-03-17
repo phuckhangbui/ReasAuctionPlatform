@@ -30,7 +30,8 @@
         public const string MSG26 = "MSG26";
         public const string MSG27 = "MSG27";
         public const string MSG28 = "MSG28";
-
+        public const string MSG29 = "MSG29";
+        public const string MSG30 = "MSG30";
 
         public string StatusCode { get; set; }
         public string Message { get; set; }
@@ -70,6 +71,8 @@
             MSG26 => "Refund money successfully.",
             MSG27 => "Auction now has new winner, with new winning price set at " + money + " VNĐ",
             MSG28 => "Auction has no available next bidder, process real estate to Decline After Auction",
+            MSG29 => "Re-up Real Estate successfully.",
+            MSG30 => "Real Estate has been sold successfully.",
             _ => null
         };
     }
