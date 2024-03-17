@@ -78,7 +78,7 @@ namespace API.Controllers
         [HttpGet("auctions")]
         public async Task<IActionResult> GetAuctionsForMember([FromQuery] AuctionParam auctionParam)
         {
-            var auctions = await _auctionService.GetNotyetAndOnGoingAuction(auctionParam);
+            var auctions = await _auctionService.GetAuctionsNotCancel(auctionParam);
 
             Response.AddPaginationHeader(new PaginationHeader(auctions.CurrentPage, auctions.PageSize,
             auctions.TotalCount, auctions.TotalPages));

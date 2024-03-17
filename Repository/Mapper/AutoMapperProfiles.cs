@@ -42,6 +42,8 @@ namespace Repository.Mapper
                 .ForMember(dest => dest.CitizenIdentification, opt => opt.MapFrom(src => src.Citizen_identification))
                 .ReverseMap();
             CreateMap<Account, AuctionAttenderDto>();
+            CreateMap<Auction, AuctionNotCancelDto>()
+                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
         }
     }
 

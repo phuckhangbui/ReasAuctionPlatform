@@ -1,5 +1,4 @@
 ﻿using BusinessObject.Entity;
-using BusinessObject.Enum;
 using Repository.DTOs;
 using Repository.Interface;
 using Repository.Param;
