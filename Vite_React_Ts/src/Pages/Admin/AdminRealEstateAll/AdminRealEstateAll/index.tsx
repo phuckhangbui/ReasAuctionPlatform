@@ -40,7 +40,7 @@ const AdminRealEstateAllList: React.FC = () => {
   const [ReasId, setReasId] = useState<Number>();
   const [messageBlock, getMessageBlock] = useState<string>();
   const [checkedStatus, setCheckedStatus] = useState<number[]>([
-    1, 2, 3, 4, 5, 6, 8, 9,
+    1, 2, 3, 4, 5, 6, 8, 9, 10
   ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { token } = useContext(UserContext);
@@ -80,7 +80,7 @@ const AdminRealEstateAllList: React.FC = () => {
   };
 
   const statusColorMap: { [key: string]: string } = {
-    In_progress: "green",
+    In_progress: "blue",
     Approved: "green",
     Selling: "orange",
     Cancel: "red",
@@ -89,6 +89,7 @@ const AdminRealEstateAllList: React.FC = () => {
     Rollback: "brown",
     DeclineAfterAuction: "darkred",
     Success: "lightcoral",
+    WaitingAuction : "yellow",
   };
 
   const statusStringMap: { [key: number]: string } = {
@@ -101,6 +102,7 @@ const AdminRealEstateAllList: React.FC = () => {
     6: "Rollback",
     8: "Decline After Auction",
     9: "Success",
+    10: "WaitingAuction",
   };
 
   const options = [
@@ -136,10 +138,14 @@ const AdminRealEstateAllList: React.FC = () => {
       label: "Success",
       value: 9,
     },
+    {
+      label: "Waiting Auction",
+      value: 10,
+    },
   ];
 
   const statusAllColorMap: { [key: number]: string } = {
-    0: "green",
+    0: "blue",
     1: "green",
     2: "orange",
     3: "red",
@@ -148,6 +154,7 @@ const AdminRealEstateAllList: React.FC = () => {
     6: "brown",
     8: "darkred",
     9: "lightcoral",
+    10: "yellow"
   };
 
   const formatDate = (dateString: Date): string => {

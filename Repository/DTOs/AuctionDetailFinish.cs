@@ -9,6 +9,7 @@
         public DateTime? DateEnd { get; set; }
         public double FloorBid { get; set; }
         public string Status { get; set; }
+        public int StatusReas { get; set; }
         public int AccountCreateId { get; set; }
         public int AccountOwnerId { get; set; }
         public int AccountWinnerId { get; set; }

@@ -211,6 +211,7 @@ namespace Repository.Implement
                 DateEnd = y.DateEnd,
                 DateStart = y.DateStart,
                 Status = getName.GetStatusAuctionName(y.Status),
+                StatusReas = _context.RealEstate.Where(a => a.ReasId == y.ReasId).Select(a => a.ReasStatus).FirstOrDefault(),
             });
             return await auctiondetail.FirstOrDefaultAsync();
         }
