@@ -51,3 +51,21 @@ export const auctionSuccess = async (
     throw error;
   }
 };
+
+export const GetAuctionHistory = async (accountId: number, token: string) => {
+  try {
+    const fetchData = await axios.get<auctionHistory[]>(
+      `${baseUrl}/api/Auction/auctions/attend/history?AccountId=${accountId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error: " + error);
+  }
+};
