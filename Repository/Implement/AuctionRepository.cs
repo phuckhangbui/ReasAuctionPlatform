@@ -119,38 +119,36 @@ namespace Repository.Implement
             var query = _context.ParticipateAuctionHistories
                 .Where(pah => pah.AccountBidId == auctionAccountingParam.AccountId)
                 .Join(
-                    _context.Account,
-                    pah => pah.AccountBidId,
-                    a => a.AccountId,
-                    (pah, a) => new { pah, a }
-                )
-                .Join(
-                    _context.DepositAmount,
-                    join1 => join1.a.AccountId,
-                    da => da.AccountSignId,
-                    (join1, da) => new { join1, da }
+                    _context.AuctionsAccounting,
+                    pah => pah.AuctionAccountingId,
+                    aa => aa.AuctionAccountingId,
+                    (pah, aa) => new { pah, aa }
                 )
                 .Join(
                     _context.Auction,
-                    join2 => join2.da.ReasId,
+                    join1 => join1.aa.ReasId,
                     a2 => a2.ReasId,
-                    (join2, a2) => new AttenderAuctionHistoryDto
+                    (join1, a2) => new { join1, a2 }
+                )
+                .Join(
+                    _context.DepositAmount,
+                    join2 => join2.a2.ReasId,
+                    da => da.ReasId,
+                    (join2, da) => new AttenderAuctionHistoryDto
                     {
-                        AuctionId = a2.AuctionId,
-                        ReasId = a2.ReasId,
-                        DateStart = a2.DateStart,
-                        DateEnd = a2.DateEnd,
+                        AuctionId = join2.a2.AuctionId,
+                        ReasId = join2.a2.ReasId,
+                        DateStart = join2.a2.DateStart,
+                        DateEnd = join2.a2.DateEnd,
                         LastBid = join2.join1.pah.LastBid,
-                        DepositStatus = join2.da.Status,
-                        ReasArea = a2.RealEstate.ReasArea,
-                        ReasName = a2.RealEstate.ReasName,
-                        TypeName = a2.RealEstate.Type_REAS.Type_Reas_Name,
-                        ThumbnailUrl = a2.RealEstate.Photos.FirstOrDefault(r => r.ReasId == a2.ReasId).ReasPhotoUrl
+                        Status = join2.join1.pah.Status,
+                        ReasArea = join2.a2.RealEstate.ReasArea,
+                        ReasName = join2.a2.RealEstate.ReasName,
+                        TypeName = join2.a2.RealEstate.Type_REAS.Type_Reas_Name,
+                        ThumbnailUrl = join2.a2.RealEstate.Photos.FirstOrDefault(r => r.ReasId == join2.a2.ReasId).ReasPhotoUrl
                     }
                 )
-                .Where(result => result.DepositStatus == (int)UserDepositEnum.Waiting_for_refund ||
-                                 result.DepositStatus == (int)UserDepositEnum.Refunded ||
-                                 result.DepositStatus == (int)UserDepositEnum.Winner)
+                .Distinct()
                 .AsQueryable();
 
             var pageList = await PageList<AttenderAuctionHistoryDto>.CreateAsync(query, auctionAccountingParam.PageNumber, auctionAccountingParam.PageSize);
@@ -158,7 +156,6 @@ namespace Repository.Implement
             var auctionDtos = _mapper.Map<List<AttenderAuctionHistoryDto>>(pageList);
 
             return new PageList<AttenderAuctionHistoryDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
-
         }
 
         public async Task<AuctionDetailOnGoing> GetAuctionDetailOnGoing(int id)
@@ -367,6 +364,30 @@ namespace Repository.Implement
             }
 
             return depositedAccounts;
+        }
+
+        public async Task<PageList<AuctionNotCancelDto>> GetAuctionNotCancelsAsync(AuctionParam auctionParam)
+        {
+            var query = _context.Auction.AsQueryable();
+
+            query = query.Where(a => a.Status != (int)AuctionStatus.Cancel);
+            query = query.OrderByDescending(a => a.DateStart);
+            query = query
+                .Include(a => a.RealEstate)
+                .Include(a => a.RealEstate.Photos.OrderBy(p => p.ReasPhotoId).Take(1));
+
+            if (!string.IsNullOrEmpty(auctionParam.Keyword))
+            {
+                query = query.Where(a =>
+                    a.RealEstate.ReasName.ToLower().Contains(auctionParam.Keyword.ToLower()) ||
+                    a.RealEstate.ReasAddress.ToLower().Contains(auctionParam.Keyword.ToLower()) ||
+                    a.DateStart >= auctionParam.TimeStart && a.DateStart <= auctionParam.TimeEnd);
+            }
+
+            return await PageList<AuctionNotCancelDto>.CreateAsync(
+            query.AsNoTracking().ProjectTo<AuctionNotCancelDto>(_mapper.ConfigurationProvider),
+            auctionParam.PageNumber,
+            auctionParam.PageSize);
         }
     }
 }

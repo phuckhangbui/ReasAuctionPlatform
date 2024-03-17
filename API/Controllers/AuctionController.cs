@@ -78,7 +78,7 @@ namespace API.Controllers
         [HttpGet("auctions")]
         public async Task<IActionResult> GetAuctionsForMember([FromQuery] AuctionParam auctionParam)
         {
-            var auctions = await _auctionService.GetNotyetAndOnGoingAuction(auctionParam);
+            var auctions = await _auctionService.GetAuctionsNotCancel(auctionParam);
 
             Response.AddPaginationHeader(new PaginationHeader(auctions.CurrentPage, auctions.PageSize,
             auctions.TotalCount, auctions.TotalPages));
@@ -309,7 +309,7 @@ namespace API.Controllers
         }
 
         //Auction attender history: Deposit status: Waiting_for_refund || Refunded || Winner
-        //[Authorize(policy: "Member")]
+        [Authorize(policy: "Member")]
         [HttpGet("auctions/attend/history")]
         public async Task<IActionResult> GetAttenderAuctionHistory([FromQuery] AuctionHistoryParam auctionHisotoryParam)
         {

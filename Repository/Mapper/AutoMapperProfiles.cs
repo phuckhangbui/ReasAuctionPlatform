@@ -42,6 +42,8 @@ namespace Repository.Mapper
                 .ForMember(dest => dest.Major, opt => opt.Ignore())
                 .ReverseMap();
             CreateMap<Account, AuctionAttenderDto>();
+            CreateMap<Auction, AuctionNotCancelDto>()
+                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
         }
     }
 
