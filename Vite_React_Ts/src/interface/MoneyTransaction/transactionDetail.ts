@@ -1,20 +1,16 @@
-interface transactionDetail {
+interface TransactionDetail {
   accountSendId: number;
-  sendBankCode: string;
-  sendBankAccount: string;
   accountSendName: string;
   accountReceiveId: number;
-  receivedBankCode: string;
-  receiveBankAccount: string;
   accountReceiveName: string;
   reasId: number;
   reasName: string;
   depositId: number;
-  txnRef: string;
+  txnRef: number;
   transactionId: number;
   transactionStatus: number;
-  transactionNo: string;
+  transactionNo: number;
   money: number;
-  dateExecution: Date;
+  dateExecution: any;
   transactionType: string;
 }
