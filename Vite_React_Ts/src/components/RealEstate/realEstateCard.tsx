@@ -77,7 +77,7 @@ const RealEstateCard = ({
   };
 
   return (
-    <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow mx-auto sm:my-2 md:my-0">
+    <div className="max-w-sm bg-white border border-gray-200 rounded-lg mx-auto sm:my-2 md:my-0 shadow-lg hover:shadow-xl transition-all delay-100">
       <div className="">
         <img
           className="rounded-t-lg h-52 w-full"
@@ -87,7 +87,7 @@ const RealEstateCard = ({
       </div>
       <div className="p-5">
         <div>
-          <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900 xl:line-clamp-2 md:line-clamp-3 ">
+          <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900 xl:line-clamp-2 md:line-clamp-3 break-all">
             {estate?.reasName}
           </h5>
         </div>
@@ -100,7 +100,7 @@ const RealEstateCard = ({
           <span className="text-gray-900 font-semibold">
             {estate?.reasArea}
           </span>
-          <span> sqrt</span>
+          <span> (m²)</span>
         </div>
 
         <div className="flex text-gray-700">

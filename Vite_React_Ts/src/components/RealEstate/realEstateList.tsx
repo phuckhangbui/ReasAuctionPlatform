@@ -58,21 +58,19 @@ const RealEstateList = ({
 
   return (
     <div>
-      <div>
-        <div className="mt-4 grid lg:grid-cols-4 md:grid-cols-2 md:gap-3 sm:grid-cols-1">
-          {realEstates &&
-            realEstates.map((realEstate) => (
-              <div
-                key={realEstate.reasId}
-                onClick={() => toggleModal(realEstate)}
-              >
-                <RealEstateCard
-                  realEstate={realEstate}
-                  ownRealEstatesStatus={ownRealEstatesStatus}
-                />
-              </div>
-            ))}
-        </div>
+      <div className="mt-4 grid lg:grid-cols-4 md:grid-cols-2 md:gap-3 sm:grid-cols-1">
+        {realEstates &&
+          realEstates.map((realEstate) => (
+            <div
+              key={realEstate.reasId}
+              onClick={() => toggleModal(realEstate)}
+            >
+              <RealEstateCard
+                realEstate={realEstate}
+                ownRealEstatesStatus={ownRealEstatesStatus}
+              />
+            </div>
+          ))}
       </div>
       {showModal && (
         <div

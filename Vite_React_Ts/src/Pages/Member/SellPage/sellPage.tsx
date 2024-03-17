@@ -15,7 +15,7 @@ const validate = (values: createRealEstate) => {
   const errors: Partial<validateRealEstate> = {};
   if (!values.reasName) {
     errors.reasName = "Required";
-  } else if (values.reasName.length < 20) {
+  } else if (values.reasName.length < 30) {
     errors.reasName = "Title is too short!";
   }
 
@@ -154,7 +154,6 @@ const SellPage = () => {
         ) {
           toast.error("Photos of Real Estate Are Required");
         } else {
-          console.log(values);
           const response = await createRealEstate(token, values);
           if (response) {
             formik.resetForm();

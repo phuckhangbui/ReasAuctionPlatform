@@ -37,6 +37,7 @@ import AddRule from "./Pages/Admin/AdminAddRule";
 import AdminRule from "./Pages/Admin/AdminRule";
 import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
 import TransactionHistory from "./Pages/Member/TransactionHistory";
+import ProfilePage from "./Pages/Member/ProfilePage/profilePage";
 
 const roles = {
   Admin: 1,
@@ -71,6 +72,7 @@ function App() {
               <Route path="/sell" element={<SellPage />} />
               <Route path="/memberReas" element={<MemberRealEstatePage />} />
               <Route path="/success" element={<SuccessPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
 

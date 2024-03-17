@@ -17,6 +17,7 @@ import {
 import { DepositContext } from "../../context/depositContext";
 import { registerParticipateAuction } from "../../api/transaction";
 import LoginModal from "../LoginModal/loginModal";
+import { memberRealEstateDetail } from "../../api/memberRealEstate";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -79,6 +80,22 @@ const RealEstateDetailModal = ({
       console.log(error);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      if (userId === realEstateDetail?.accountOwnerId) {
+        const fetchOwnerRealEstateDetail = async () => {
+          if (token) {
+            const response = await memberRealEstateDetail(realEstateId, token);
+            setRealEstateDetail(response);
+          }
+        };
+        fetchOwnerRealEstateDetail();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [realEstateDetail?.detail === null]);
 
   //get userRegisterList
   useEffect(() => {
@@ -692,7 +709,7 @@ const RealEstateDetailModal = ({
                   <div className="text-xl font-bold ">
                     {realEstateDetail?.reasArea}
                   </div>
-                  <div className="text-xs text-gray-700">Sqft</div>
+                  <div className="text-xs text-gray-700">m²</div>
                 </div>
               </div>
               <div className="flex items-center">
