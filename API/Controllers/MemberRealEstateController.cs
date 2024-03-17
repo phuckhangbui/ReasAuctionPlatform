@@ -23,15 +23,17 @@ namespace API.Controllers
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
         private readonly IMoneyTransactionService _moneyTransactionService;
+        private readonly IRealEstateService _realEstateService;
 
         private const string BaseUri = "/api/home/";
-        public MemberRealEstateController(IMemberRealEstateService memberRealEstateService, IVnPayService vnPayService, IOptions<VnPayProperties> vnPayProperties, IMoneyTransactionService moneyTransactionService, INotificatonService notificatonService)
+        public MemberRealEstateController(IMemberRealEstateService memberRealEstateService, IVnPayService vnPayService, IOptions<VnPayProperties> vnPayProperties, IMoneyTransactionService moneyTransactionService, INotificatonService notificatonService, IRealEstateService realEstateService)
         {
             _memberRealEstateService = memberRealEstateService;
             _vnPayService = vnPayService;
             _vnPayProperties = vnPayProperties.Value;
             _moneyTransactionService = moneyTransactionService;
             _notificatonService = notificatonService;
+            _realEstateService = realEstateService;
         }
 
 
@@ -215,36 +217,26 @@ namespace API.Controllers
 
         }
 
+        [Authorize(policy: "Member")]
+        [HttpPost(BaseUri + "reup/{reasId}")]
+        public async Task<ActionResult> ReupRealEstate(int reasId, DateTime dateEnd)
+        {
+            int accountId = GetLoginAccountId();
+            RealEstate realEstate = _realEstateService.GetRealEstate(reasId);
 
-        //[HttpPost(BaseUri + "my_real_estate/payment")]
-        //public async Task<ActionResult<ApiResponseMessage>> PaymentAmountToUpRealEstaeAfterApprove(TransactionMoneyCreateParam transactionMoneyCreateParam)
-        //{
-        //    int userMember = GetIdMember(_memberRealEstateService.AccountRepository);
-        //    if (userMember != 0)
-        //    {
-        //        if (transactionMoneyCreateParam.Money != transactionMoneyCreateParam.MoneyPaid)
-        //        {
-        //            return new ApiResponseMessage("MSG20");
-        //        }
-        //        else
-        //        {
-        //            try
-        //            {
-        //                bool check = await _memberRealEstateService.PaymentAmountToUpRealEstaeAfterApprove(transactionMoneyCreateParam, userMember);
-        //                if (check)
-        //                    return new ApiResponseMessage("MSG19");
-        //                else return BadRequest(new ApiResponse(401, "Have any error when excute operation"));
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                return BadRequest(new ApiResponse(400, "Have any error when excute operation"));
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(new ApiResponse(401));
-        //    }
-        //}
+            if (realEstate == null || accountId == 0 || realEstate.AccountOwnerId == accountId)
+            {
+                return BadRequest(new ApiResponse(400, "No matching real estate with account"));
+            }
+
+            bool result = await _memberRealEstateService.ReupRealEstate(realEstate, dateEnd);
+            if (result == false)
+            {
+                return BadRequest(new ApiResponse(400, "Fail to reup"));
+            }
+
+            return Ok();
+        }
+
     }
 }

@@ -154,6 +154,15 @@ namespace Service.Implement
             else return false;
         }
 
+        public async Task<bool> ReupRealEstate(RealEstate realEstate, DateTime dateEnd)
+        {
+            realEstate.DateStart = DateTime.Now;
+            realEstate.DateEnd = dateEnd;
+            realEstate.ReasStatus = (int)RealEstateStatus.Selling;
+
+            return await _real_estate_repository.UpdateAsync(realEstate);
+        }
+
 
     }
 }

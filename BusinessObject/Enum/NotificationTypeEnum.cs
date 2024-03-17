@@ -10,6 +10,8 @@
         AuctionFinishWinner = 6,
         AuctionFinishLoser = 7,
         AuctionFinishNotAttender = 8,
-        AuctionFinishAdminAndStaff = 9
+        AuctionFinishAdminAndStaff = 9,
+        RealEstateStatusChangeNotiToOwner = 10,
+        AuctionWinnerNoContact = 11,
     }
 }

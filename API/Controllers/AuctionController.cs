@@ -536,7 +536,7 @@ namespace API.Controllers
             await _participantHistoryService.UpdateParticipateHistoryStatus(auctionAccounting.AuctionAccountingId, auctionAccounting.AccountWinId, (int)ParticipateAuctionHistoryEnum.Others, updateAuctionWinnerDto.message);
 
             //send noti + mail for old winner, inform loose deposit
-
+            await _notificatonService.SendNotificationWhenWinnerLoseContactUsingOldAuctionAccounting(updateAuctionWinnerDto.auctionId);
 
 
             if (nextHighestBidder != null)
@@ -558,7 +558,7 @@ namespace API.Controllers
                 await _depositAmountService.UpdateStatus(newAuctionAccounting.AccountWinId, auction.ReasId, (int)UserDepositEnum.Winner);
 
                 //send noti + mail for new winner
-
+                await _notificatonService.SendNotificationWhenWinAuction(updateAuctionWinnerDto.auctionId);
 
                 return Ok(new { message = $"Auction now has new winner, with new winning price set at {newAuctionAccounting.MaxAmount} VND" });
 
@@ -572,7 +572,7 @@ namespace API.Controllers
                 auctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWhenNoWinnerRemain(updateAuctionWinnerDto.auctionId);
 
                 //send noti + mail for owner notif ther real estate status
-
+                _notificatonService.SendNotificationToOwnerWhenChangeStatusOfRealEstate(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
 
                 return Ok(new { message = "Auction has no available next bidder, process real estate to Decline After Auction" });
 
