@@ -29,7 +29,6 @@ export const getAuctionStatus = async (
       }
     );
     const response = fetchData.data;
-    console.log(response);
     return response;
   } catch (error) {
     console.log("Error:", error);
@@ -40,6 +39,24 @@ export const getAuctionUserList = async (reasId: number) => {
   try {
     const fetchData = await axios.get<number[]>(
       `${baseUrl}/auctions/${reasId}/attenders`
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error: " + error);
+  }
+};
+
+export const StartAuction = async (auctionId: number, token: string) => {
+  try {
+    const fetchData = await axios.get<Message>(
+      `${baseUrl}/api/Auction/start?auctionId=${auctionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
     );
     const response = fetchData.data;
     console.log(response);

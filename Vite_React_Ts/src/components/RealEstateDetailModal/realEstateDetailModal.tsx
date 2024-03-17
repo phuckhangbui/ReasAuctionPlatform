@@ -2,13 +2,14 @@ import { Button, Carousel, Typography } from "@material-tailwind/react";
 import { useContext, useEffect, useState } from "react";
 import { getRealEstateById } from "../../api/realEstate";
 import { NumberFormat } from "../../Utils/numbetFormat";
-import { Empty, InputNumber, Modal, Statistic } from "antd";
+import { InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
 import { UserContext } from "../../context/userContext";
 import dayjs, { Dayjs } from "dayjs";
 import { ref, get, child, update, onValue } from "firebase/database";
 import { db } from "../../Config/firebase-config";
 import {
+  StartAuction,
   auctionSuccess,
   getAuctionHome,
   getAuctionStatus,
@@ -44,13 +45,13 @@ const RealEstateDetailModal = ({
   const [totalUsers, setTotalUsers] = useState(0);
   const [isUsersAttend, setIsUserAttend] = useState(false);
   const [isOneParticipant, setIsOneParticipant] = useState(true);
-  const [countdownValue, setCountdownValue] = useState(60000);
+  // const [countdownValue, setCountdownValue] = useState(60000);
   const [countDownWaiting, setCountDownWaiting] = useState<Dayjs | undefined>();
   const [userRegisterList, setUserRegisterList] = useState<
     number[] | undefined
   >();
   const [isUserRegistered, setIsUserRegistered] = useState(false);
-  const [isBidded, setIsBidded] = useState(false);
+  // const [isBidded, setIsBidded] = useState(false);
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
@@ -64,6 +65,7 @@ const RealEstateDetailModal = ({
   // 5: Reas is auctioning
 
   const [statusUserList, setStatusUserList] = useState<number>(0);
+  const [isAuctionEnd, setIsAuctionEnd] = useState(false);
   const { getDeposit } = useContext(DepositContext);
   const { token, userId } = useContext(UserContext);
 
@@ -418,24 +420,27 @@ const RealEstateDetailModal = ({
       });
 
       setCurrentBid(currentInputBid);
+      if (auction && token) {
+        StartAuction(auction.auctionId, token);
+      }
     } catch (error) {
       console.error("Error updating bid in Firebase:", error);
     }
   };
 
   //subcribe the lastBid and then plus 60 seconds when lastbid updated
-  useEffect(() => {
-    const lastBidRef = ref(db, `auctions/${realEstateId}/lastBid`);
-    const unsubscribe = onValue(lastBidRef, (snapshot) => {
-      const lastBid = snapshot.val();
-      const newCountdownValue = lastBid + 60000;
-      setCountdownValue(newCountdownValue);
-    });
+  // useEffect(() => {
+  //   const lastBidRef = ref(db, `auctions/${realEstateId}/lastBid`);
+  //   const unsubscribe = onValue(lastBidRef, (snapshot) => {
+  //     const lastBid = snapshot.val();
+  //     const newCountdownValue = lastBid + 60000;
+  //     setCountdownValue(newCountdownValue);
+  //   });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [realEstateId]);
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [realEstateId]);
 
   //set count down for status change
   useEffect(() => {
@@ -443,15 +448,14 @@ const RealEstateDetailModal = ({
       db,
       `auctions/${realEstateId}/statusChangeTime`
     );
-    const unsubscribe = onValue(lastStatusChangeRef, (snapshot) => {
-      const lastChange = snapshot.val();
+    const unsubscribe = onValue(lastStatusChangeRef, () => {
+      // const lastChange = snapshot.val();
       let newCountdownValue;
       if (auction) {
         if (statusUserList == 1) {
-          newCountdownValue = dayjs(auction.dateStart).add(5, "minutes");
-          console.log(newCountdownValue);
+          newCountdownValue = dayjs(auction.dateStart).add(10, "minutes");
         } else if (statusUserList == 2) {
-          newCountdownValue = dayjs(auction.dateStart).add(0, "minutes");
+          newCountdownValue = dayjs(auction.dateStart).add(15, "minutes");
         }
       }
 
@@ -519,7 +523,8 @@ const RealEstateDetailModal = ({
         setIsAuctionOpen(false);
         setIsOneParticipant(false);
         setIsUserAttend(true);
-        setIsBidded(false);
+        // setIsBidded(false);
+        setIsAuctionEnd(true);
         identifyWinner();
       }
     });
@@ -528,32 +533,32 @@ const RealEstateDetailModal = ({
     };
   }, [realEstateId]);
 
-  useEffect(() => {
-    const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
-    const unsubscribe = onValue(statusRef, (snapshot) => {
-      const statusValue = snapshot.val();
-      if (statusValue == 0) {
-        setIsBidded(false);
-      } else if (statusValue == 1) {
-        setIsBidded(true);
-      }
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, [realEstateId]);
+  // useEffect(() => {
+  //   const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
+  //   const unsubscribe = onValue(statusRef, (snapshot) => {
+  //     const statusValue = snapshot.val();
+  //     if (statusValue == 0) {
+  //       setIsBidded(false);
+  //     } else if (statusValue == 1) {
+  //       setIsBidded(true);
+  //     }
+  //   });
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [realEstateId]);
 
-  const handleOnFinish = () => {
-    if (auction) {
-      if (currentBid > auction?.floorBid) {
-        const auctionRef = ref(db, `auctions/${realEstateId}`);
-        update(auctionRef, {
-          status: 4,
-        });
-        setIsAuctionOpen(false);
-      }
-    }
-  };
+  // const handleOnFinish = () => {
+  //   if (auction) {
+  //     if (currentBid > auction?.floorBid) {
+  //       const auctionRef = ref(db, `auctions/${realEstateId}`);
+  //       update(auctionRef, {
+  //         status: 4,
+  //       });
+  //       setIsAuctionOpen(false);
+  //     }
+  //   }
+  // };
 
   const handleOnFinishWaiting10Mins = () => {
     const auctionRef = ref(db, `auctions/${realEstateId}`);
@@ -605,6 +610,10 @@ const RealEstateDetailModal = ({
     } catch (error) {
       console.log("Error:", error);
     }
+  };
+
+  const handleCountDownStarting = () => {
+    setAuctionStatus(5);
   };
 
   return (
@@ -852,7 +861,6 @@ const RealEstateDetailModal = ({
             </div>
           </div>
           <div className={getActiveTabDetail("auction")}>
-            <div>{isBidded ? <>true</> : <>false</>}</div>
             {userId ? (
               auction ? (
                 auctionStatus === 0 ? (
@@ -895,7 +903,7 @@ const RealEstateDetailModal = ({
                       <Typography variant="h3" className="text-center">
                         Current bid: {NumberFormat(currentBid)}
                       </Typography>
-                      {isBidded ? (
+                      {/* {isBidded ? (
                         <>
                           <Countdown
                             value={countdownValue}
@@ -903,7 +911,7 @@ const RealEstateDetailModal = ({
                             onFinish={() => handleOnFinish()}
                           />
                         </>
-                      ) : null}
+                      ) : null} */}
                     </div>
 
                     <div className="grid grid-cols-5 gap-4">
@@ -917,11 +925,15 @@ const RealEstateDetailModal = ({
                         <div className="font-semibold flex items-center">
                           Total user: {totalUsers}
                         </div>
-                        <Countdown
-                          value={dayjs(auction.dateEnd).toDate().toString()}
-                          format="H [hours] m [minutes] s [secs]"
-                          prefix="Remain time"
-                        />
+                        {!isAuctionEnd ? (
+                          <Countdown
+                            value={dayjs(auction.dateEnd).toDate().toString()}
+                            format="H [hours] m [minutes] s [secs]"
+                            prefix="Remain time"
+                          />
+                        ) : (
+                          <></>
+                        )}
                       </div>
 
                       {isUserRegistered ? (
@@ -1043,7 +1055,7 @@ const RealEstateDetailModal = ({
                               ) : (
                                 <>
                                   <Countdown
-                                    value={countDownWaiting}
+                                    value={countDownWaiting?.toString()}
                                     format=" m [minutes] s [secs]"
                                     onFinish={() =>
                                       handleOnFinishWaiting5Mins()
@@ -1058,7 +1070,7 @@ const RealEstateDetailModal = ({
                           ) : (
                             <>
                               <Countdown
-                                value={countDownWaiting}
+                                value={countDownWaiting?.toString()}
                                 format=" m [minutes] s [secs]"
                                 onFinish={() => handleOnFinishWaiting10Mins()}
                               />
@@ -1074,18 +1086,28 @@ const RealEstateDetailModal = ({
                           )}
                         </>
                       ) : (
-                        <>
-                          <Typography>
-                            You didn't register this auction
-                          </Typography>
-                        </>
+                        <div className="flex justify-center p-10">
+                          <div className="text-4xl text-red-700">
+                            You Didn't Register This Auction
+                          </div>
+                        </div>
                       )}
                     </div>
                   </>
                 ) : auctionStatus === 6 ? (
-                  <>auction is waiting to be start</>
+                  <div className="flex justify-center p-10">
+                    <div className="text-4xl text-green-700">
+                      Auction Is Waiting To Be Start
+                    </div>
+                    <div>
+                      <Countdown
+                        value={auction.dateStart.toString()}
+                        onFinish={handleCountDownStarting}
+                      />
+                    </div>
+                  </div>
                 ) : (
-                  <>null</>
+                  <></>
                 )
               ) : (
                 <div className="flex justify-center flex-col items-center py-10">
