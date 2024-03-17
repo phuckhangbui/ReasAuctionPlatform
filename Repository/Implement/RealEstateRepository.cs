@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using BusinessObject.Entity;
 using BusinessObject.Enum;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Repository.Data;
 using Repository.DTOs;
 using Repository.Interface;
@@ -271,6 +272,61 @@ namespace Repository.Implement
         {
             var reasName = _context.RealEstate.Where(x => x.ReasId == id).Select(y => y.ReasName).FirstOrDefault();
             return reasName;
+        }
+
+        public async Task<RealEstate> CreateRealEstateAsync(NewRealEstateParam newRealEstateParam, int userMember)
+        {
+            var newRealEstate = new RealEstate();
+            var newPhotoList = new RealEstatePhoto();
+            var newDetail = new RealEstateDetail();
+            bool checkProcess = false;
+            newRealEstate.ReasName = newRealEstateParam.ReasName;
+            newRealEstate.ReasPrice = newRealEstateParam.ReasPrice;
+            newRealEstate.ReasAddress = newRealEstateParam.ReasAddress;
+            newRealEstate.ReasArea = newRealEstateParam.ReasArea;
+            newRealEstate.ReasDescription = newRealEstateParam.ReasDescription;
+            newRealEstate.Message = "";
+            newRealEstate.AccountOwnerId = userMember;
+            newRealEstate.DateCreated = DateTime.Now;
+            newRealEstate.Type_Reas = newRealEstateParam.Type_Reas;
+            newRealEstate.DateStart = DateTime.Now;
+            newRealEstate.DateEnd = newRealEstateParam.DateEnd;
+            newRealEstate.ReasStatus = (int)RealEstateStatus.InProgress;
+            try
+            {
+                newRealEstate.AccountOwnerName = await _context.Account.Where(x => x.AccountId == userMember).Select(x => x.AccountName).FirstOrDefaultAsync();
+                await CreateAsync(newRealEstate);
+                foreach (PhotoFileDto photos in newRealEstateParam.Photos)
+                {
+                    newPhotoList.ReasPhotoId = 0;
+                    newPhotoList.ReasId = newRealEstate.ReasId;
+                    newPhotoList.ReasPhotoUrl = photos.ReasPhotoUrl;
+                    _context.Set<RealEstatePhoto>().Add(newPhotoList);
+                    await _context.SaveChangesAsync();
+                }
+                try
+                {
+                    newDetail.ReasDetailId = 0;
+                    newDetail.Reas_Cert_Of_Land_Img_Front = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_Front;
+                    newDetail.Reas_Cert_Of_Land_Img_After = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_After;
+                    newDetail.Reas_Cert_Of_Home_Ownership = newRealEstateParam.Detail.Reas_Cert_Of_Home_Ownership;
+                    newDetail.Reas_Registration_Book = newRealEstateParam.Detail.Reas_Registration_Book;
+                    newDetail.Sales_Authorization_Contract = newRealEstateParam.Detail.Sales_Authorization_Contract;
+                    newDetail.Documents_Proving_Marital_Relationship = newRealEstateParam.Detail.Documents_Proving_Marital_Relationship;
+                    newDetail.ReasId = newRealEstate.ReasId;
+                    _context.Set<RealEstateDetail>().Add(newDetail);
+                    await _context.SaveChangesAsync();
+                    return newRealEstate;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }
