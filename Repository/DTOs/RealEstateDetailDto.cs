@@ -13,6 +13,7 @@
         public DateTime DateEnd { get; set; }
         public int AccountOwnerId { get; set; }
         public string AccountOwnerName { get; set; }
+        public int Type_Id { get; set; }
         public string Type_REAS_Name { get; set; }
         public DateTime DateCreated { get; set; }
 
