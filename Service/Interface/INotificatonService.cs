@@ -1,11 +1,12 @@
 ﻿using BusinessObject.Entity;
+using Repository.DTOs;
 using Repository.Param;
 
 namespace Service.Interface
 {
     public interface INotificatonService
     {
-        Task<List<Notification>> GetNotificationsOrderByDateCreate(int accountId);
+        Task<List<NotificationDto>> GetNotificationsOrderByDateCreate(int accountId);
         Task SendNotificationWhenMemberCreateReal(RealEstate realEstate);
         Task SendNotificationWhenApproveRealEstate(ReasStatusParam reasStatusParam, RealEstate realEstate);
         Task SendNotificationWhenCreateAuction(int auctionId);
