@@ -64,7 +64,8 @@ namespace Service.Implement
                     Token = _tokenService.CreateToken(account),
                     RoleId = account.RoleId,
                     AccountName = account.AccountName,
-                    Username = account.Username
+                    Username = account.Username,
+                    isNewAccount = false
                 };
             }
         }
@@ -109,7 +110,9 @@ namespace Service.Implement
                     Token = _tokenService.CreateToken(account),
                     RoleId = account.RoleId,
                     AccountName = account.AccountName,
-                    Username = account.Username
+                    Username = account.Username,
+                    isNewAccount = false
+
                 };
             }
             else
@@ -134,7 +137,8 @@ namespace Service.Implement
                     Token = _tokenService.CreateToken(account),
                     RoleId = account.RoleId,
                     AccountName = account.AccountName,
-                    Username = account.Username
+                    Username = account.Username,
+                    isNewAccount = true
                 };
             }
         }
