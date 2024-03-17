@@ -24,5 +24,6 @@ namespace Repository.Interface
         Task<UserProfileDto> GetMemberProfileDetail(int accountId);
         Task<Account> GetAccountOnId(int accountId);
         Task<List<Account>> GetAllStaffAndAdminAccounts();
+        Task<int> UpdateReupVoucher(int accountId, bool isAddReupVoucher);
     }
 }

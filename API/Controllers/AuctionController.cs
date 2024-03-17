@@ -25,10 +25,11 @@ namespace API.Controllers
         private readonly IRealEstateService _realEstateService;
         private readonly IParticipantHistoryService _participantHistoryService;
         private readonly INotificatonService _notificatonService;
+        private readonly IAccountService _accountService;
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
 
-        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService, INotificatonService notificatonService)
+        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService, INotificatonService notificatonService, IAccountService accountService)
         {
             _auctionService = auctionService;
             _auctionAccountingService = auctionAccountingService;
@@ -39,6 +40,7 @@ namespace API.Controllers
             _realEstateService = realEstateService;
             _participantHistoryService = participantHistoryService;
             _notificatonService = notificatonService;
+            _accountService = accountService;
         }
 
         [HttpGet("/auctions/{reasId}")]
@@ -566,13 +568,17 @@ namespace API.Controllers
             else
             {
                 //realestate now in the DeclineAfterAuction
-                await _realEstateService.UpdateRealEstateStatus(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
+                await _realEstateService.UpdateRealEstateStatus(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction, false);
+
+                //add voucher for winner
+                var realEsate = _realEstateService.GetRealEstate(auction.ReasId);
+                await _accountService.UpdateReupVoucher(realEsate.AccountOwnerId, true);
 
                 //update auction accounting to floor level
                 auctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWhenNoWinnerRemain(updateAuctionWinnerDto.auctionId);
 
                 //send noti + mail for owner notif ther real estate status
-                _notificatonService.SendNotificationToOwnerWhenChangeStatusOfRealEstate(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
+                await _notificatonService.SendNotificationToOwnerWhenChangeStatusOfRealEstate(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
 
                 return Ok(new ApiResponseMessage("MSG28"));
 

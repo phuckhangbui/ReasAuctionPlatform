@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Entity;
+using BusinessObject.Enum;
 using Repository.DTOs;
 using Repository.Interface;
 using Repository.Param;
@@ -69,12 +70,14 @@ namespace Service.Implement
             Account account = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatusParam);
             if (account != null)
             {
-                if (reasStatusParam.reasStatus == 3 || reasStatusParam.reasStatus == 9)
+                if (reasStatusParam.reasStatus == (int)RealEstateStatus.Cancel)
                 {
                     SendMailWhenRejectRealEstate.SendEmailWhenRejectRealEstate(account.AccountEmail, account.AccountName, reasStatusParam.messageString);
                 }
-                else if (reasStatusParam.reasStatus == 1)
+                else if (reasStatusParam.reasStatus == (int)RealEstateStatus.Approved)
                 {
+
+
                     SendMailWhenApproveRealEstate.SendEmailWhenApproveRealEstate(account.AccountEmail, account.AccountName);
 
                 }

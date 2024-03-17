@@ -51,5 +51,32 @@ namespace Service.Implement
         {
             return _real_estate_repository.GetRealEstate(reasId);
         }
+
+        public async Task<bool> UpdateRealEstateStatus(int reasId, int status, bool IsReupYet)
+        {
+            var realEsate = _real_estate_repository.GetRealEstate(reasId);
+
+            if (realEsate != null)
+            {
+                realEsate.ReasStatus = status;
+                realEsate.IsReupYet = IsReupYet;
+                return await _real_estate_repository.UpdateAsync(realEsate);
+            }
+            return false;
+        }
+
+        public async Task<bool> UpdateRealEstateIsReupYet(int reasId, bool IsReupYet)
+        {
+            var realEsate = _real_estate_repository.GetRealEstate(reasId);
+
+            if (realEsate != null)
+            {
+                realEsate.IsReupYet = IsReupYet;
+                return await _real_estate_repository.UpdateAsync(realEsate);
+            }
+            return false;
+        }
+
+
     }
 }

@@ -14,13 +14,15 @@ namespace Service.Implement
         private readonly IAccountRepository _account_repository;
         private readonly IRealEstateDetailRepository _real_estate_detail_repository;
         private readonly ITypeReasRepository _typeReasRepository;
+        private readonly IRealEstateService _real_estate_service;
 
-        public MemberRealEstateService(IRealEstateRepository real_estate_repository, IAccountRepository account_repository, IRealEstateDetailRepository real_estate_detail_repository, ITypeReasRepository typeReasRepository)
+        public MemberRealEstateService(IRealEstateRepository real_estate_repository, IAccountRepository account_repository, IRealEstateDetailRepository real_estate_detail_repository, ITypeReasRepository typeReasRepository, IRealEstateService real_estate_service)
         {
             _real_estate_repository = real_estate_repository;
             _account_repository = account_repository;
             _real_estate_detail_repository = real_estate_detail_repository;
             _typeReasRepository = typeReasRepository;
+            _real_estate_service = real_estate_service;
         }
 
         public IAccountRepository AccountRepository => _account_repository;
@@ -30,6 +32,13 @@ namespace Service.Implement
             var createReal = await _real_estate_repository.CreateRealEstateAsync(newRealEstateParam, userMember);
             if (createReal != null)
             {
+                if (newRealEstateParam.OldReasId != 0)
+                {
+                    await _real_estate_service.UpdateRealEstateIsReupYet(newRealEstateParam.OldReasId, true);
+                }
+
+
+
                 return createReal;
             }
             else return null;

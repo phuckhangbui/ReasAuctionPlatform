@@ -99,8 +99,6 @@ namespace API.Controllers
                 var realEstate = await _memberRealEstateService.CreateNewRealEstate(newRealEstateDto, userMember);
                 if (realEstate != null)
                 {
-
-
                     //send message here
                     await _notificatonService.SendNotificationWhenMemberCreateReal(realEstate);
 
