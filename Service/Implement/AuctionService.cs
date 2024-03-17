@@ -46,7 +46,7 @@ namespace Service.Implement
         public async Task<AuctionCreationResult> CreateAuction(AuctionCreateParam auctionCreateParam)
         {
             var auction = await _auctionRepository.CreateAuction(auctionCreateParam);
-            if(auction != null) 
+            if (auction != null)
             {
                 SendMailWhenCreateAuction.SendMailForMemberWhenCreateAuction(auction.Users, auction.ReasName, auctionCreateParam.DateStart);
                 return auction;
@@ -139,7 +139,7 @@ namespace Service.Implement
             if (auction != null && auction.Status == (int)AuctionStatus.Pending)
             {
                 auction.Status = (int)AuctionStatus.OnGoing;
-                auction.DateEnd = DateTime.Now.AddHours(1);
+                auction.DateEnd = DateTime.Now.AddMinutes(15);
 
                 bool result = await _auctionRepository.UpdateAsync(auction);
                 if (result)

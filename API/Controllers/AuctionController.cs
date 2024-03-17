@@ -256,12 +256,29 @@ namespace API.Controllers
 
         [Authorize(policy: "Member")]
         [HttpGet("start")]
-        public async Task<ActionResult> AuctionStart(int auctionId)
+        public async Task<ActionResult> AuctionStart(AuctionSuccessDto participants)
         {
-            var result = await _auctionService.UpdateAuctionWhenStart(auctionId);
-            if (result != null)
+            var auction = await _auctionService.UpdateAuctionWhenStart(participants.AuctionDetailDto.AuctionId);
+            if (auction != null)
             {
-                return Ok(result);
+                try
+                {
+                    List<int> userIdRegisterInAuction = await _auctionService.GetUserInAuction(auction.ReasId);
+
+                    List<int> userIdParticipateInAuction = participants.AuctionHistory.Select(a => a.AccountId).ToList();
+
+                    List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
+
+                    foreach (int userId in userIdsRegisteredNotParticipated)
+                    {
+                        await _depositAmountService.UpdateStatus(userId, auction.ReasId, (int)UserDepositEnum.LostDeposit);
+                    }
+
+                    await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auction.AuctionId);
+
+                    return Ok();
+                }
+                catch (Exception ex) { BadRequest(new ApiResponse(404, ex.ToString())); }
             }
 
             return BadRequest(new ApiResponse(404));

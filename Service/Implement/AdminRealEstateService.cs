@@ -13,12 +13,15 @@ namespace Service.Implement
         private readonly IAccountRepository _accountRepository;
         private readonly IRealEstateDetailRepository _realEstateDetailRepository;
         private readonly IRealEstateRepository _realEstateRepository;
+        private readonly INotificatonService _notificatonService;
 
-        public AdminRealEstateService(IAccountRepository accountRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstateRepository realEstateRepository)
+
+        public AdminRealEstateService(IAccountRepository accountRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstateRepository realEstateRepository, INotificatonService notificatonService)
         {
             _accountRepository = accountRepository;
             _realEstateDetailRepository = realEstateDetailRepository;
             _realEstateRepository = realEstateRepository;
+            _notificatonService = notificatonService;
         }
 
         public IAccountRepository AccountRepository => _accountRepository;
@@ -76,8 +79,6 @@ namespace Service.Implement
                 }
                 else if (reasStatusParam.reasStatus == (int)RealEstateStatus.Approved)
                 {
-
-
                     SendMailWhenApproveRealEstate.SendEmailWhenApproveRealEstate(account.AccountEmail, account.AccountName);
 
                 }
