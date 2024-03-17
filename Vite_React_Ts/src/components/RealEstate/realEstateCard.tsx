@@ -4,21 +4,22 @@ import { UserContext } from "../../context/userContext";
 import { payRealEstatePostingFee } from "../../api/transaction";
 import { ReasContext } from "../../context/reasContext";
 import { Tag } from "antd";
+import { Link } from "react-router-dom";
 interface RealEstateProps {
   realEstate: realEstate;
   ownRealEstatesStatus?: boolean;
 }
 
 const statusAllColorMap: { [key: string]: string } = {
-  "InProgress": "green",
-  "Approved": "green",
-  "Selling": "orange",
-  "Cancel": "red",
-  "Auctioning": "lightgreen",
-  "Sold": "brown",
-  "Rollback": "red",
-  "DeclineAfterAuction": "darkred",
-  "Success": "lightcoral",
+  InProgress: "green",
+  Approved: "green",
+  Selling: "orange",
+  Cancel: "red",
+  Auctioning: "lightgreen",
+  Sold: "brown",
+  Rollback: "red",
+  DeclineAfterAuction: "darkred",
+  Success: "lightcoral",
 };
 
 const RealEstateCard = ({
@@ -124,7 +125,20 @@ const RealEstateCard = ({
             <span className="pl-1">VND</span>
           </div>
         </div>
-        <div className="flex justify-end text-gray-700">
+        <div
+          className={`${
+            showStatus ? "justify-between" : "justify-end"
+          } flex  text-gray-700`}
+        >
+          <div>
+            {showStatus ? (
+              <Tag color={statusAllColorMap[estate?.reasStatus || ""]}>
+                {estate?.reasStatus}
+              </Tag>
+            ) : (
+              <></>
+            )}
+          </div>
           <div className=" tracking-tight">
             Due:{" "}
             <span className="text-gray-900 font-semibold">
@@ -132,24 +146,31 @@ const RealEstateCard = ({
             </span>
           </div>
         </div>
-        {showStatus ? (
-          estate?.reasStatus === "Approved" ? (
-            <div className="flex justify-center">
+        <div className="flex justify-center mt-1">
+          {showStatus ? (
+            estate?.reasStatus === "Approved" ? (
               <button
                 onClick={handlePayingFee}
                 className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               >
                 Pay Posting Fee
               </button>
-            </div>
+            ) : estate?.reasStatus === "Rollback" ||
+              estate?.reasStatus === "DeclineAfterAuction" ? (
+              <button
+                className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                <Link to={`/update/${estate?.reasId}`}>Update</Link>
+              </button>
+            ) : (
+              <div className="text-transparent bg-transparent text-sm px-4 py-2 ">
+                .
+              </div>
+            )
           ) : (
-            <Tag color={statusAllColorMap[estate?.reasStatus || ""]}>
-              {estate?.reasStatus}
-            </Tag>
-          )
-        ) : (
-          <></>
-        )}
+            <></>
+          )}
+        </div>
       </div>
     </div>
   );

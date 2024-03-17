@@ -38,6 +38,7 @@ import AdminRule from "./Pages/Admin/AdminRule";
 import AuctionHistory from "./Pages/Member/AuctionHistory/AuctionHistory";
 import TransactionHistory from "./Pages/Member/TransactionHistory";
 import ProfilePage from "./Pages/Member/ProfilePage/profilePage";
+import UpdateRealEstatePage from "./Pages/Member/UpdateRealEstatePage/updateRealEstatePage";
 
 const roles = {
   Admin: 1,
@@ -327,6 +328,7 @@ function App() {
               <Route path="/transaction" element={<TransactionHistory />} />
               <Route path="/sell" element={<SellPage />} />
               <Route path="/memberReas" element={<MemberRealEstatePage />} />
+              <Route path="/update/:reasId" element={<UpdateRealEstatePage />} />
               <Route path="/success" element={<SuccessPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
