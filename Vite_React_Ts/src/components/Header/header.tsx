@@ -3,11 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import LoginModal from "../LoginModal/loginModal";
 import { UserContext } from "../../context/userContext";
 import { AvatarDropdown } from "../AvatarDropdown/AvatarDropdown";
+import NotificationList from "../NotificationList/notificationList";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const currentUrl = useLocation();
   const [showModal, setShowModal] = useState(false);
+  const [isNotiOpen, setIsNotiOpen] = useState(false);
+  const currentUrl = useLocation();
   const { userRole } = useContext(UserContext);
 
   const getActiveLink = (url: string) => {
@@ -35,6 +37,10 @@ const Header = () => {
       // If the click occurs on the overlay (not on the modal content), close the modal
       closeModal();
     }
+  };
+
+  const toggleNotiList = () => {
+    setIsNotiOpen(!isNotiOpen);
   };
 
   useEffect(() => {
@@ -69,16 +75,32 @@ const Header = () => {
         </Link>
         <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
           {userRole ? (
-            <>
-              {/* <span className="text-mainBlue">{user.username}</span>
+            <div className="flex items-center">
+              {/* <NotificationList /> */}
               <button
-                onClick={() => logout()} // Call logout function from UserContext
-                className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                onClick={toggleNotiList}
+                type="button"
+                className="mr-3"
+                aria-expanded={isNotiOpen}
               >
-                Logout
-              </button> */}
+                <span className="sr-only">Open Notification</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                  />
+                </svg>
+              </button>
               <AvatarDropdown />
-            </>
+            </div>
           ) : (
             <button
               onClick={() => toggleModal()}
@@ -162,6 +184,17 @@ const Header = () => {
           <LoginModal closeModal={closeModal} />
         </div>
       )}
+      <div
+        id="dropdownNotification"
+        className={`${
+          isNotiOpen ? "block" : "hidden"
+        } z-50 w-full max-w-sm bg-white divide-y divide-gray-100 absolute flex right-3 transition-all duration-300 ease-in rounded-lg `}
+        aria-labelledby="dropdownNotificationButton"
+      >
+        <div className="rounded-lg shadow ">
+          <NotificationList />
+        </div>
+      </div>
     </nav>
   );
 };
