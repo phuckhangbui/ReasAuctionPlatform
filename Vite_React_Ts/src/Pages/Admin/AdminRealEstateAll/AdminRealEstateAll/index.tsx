@@ -40,7 +40,7 @@ const AdminRealEstateAllList: React.FC = () => {
   const [ReasId, setReasId] = useState<Number>();
   const [messageBlock, getMessageBlock] = useState<string>();
   const [checkedStatus, setCheckedStatus] = useState<number[]>([
-    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 8, 9,
   ]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { token } = useContext(UserContext);
@@ -87,9 +87,8 @@ const AdminRealEstateAllList: React.FC = () => {
     Auctioning: "lightgreen",
     Sold: "brown",
     Rollback: "brown",
-    Re_up: "blue",
     DeclineAfterAuction: "darkred",
-    Block: "lightcoral",
+    Success: "lightcoral",
   };
 
   const statusStringMap: { [key: number]: string } = {
@@ -100,9 +99,8 @@ const AdminRealEstateAllList: React.FC = () => {
     4: "Auctioning",
     5: "Sold",
     6: "Rollback",
-    7: "Re_up",
     8: "Decline After Auction",
-    9: "Block",
+    9: "Success",
   };
 
   const options = [
@@ -131,15 +129,11 @@ const AdminRealEstateAllList: React.FC = () => {
       value: 6,
     },
     {
-      label: "ReUp",
-      value: 7,
-    },
-    {
       label: "Decline After Auction",
       value: 8,
     },
     {
-      label: "Block",
+      label: "Success",
       value: 9,
     },
   ];
@@ -152,7 +146,6 @@ const AdminRealEstateAllList: React.FC = () => {
     4: "lightgreen",
     5: "brown",
     6: "brown",
-    7: "blue",
     8: "darkred",
     9: "lightcoral",
   };

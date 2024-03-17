@@ -560,7 +560,7 @@ namespace API.Controllers
                 //send noti + mail for new winner
 
 
-                return Ok(new { message = $"Auction now has new winner, with new winning price set at {newAuctionAccounting.MaxAmount} VND" });
+                return Ok(new ApiResponseMessage("MSG27", "", newAuctionAccounting.MaxAmount));
 
             }
             else
@@ -574,7 +574,7 @@ namespace API.Controllers
                 //send noti + mail for owner notif ther real estate status
 
 
-                return Ok(new { message = "Auction has no available next bidder, process real estate to Decline After Auction" });
+                return Ok(new ApiResponseMessage("MSG28"));
 
             }
         }

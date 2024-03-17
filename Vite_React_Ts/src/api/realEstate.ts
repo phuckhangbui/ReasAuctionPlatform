@@ -93,3 +93,25 @@ export const createRealEstate = async (
     console.log("Error:", error);
   }
 };
+
+export const reUpRealEstate = async ({reasId, dateEnd}: ReupRealEstate, token : string | undefined) => {
+  try {
+    const param = {
+      reasId, dateEnd
+    }
+    const fetchData = await axios.post<Message>(
+      `${baseUrl}/api/home/my_real_estate/create`,
+      param,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};

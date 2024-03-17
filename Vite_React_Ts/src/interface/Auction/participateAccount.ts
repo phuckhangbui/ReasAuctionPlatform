@@ -3,5 +3,6 @@ interface ParticipateAccount{
     accountName : string,
     accountEmail : string,
     accountPhone : string,
-    lastBid : number
+    lastBid : number,
+    note : string,
 }

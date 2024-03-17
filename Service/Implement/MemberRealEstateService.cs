@@ -44,9 +44,9 @@ namespace Service.Implement
             newRealEstate.ReasDescription = newRealEstateParam.ReasDescription;
             newRealEstate.Message = "";
             newRealEstate.AccountOwnerId = userMember;
-            newRealEstate.DateCreated = DateTime.UtcNow;
+            newRealEstate.DateCreated = DateTime.Now;
             newRealEstate.Type_Reas = newRealEstateParam.Type_Reas;
-            newRealEstate.DateStart = newRealEstateParam.DateStart;
+            newRealEstate.DateStart = DateTime.Now;
             newRealEstate.DateEnd = newRealEstateParam.DateEnd;
             newRealEstate.ReasStatus = (int)RealEstateStatus.InProgress;
             try

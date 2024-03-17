@@ -305,6 +305,11 @@ const CompleteList: React.FC = () => {
       render: (lastBid: number) => NumberFormat(lastBid),
       width: "15%",
     },
+    {
+      title: "Note",
+      dataIndex: "note",
+      width: "20%",
+    },
   ];
 
   const handleBackToList = () => {
@@ -347,11 +352,17 @@ const CompleteList: React.FC = () => {
     };
     const response = await fetchChangeMemberWin(Auction);
     if (response != undefined && response) {
-      if (response.statusCode == "MSG05") {
+      if (response.statusCode == "MSG27") {
         openNotificationWithIcon("success", response.message);
         fetchAuctionDetail(auctionID);
         fetchParticipate(auctionID);
-      } else {
+      } 
+      else if (response.statusCode == "MSG28") {
+        openNotificationWithIcon("success", response.message);
+        fetchAuctionDetail(auctionID);
+        fetchParticipate(auctionID);
+      }
+      else {
         openNotificationWithIcon(
           "error",
           "Something went wrong when executing operation. Please try again!"

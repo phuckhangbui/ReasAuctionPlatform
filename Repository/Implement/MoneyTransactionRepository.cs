@@ -162,7 +162,7 @@ namespace Repository.Implement
             newTransaction.TransactionNo = Convert.ToString(Convert.ToDouble(_dataContext.MoneyTransaction.Max(x => x.TransactionNo)) + 1);
             newTransaction.TxnRef = "";
             newTransaction.AccountReceiveId = refundTransactionParam.accountReceiveId;
-            newTransaction.AccountSendId = _dataContext.Account.Where(x => x.AccountName.Equals("admin")).Select(x => x.AccountId).FirstOrDefault();
+            newTransaction.AccountSendId = _dataContext.Account.Where(x => x.AccountName.Equals("REAS Company")).Select(x => x.AccountId).FirstOrDefault();
             newTransaction.ReasId = refundTransactionParam.reasId;
             newTransaction.DateExecution = DateTime.Now;
             newTransaction.Money = refundTransactionParam.money;

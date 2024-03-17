@@ -9,9 +9,8 @@
         Auctioning = 4,
         Sold = 5,
         Rollback = 6,
-        ReUp = 7,
         DeclineAfterAuction = 8,
-        Block = 9,
+        Success = 9,
         WaitingAuction = 10,
     }
 }
