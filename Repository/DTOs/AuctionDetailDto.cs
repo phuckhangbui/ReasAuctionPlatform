@@ -11,7 +11,7 @@ namespace Repository.DTOs
         public int AccountWinId { get; set; }
 
         [Required]
-        public float WinAmount { get; set; }
+        public double WinAmount { get; set; }
     }
 
     public class ParticipantAuctionHistoryDto

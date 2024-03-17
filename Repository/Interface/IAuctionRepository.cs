@@ -18,7 +18,7 @@ namespace Repository.Interface
         Task<IEnumerable<ReasForAuctionDto>> GetAuctionsReasForCreate();
         Task<IEnumerable<DepositAmountUserDto>> GetAllUserForDeposit(int id);
         Task<bool> EditAuctionStatus(string autionId, string statusCode);
-        Task<Auction> CreateAuction(AuctionCreateParam auctionCreateParam);
+        Task<AuctionCreationResult> CreateAuction(AuctionCreateParam auctionCreateParam);
         Auction GetAuction(int auctionId);
         Task<PageList<AttenderAuctionHistoryDto>> GetAuctionHistoryForAttenderAsync(AuctionHistoryParam auctionAccountingParam);
         Task<PageList<AuctionDto>> GetAuctionHistoryForOwnerAsync(AuctionHistoryParam auctionAccountingParam);

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using BusinessObject.Entity;
 using Microsoft.EntityFrameworkCore;
 using Repository.Data;
@@ -32,6 +32,20 @@ namespace Repository.Implement
             return participate;
         }
 
+        public async Task<List<ParticipateAuctionFinalDto>> GetAllParticipateList(int auctionId)
+        {
+            var participate = _context.ParticipateAuctionHistories.OrderByDescending(x => x.LastBid).Where(x => x.AuctionAccountingId ==
+            _context.AuctionsAccounting.Where(y => y.AuctionId == auctionId).Select(z => z.AuctionAccountingId).FirstOrDefault()).Select(x => new ParticipateAuctionFinalDto
+            {
+                idAccount = x.AccountBidId,
+                accountName = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.AccountName).FirstOrDefault(),
+                accountEmail = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.AccountEmail).FirstOrDefault(),
+                accountPhone = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.PhoneNumber).FirstOrDefault(),
+                lastBid = Convert.ToDouble(x.LastBid),
+            }).ToList();
+            return participate;
+        }
+
         public async Task<List<AuctionAttenderDto>> GetLosingAttendees(int reasId)
         {
             var nonWinningAttendees = await _context.ParticipateAuctionHistories
@@ -53,6 +67,12 @@ namespace Repository.Implement
             .ToListAsync();
 
             return _mapper.Map<List<AuctionAttenderDto>>(nonWinningAttendees); ;
+        }
+
+        public async Task<ParticipateAuctionHistory> GetParticipant(int auctionAccountingId, int participantId)
+        {
+            var participate = _context.ParticipateAuctionHistories.Where(x => x.AuctionAccountingId == auctionAccountingId && x.AccountBidId == participantId).FirstOrDefault();
+            return participate;
         }
     }
 }

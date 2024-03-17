@@ -6,6 +6,7 @@ using Repository.Paging;
 using Repository.Param;
 using Service.Exceptions;
 using Service.Interface;
+using Service.Mail;
 
 namespace Service.Implement
 {
@@ -42,10 +43,15 @@ namespace Service.Implement
             return await _auctionRepository.GetAuctionHistoryForOwnerAsync(auctionAccountingParam);
         }
 
-        public async Task<Auction> CreateAuction(AuctionCreateParam auctionCreateParam)
+        public async Task<AuctionCreationResult> CreateAuction(AuctionCreateParam auctionCreateParam)
         {
             var auction = await _auctionRepository.CreateAuction(auctionCreateParam);
-            return auction;
+            if(auction != null) 
+            {
+                SendMailWhenCreateAuction.SendMailForMemberWhenCreateAuction(auction.Users, auction.ReasName, auctionCreateParam.DateStart);
+                return auction;
+            }
+            else return null;
         }
 
         public async Task<IEnumerable<DepositAmountUserDto>> GetAllUserForDeposit(int id)
@@ -149,5 +155,11 @@ namespace Service.Implement
         {
             return await _auctionRepository.GetUserIdInAuctionUsingReasId(reasId);
         }
+
+        public async Task<Auction> GetAuctionByAuctionId(int auctionId)
+        {
+            return await _auctionRepository.GetAuctionByAuctionId(auctionId);
+        }
+
     }
 }

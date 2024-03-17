@@ -185,7 +185,7 @@ namespace API.Controllers
             try
             {
                 //update/add auction accounting
-                auctionAccountingDto = await _auctionAccountingService.UpdateAuctionAccounting(auctionSuccessDto.AuctionDetailDto);
+                auctionAccountingDto = await _auctionAccountingService.CreateAuctionAccounting(auctionSuccessDto.AuctionDetailDto);
 
                 if (auctionAccountingDto == null)
                 {
@@ -216,7 +216,7 @@ namespace API.Controllers
 
 
                 //add to participant history
-                await _participantHistoryService.CreateParticipantHistory(auctionSuccessDto.AuctionHistory, auctionAccountingDto.AuctionAccountingId);
+                await _participantHistoryService.CreateParticipantHistory(auctionSuccessDto.AuctionHistory, auctionAccountingDto.AuctionAccountingId, auctionSuccessDto.AuctionDetailDto.WinAmount);
 
 
                 //update auction status
@@ -231,14 +231,14 @@ namespace API.Controllers
                     //send email
                     await _auctionAccountingService.SendWinnerEmail(auctionAccountingDto);
 
+                    userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
+
                     //send notification
                     _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
 
                     _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AccountWinId);
 
                     _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
-
-                    userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
 
                     _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
 
@@ -510,7 +510,72 @@ namespace API.Controllers
             }
             else
             {
-                return null;
+                return BadRequest(new ApiResponse(400, "Have any error when excute operation."));
+            }
+        }
+
+        [Authorize(policy: "AdminAndStaff")]
+        [HttpPost("update/winner")]
+        public async Task<ActionResult> UpdateAuctionWinner(UpdateAuctionWinnerDto updateAuctionWinnerDto)
+        {
+            Auction auction = await _auctionService.GetAuctionByAuctionId(updateAuctionWinnerDto.auctionId);
+
+            if (auction == null || auction.Status != (int)AuctionStatus.Finish)
+            {
+                return BadRequest(new ApiResponse(400, "Auction not avaible for edit"));
+            }
+
+            var auctionAccounting = await _auctionAccountingService.GetAuctionAccounting(updateAuctionWinnerDto.auctionId);
+
+            var nextHighestBidder = await _participantHistoryService.GetNextHighestBidder(updateAuctionWinnerDto.auctionId, auctionAccounting.MaxAmount);
+
+            /// update status of userdeposit to LostDeposit
+            await _depositAmountService.UpdateStatus(auctionAccounting.AccountWinId, auction.ReasId, (int)UserDepositEnum.LostDeposit);
+
+            //update status of participant history of old winner IsWinner = false
+            await _participantHistoryService.UpdateParticipateHistoryStatus(auctionAccounting.AuctionAccountingId, auctionAccounting.AccountWinId, (int)ParticipateAuctionHistoryEnum.Others, updateAuctionWinnerDto.message);
+
+            //send noti + mail for old winner, inform loose deposit
+
+
+
+            if (nextHighestBidder != null)
+            {
+                var newAuctionInformation = new AuctionDetailDto
+                {
+                    AuctionId = updateAuctionWinnerDto.auctionId,
+                    AccountWinId = nextHighestBidder.idAccount,
+                    WinAmount = nextHighestBidder.lastBid
+                };
+                //update 
+                var newAuctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWinner(newAuctionInformation);
+
+                //update status of participant history of new winner IsWinner = true
+                // auctionAccounting now have the id of the new winner in the method above
+                await _participantHistoryService.UpdateParticipateHistoryStatus(newAuctionAccounting.AuctionAccountingId, newAuctionAccounting.AccountWinId, (int)ParticipateAuctionHistoryEnum.Winner, null);
+
+                //update status of userdeposit to Winner
+                await _depositAmountService.UpdateStatus(newAuctionAccounting.AccountWinId, auction.ReasId, (int)UserDepositEnum.Winner);
+
+                //send noti + mail for new winner
+
+
+                return Ok(new { message = $"Auction now has new winner, with new winning price set at {newAuctionAccounting.MaxAmount} VND" });
+
+            }
+            else
+            {
+                //realestate now in the DeclineAfterAuction
+                await _realEstateService.UpdateRealEstateStatus(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
+
+                //update auction accounting to floor level
+                auctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWhenNoWinnerRemain(updateAuctionWinnerDto.auctionId);
+
+                //send noti + mail for owner notif ther real estate status
+
+
+                return Ok(new { message = "Auction has no available next bidder, process real estate to Decline After Auction" });
+
             }
         }
 

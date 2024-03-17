@@ -7,7 +7,7 @@ namespace Repository.Interface
 {
     public interface IRealEstateRepository : IBaseRepository<RealEstate>
     {
-        Task<bool> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto);
+        Task<Account> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto);
         Task<bool> CheckRealEstateExist(int reasId);
         Task<PageList<RealEstateDto>> GetOwnerRealEstate(int idOwner);
         Task<PageList<RealEstateDto>> GetOwnerRealEstateBySearch(int idOwner, SearchRealEstateParam searchRealEstateDto);
