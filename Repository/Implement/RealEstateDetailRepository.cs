@@ -29,7 +29,6 @@ namespace Repository.Implement
                 AccountOwnerName = x.AccountOwnerName,
                 Photos = _context.RealEstatePhoto.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePhotoDto
                 {
-                    ReasPhotoId = z.ReasPhotoId,
                     ReasPhotoUrl = z.ReasPhotoUrl,
                 }).ToList(),
                 Type_REAS_Name = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(y => y.Type_Reas_Name).FirstOrDefault(),
@@ -56,7 +55,6 @@ namespace Repository.Implement
                 AccountOwnerName = x.AccountOwnerName,
                 Photos = _context.RealEstatePhoto.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePhotoDto
                 {
-                    ReasPhotoId = z.ReasPhotoId,
                     ReasPhotoUrl = z.ReasPhotoUrl,
                 }).ToList(),
                 Type_REAS_Name = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(y => y.Type_Reas_Name).FirstOrDefault(),
@@ -92,7 +90,6 @@ namespace Repository.Implement
                 AccountOwnerName = x.AccountOwnerName,
                 Photos = _context.RealEstatePhoto.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePhotoDto
                 {
-                    ReasPhotoId = z.ReasPhotoId,
                     ReasPhotoUrl = z.ReasPhotoUrl,
                 }).ToList(),
                 Type_REAS_Name = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(y => y.Type_Reas_Name).FirstOrDefault(),
