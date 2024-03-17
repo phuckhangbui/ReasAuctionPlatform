@@ -234,13 +234,13 @@ namespace API.Controllers
                     userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
 
                     //send notification
-                    _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
+                    await _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
 
-                    _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AccountWinId);
+                    await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId);
 
-                    _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
+                    await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
 
-                    _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
+                    await _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
 
                 }
             }

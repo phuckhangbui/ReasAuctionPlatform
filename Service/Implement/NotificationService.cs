@@ -16,13 +16,14 @@ namespace Service.Implement
         private readonly IAuctionRepository _auctionRepository;
         private readonly IAuctionAccountingRepository _auctionAccountingRepository;
 
-        public NotificationService(INotificationRepository notificationRepository, IFirebaseMessagingService messagingService, IAccountRepository accountRepository, IRealEstateRepository realEstateRepository, IAuctionRepository auctionRepository)
+        public NotificationService(INotificationRepository notificationRepository, IFirebaseMessagingService messagingService, IAccountRepository accountRepository, IRealEstateRepository realEstateRepository, IAuctionRepository auctionRepository, IAuctionAccountingRepository auctionAccountingRepository)
         {
             _notificationRepository = notificationRepository;
             _messagingService = messagingService;
             _accountRepository = accountRepository;
             _realEstateRepository = realEstateRepository;
             _auctionRepository = auctionRepository;
+            _auctionAccountingRepository = auctionAccountingRepository;
         }
 
         public async Task<List<Notification>> GetNotificationsOrderByDateCreate(int accountId)
