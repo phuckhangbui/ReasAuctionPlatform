@@ -218,24 +218,24 @@ namespace API.Controllers
         }
 
         [Authorize(policy: "Member")]
-        [HttpPost(BaseUri + "reup/{reasId}")]
-        public async Task<ActionResult> ReupRealEstate(int reasId, DateTime dateEnd)
+        [HttpPost(BaseUri + "reup")]
+        public async Task<ActionResult> ReupRealEstate(ReupParam reupParam)
         {
             int accountId = GetLoginAccountId();
-            RealEstate realEstate = _realEstateService.GetRealEstate(reasId);
+            RealEstate realEstate = _realEstateService.GetRealEstate(reupParam.reasId);
 
-            if (realEstate == null || accountId == 0 || realEstate.AccountOwnerId == accountId)
+            if (realEstate == null || accountId == 0 || realEstate.AccountOwnerId != accountId)
             {
                 return BadRequest(new ApiResponse(400, "No matching real estate with account"));
             }
 
-            bool result = await _memberRealEstateService.ReupRealEstate(realEstate, dateEnd);
+            bool result = await _memberRealEstateService.ReupRealEstate(realEstate, reupParam.dateEnd);
             if (result == false)
             {
                 return BadRequest(new ApiResponse(400, "Fail to reup"));
             }
 
-            return Ok();
+            return Ok(new ApiResponseMessage("MSG29"));
         }
 
     }

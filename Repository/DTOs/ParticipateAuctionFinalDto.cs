@@ -8,5 +8,6 @@
         public string accountPhone { get; set; }
         public double lastBid { get; set; }
         public int isWinner { get; set; }
+        public string note { get; set; }
     }
 }

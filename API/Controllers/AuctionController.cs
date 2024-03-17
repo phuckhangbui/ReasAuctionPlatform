@@ -78,7 +78,7 @@ namespace API.Controllers
         [HttpGet("auctions")]
         public async Task<IActionResult> GetAuctionsForMember([FromQuery] AuctionParam auctionParam)
         {
-            var auctions = await _auctionService.GetNotyetAndOnGoingAuction(auctionParam);
+            var auctions = await _auctionService.GetAuctionsNotCancel(auctionParam);
 
             Response.AddPaginationHeader(new PaginationHeader(auctions.CurrentPage, auctions.PageSize,
             auctions.TotalCount, auctions.TotalPages));
@@ -560,7 +560,7 @@ namespace API.Controllers
                 //send noti + mail for new winner
                 await _notificatonService.SendNotificationWhenWinAuction(updateAuctionWinnerDto.auctionId);
 
-                return Ok(new { message = $"Auction now has new winner, with new winning price set at {newAuctionAccounting.MaxAmount} VND" });
+                return Ok(new ApiResponseMessage("MSG27", "", newAuctionAccounting.MaxAmount));
 
             }
             else
@@ -574,7 +574,7 @@ namespace API.Controllers
                 //send noti + mail for owner notif ther real estate status
                 _notificatonService.SendNotificationToOwnerWhenChangeStatusOfRealEstate(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
 
-                return Ok(new { message = "Auction has no available next bidder, process real estate to Decline After Auction" });
+                return Ok(new ApiResponseMessage("MSG28"));
 
             }
         }

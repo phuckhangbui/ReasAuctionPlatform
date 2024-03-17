@@ -4,6 +4,7 @@ interface AuctionDetailCompleteAdmin{
     reasName: string;//
     floorBid: number;
     status: string;
+    statusReas: number;
     dateStart: Date;
     dateEnd: Date;
     accountCreateId : number;

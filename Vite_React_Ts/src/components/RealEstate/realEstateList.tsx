@@ -59,7 +59,7 @@ const RealEstateList = ({
   return (
     <div>
       <div>
-        <div className="mt-4 grid lg:grid-cols-4 md:grid-cols-2 md:gap-3 sm:grid-cols-1">
+        <div className="mt-10 grid lg:grid-cols-1 md:gap-3 ">
           {realEstates &&
             realEstates.map((realEstate) => (
               <div
