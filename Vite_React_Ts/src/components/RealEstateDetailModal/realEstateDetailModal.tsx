@@ -196,21 +196,6 @@ const RealEstateDetailModal = ({
     }
   }, [realEstateDetail?.dateEnd]);
 
-  function formatVietnameseDong(price: string) {
-    // Convert the string to a number
-    const numberPrice = parseInt(price, 10);
-    // Check if the conversion was successful
-    if (isNaN(numberPrice)) {
-      // Return the original string if it's not a valid number
-      return price;
-    }
-    // Format the number
-    const formattedNumber = numberPrice
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return formattedNumber;
-  }
-
   // Change the tab index
   const toggleTab = (index: string) => {
     setTabStatus(index);
@@ -670,7 +655,6 @@ const RealEstateDetailModal = ({
                   src={photo.reasPhotoUrl}
                   alt="Real Estate Photos"
                   className="md:h-120 sm:h-96 w-full object-fill rounded-lg"
-                  key={photo.reasPhotoId}
                 />
               ))}
             </Carousel>
@@ -738,7 +722,7 @@ const RealEstateDetailModal = ({
                 <div>
                   <div className="text-xl font-bold ">
                     {realEstateDetail?.reasPrice
-                      ? formatVietnameseDong(realEstateDetail?.reasPrice)
+                      ? NumberFormat(realEstateDetail?.reasPrice)
                       : realEstateDetail?.reasPrice}{" "}
                     VND
                   </div>

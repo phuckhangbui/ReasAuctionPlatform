@@ -18,6 +18,7 @@ public class RealEstate
     public int AccountOwnerId { get; set; }
     public string AccountOwnerName { get; set; }
     public DateTime DateCreated { get; set; }
+    public bool IsReupYet { get; set; }
 
     public List<RealEstatePhoto> Photos { get; set; }
 
