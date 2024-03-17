@@ -3,10 +3,23 @@ import realEstate from "../../interface/RealEstate/realEstate";
 import { UserContext } from "../../context/userContext";
 import { payRealEstatePostingFee } from "../../api/transaction";
 import { ReasContext } from "../../context/reasContext";
+import { Tag } from "antd";
 interface RealEstateProps {
   realEstate: realEstate;
   ownRealEstatesStatus?: boolean;
 }
+
+const statusAllColorMap: { [key: string]: string } = {
+  "InProgress": "green",
+  "Approved": "green",
+  "Selling": "orange",
+  "Cancel": "red",
+  "Auctioning": "lightgreen",
+  "Sold": "brown",
+  "Rollback": "red",
+  "DeclineAfterAuction": "darkred",
+  "Success": "lightcoral",
+};
 
 const RealEstateCard = ({
   realEstate,
@@ -130,13 +143,9 @@ const RealEstateCard = ({
               </button>
             </div>
           ) : (
-            <div className="flex justify-end text-gray-700">
-              <div className=" tracking-tight">
-                <span className="text-gray-900 font-semibold">
-                  {estate?.reasStatus}
-                </span>
-              </div>
-            </div>
+            <Tag color={statusAllColorMap[estate?.reasStatus || ""]}>
+              {estate?.reasStatus}
+            </Tag>
           )
         ) : (
           <></>

@@ -64,8 +64,12 @@ const TransactionList: React.FC = () => {
   };
 
   const FormSearch = () => {
-    const [dateExecutionFrom, setDateExecutionFrom] = useState<string | undefined>();
-    const [dateExecutionTo, setDateExecutionTo] = useState<string | undefined>();
+    const [dateExecutionFrom, setDateExecutionFrom] = useState<
+      string | undefined
+    >();
+    const [dateExecutionTo, setDateExecutionTo] = useState<
+      string | undefined
+    >();
     const { RangePicker } = DatePicker;
 
     const handleDateRange = (
@@ -112,13 +116,13 @@ const TransactionList: React.FC = () => {
       dataIndex: "transactionStatus",
       width: "5%",
       render: (transactionStatus: number) => {
-          const color =
-            statusTransactionColorMap[statusStringMap[transactionStatus]];
-          return (
-            <Tag color={color} key={statusStringMap[transactionStatus]}>
-              {statusStringMap[transactionStatus]}
-            </Tag>
-          );
+        const color =
+          statusTransactionColorMap[statusStringMap[transactionStatus]];
+        return (
+          <Tag color={color} key={statusStringMap[transactionStatus]}>
+            {statusStringMap[transactionStatus].toUpperCase()}
+          </Tag>
+        );
       },
     },
     {
@@ -185,12 +189,12 @@ const TransactionList: React.FC = () => {
       {
         key: "3",
         label: "Sender Banking Code",
-        children: transactionDetail?.sendBankCode || "",
+        children: transactionDetail?.accountSendBankingCode || "",
       },
       {
         key: "4",
         label: "Sender Banking Account",
-        children: transactionDetail?.sendBankAccount || "",
+        children: transactionDetail?.accountSendBankingNumber || "",
       },
       {
         key: "5",
@@ -200,12 +204,12 @@ const TransactionList: React.FC = () => {
       {
         key: "6",
         label: "Receiver Banking Code",
-        children: transactionDetail?.receivedBankCode || "",
+        children: transactionDetail?.accountReceiveBankingCode || "",
       },
       {
         key: "7",
         label: "Receiver Banking Account",
-        children: transactionDetail?.receiveBankAccount || "",
+        children: transactionDetail?.accountReceiveBankingNumber || "",
       },
       {
         key: "8",
@@ -215,25 +219,23 @@ const TransactionList: React.FC = () => {
       {
         key: "9",
         label: "Status",
-        children: transactionDetail?.transactionStatus || "",
-        render: (transactionStatus: string | number) => {
-          if (typeof transactionStatus === "number") {
-            const color =
-              statusTransactionColorMap[statusStringMap[transactionStatus]];
-            return (
-              <Tag color={color} key={statusStringMap[transactionStatus]}>
-                {statusStringMap[transactionStatus]}
-              </Tag>
-            );
-          } else {
-            return null;
-          }
+        children: transactionDetail?.transactionStatus || 0,
+        render: (transactionStatus: number) => {
+          const color =
+            statusTransactionColorMap[statusStringMap[transactionStatus]];
+          return (
+            <Tag color={color} key={statusStringMap[transactionStatus]}>
+              {statusStringMap[transactionStatus].toUpperCase()}
+            </Tag>
+          );
         },
       },
       {
         key: "10",
         label: "Money",
-        children: transactionDetail?.money ? NumberFormat(transactionDetail?.money) : "",
+        children: transactionDetail?.money
+          ? NumberFormat(transactionDetail?.money)
+          : "",
       },
       {
         key: "11",
@@ -250,7 +252,7 @@ const TransactionList: React.FC = () => {
     ];
     return items.map((item) => (
       <Descriptions.Item key={item.key} label={item.label}>
-        {item.children}
+        {typeof item.children === 'number' && item.render ? item.render(item.children) : item.children}
       </Descriptions.Item>
     ));
   };

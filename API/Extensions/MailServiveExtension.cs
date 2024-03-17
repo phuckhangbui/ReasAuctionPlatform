@@ -1,5 +1,4 @@
-﻿using API.Services;
-
+﻿using Service.Mail;
 
 namespace API.Extensions
 {

@@ -1,9 +1,10 @@
-﻿using API.DTOs;
-using API.Helper.VnPay;
-using API.Interface.Service;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Repository.DTOs;
+using Repository.Interface;
+using Service.Interface;
+using Service.VnPay;
 
 namespace API.Controllers
 {
@@ -12,11 +13,19 @@ namespace API.Controllers
     {
         private readonly VnPayProperties _vnPayProperties;
         private readonly IFirebaseMessagingService _firebaseMessagingService;
+        private readonly IAuctionAccountingRepository _auctionAccountingRepository;
 
-        public TestController(IOptions<VnPayProperties> vnPayProperties, IFirebaseMessagingService firebaseMessagingService)
+        public TestController(IOptions<VnPayProperties> vnPayProperties, IFirebaseMessagingService firebaseMessagingService, IAuctionAccountingRepository auctionRepository)
         {
             _vnPayProperties = vnPayProperties.Value;
             _firebaseMessagingService = firebaseMessagingService;
+            _auctionAccountingRepository = auctionRepository;
+        }
+
+        [HttpGet("auctionacounting")]
+        public async Task<ActionResult> TestGetAuctionAccountWhenAuctionFinish(int auctionId)
+        {
+            return Ok(_auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId));
         }
 
         [HttpPost("pushnoti")]

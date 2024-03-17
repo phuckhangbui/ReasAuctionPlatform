@@ -3,12 +3,23 @@ import { Input } from "@material-tailwind/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { NumberFormat } from "../../../../Utils/numberFormat";
-import { Table, TableProps, Tag, Button, Descriptions } from "antd";
+import {
+  Table,
+  TableProps,
+  Tag,
+  Button,
+  Descriptions,
+  Modal,
+  notification,
+  Input as InputAntd,
+} from "antd";
 import { useState, useEffect, useContext } from "react";
 import {
   getAuctionCompleteAdmin,
   getAuctionCompleteAdminById,
   getPaticipateUser,
+  changeMemberWin,
+  changeSuccessReal,
 } from "../../../../api/adminAuction";
 import { UserContext } from "../../../../context/userContext";
 
@@ -20,8 +31,10 @@ const CompleteList: React.FC = () => {
     useState<AuctionDetailCompleteAdmin>();
   const [participateData, setParticipateData] =
     useState<ParticipateAccount[]>();
-  const [auctionID, setAuctionID] = useState<number>();
+  const [auctionID, setAuctionID] = useState<number | undefined>();
+  const [reasID, setReasID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [statusReas, setStatusReas] = useState<number | undefined>();
 
   const formatDate = (dateString: Date): string => {
     const dateObject = new Date(dateString);
@@ -58,13 +71,15 @@ const CompleteList: React.FC = () => {
     fetchAuctionList();
   }, [token]);
 
-  const fetchAuctionDetail = async (auctionId: Number | undefined) => {
+  const fetchAuctionDetail = async (auctionId: number | undefined) => {
     try {
       if (token) {
         let data: AuctionDetailCompleteAdmin | undefined;
         data = await getAuctionCompleteAdminById(auctionId, token);
         setAuctionDetailData(data);
-        setAuctionID(auctionID);
+        setAuctionID(auctionId);
+        setReasID(data?.reasId);
+        setStatusReas(data?.statusReas);
         setShowDetail(true);
       }
     } catch (error) {
@@ -72,17 +87,41 @@ const CompleteList: React.FC = () => {
     }
   };
 
-  const fetchParticipate = async (auctionId: number) => {
+  const fetchParticipate = async (auctionId: number | undefined) => {
     try {
       if (token) {
         let data: ParticipateAccount[] | undefined;
         data = await getPaticipateUser(token, auctionId);
         setParticipateData(data);
-        setAuctionID(auctionID);
+        setAuctionID(auctionId);
         setShowDetail(true);
       }
     } catch (error) {
       console.error("Error fetching participate users:", error);
+    }
+  };
+
+  const fetchChangeMemberWin = async (dataReponse: AuctionChangeMember) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await changeMemberWin(dataReponse, token);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching change member:", error);
+    }
+  };
+
+  const fetchChangeContactSuccess = async (reasId: number | undefined) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await changeSuccessReal(reasId, token);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching change contact success:", error);
     }
   };
 
@@ -95,7 +134,7 @@ const CompleteList: React.FC = () => {
     {
       title: "No",
       width: "5%",
-      render: (index: number) => index + 1,
+      render: (_text: any, _record: any, index: number) => index + 1,
     },
     {
       title: "Reas Name",
@@ -223,7 +262,7 @@ const CompleteList: React.FC = () => {
       },
       {
         key: "14",
-        label: "Account Status",
+        label: "Auction Status",
         children: auctionDetailData?.status || "",
         render: (reas_Status: string) => {
           const color = statusColorMap[reas_Status] || "gray"; // Mặc định là màu xám nếu không có trong ánh xạ
@@ -260,7 +299,7 @@ const CompleteList: React.FC = () => {
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (_text: any, _record: any, index: number) => index + 1,
     },
     {
       title: "Account Name",
@@ -283,11 +322,84 @@ const CompleteList: React.FC = () => {
       render: (lastBid: number) => NumberFormat(lastBid),
       width: "15%",
     },
+    {
+      title: "Note",
+      dataIndex: "note",
+      width: "20%",
+    },
   ];
 
   const handleBackToList = () => {
     setShowDetail(false); // Ẩn bảng chi tiết và hiện lại danh sách
     fetchAuctionList(); // Gọi lại hàm fetchMemberList khi quay lại danh sách
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleOk = () => {
+    setIsModalOpen(false);
+    handleChangeMember();
+    setShowDetail(false);
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  let noteReason: string = "";
+  const onChangeMember = (note: any) => {
+    noteReason = note;
+  };
+
+  const openNotificationWithIcon = (
+    type: "success" | "error",
+    description: string
+  ) => {
+    notification[type]({
+      message: "Notification Title",
+      description: description,
+    });
+  };
+
+  const handleChangeMember = async () => {
+    const Auction: AuctionChangeMember = {
+      auctionId: auctionID,
+      note: noteReason,
+    };
+    const response = await fetchChangeMemberWin(Auction);
+    if (response != undefined && response) {
+      if (response.statusCode == "MSG27") {
+        openNotificationWithIcon("success", response.message);
+        fetchAuctionDetail(auctionID);
+        fetchParticipate(auctionID);
+      } else if (response.statusCode == "MSG28") {
+        openNotificationWithIcon("success", response.message);
+        fetchAuctionDetail(auctionID);
+        fetchParticipate(auctionID);
+      } else {
+        openNotificationWithIcon(
+          "error",
+          "Something went wrong when executing operation. Please try again!"
+        );
+      }
+    }
+  };
+
+  const handleChangeContactSuccess = async () => {
+    const response = await fetchChangeContactSuccess(reasID);
+    if (response != undefined && response) {
+      if (response.statusCode == "MSG30") {
+        openNotificationWithIcon("success", response.message);
+        fetchAuctionDetail(auctionID);
+        fetchParticipate(auctionID);
+      } else {
+        openNotificationWithIcon(
+          "error",
+          "Something went wrong when executing operation. Please try again!"
+        );
+      }
+    }
   };
 
   // Generate random dates within a range of 10 years from today
@@ -301,6 +413,46 @@ const CompleteList: React.FC = () => {
           <Button onClick={handleBackToList}>
             <FontAwesomeIcon icon={faArrowLeft} style={{ color: "#74C0FC" }} />
           </Button>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            {statusReas === 5 ? (
+              <div>
+                <Button
+                  onClick={handleChangeContactSuccess}
+                  style={{ backgroundColor: "green" }}
+                >
+                  Contact Success
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <Button disabled>Contact Success</Button>
+              </div>
+            )}
+
+            <Button onClick={showModal}>Change Member Win</Button>
+            <Modal
+              title="Fill information to create Auction"
+              open={isModalOpen}
+              onOk={handleOk}
+              onCancel={handleCancel}
+              footer={[
+                <Button key="submit" onClick={handleOk}>
+                  Create
+                </Button>,
+              ]}
+            >
+              <div style={{ alignContent: "center" }}>
+                <p>
+                  <strong>Note :</strong>
+                </p>
+                <InputAntd
+                  placeholder="Note reason to change winner"
+                  onChange={onChangeMember}
+                />
+              </div>
+              <br />
+            </Modal>
+          </div>
           <br />
           <br />
           <Descriptions bordered title="Detail of Auction">

@@ -26,6 +26,9 @@ const MemberRealEstatePage = () => {
     }
   }, []);
 
+
+
+
   return (
     <>
       <div className="pt-20">

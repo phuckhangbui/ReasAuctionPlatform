@@ -1,11 +1,11 @@
-using API.Data;
 using API.Extensions;
-using API.Helper.VnPay;
-using API.Interface.Service;
-using API.Services;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Repository.Data;
+using Service.Implement;
+using Service.Interface;
+using Service.VnPay;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,7 +95,6 @@ using (var scope = app.Services.CreateScope())
     var backgroundTaskService = serviceProvider.GetRequiredService<IBackgroundTaskService>();
 
     RecurringJob.AddOrUpdate("ScheduleAuction", () => backgroundTaskService.ScheduleAuction(), Cron.MinuteInterval(1));
-    RecurringJob.AddOrUpdate("ScheduleSendEmailNoticeAttenders", () => backgroundTaskService.ScheduleSendEmailNoticeAttenders(), Cron.MinuteInterval(10));
 }
 
 app.Run();

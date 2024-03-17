@@ -1,8 +1,8 @@
-﻿using API.DTOs;
-using API.Errors;
-using API.Interface.Service;
+﻿using API.MessageResponse;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.DTOs;
+using Service.Interface;
 
 namespace API.Controllers
 {
@@ -32,7 +32,7 @@ namespace API.Controllers
 
         [Authorize(policy: "Member")]
         [HttpPut("profile/update")]
-        public async Task<ActionResult> UpdateUserInfomation(UserUpdateProfileInfo userProfileDto)
+        public async Task<ActionResult> UpdateUserInfomation(UserProfileDto userProfileDto)
         {
             int accountId = GetLoginAccountId();
             if (accountId == 0)
