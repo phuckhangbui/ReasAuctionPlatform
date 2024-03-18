@@ -110,8 +110,8 @@ namespace Service.Implement
                 {
                     _logger.LogInformation($"Auction id: {auction.AuctionId} is in status 'OnGoing'");
                     var currentDateTime = DateTime.Now;
-                    TimeSpan delayScheduleSendMailToLoser = auction.DateEnd.AddMinutes(1) - currentDateTime;
-                    TimeSpan delayUpdateAuctionResultFromFirebase = auction.DateEnd - currentDateTime;
+                    TimeSpan delayScheduleSendMailToLoser = auction.DateEnd.AddMinutes(5) - currentDateTime;
+                    TimeSpan delayUpdateAuctionResultFromFirebase = auction.DateEnd.AddMinutes(1) - currentDateTime;
 
                     BackgroundJob.Schedule(() => UpdateAuctionResultFromFirebase(auction.AuctionId), delayUpdateAuctionResultFromFirebase);
                     _logger.LogInformation($"UpdateAuctionResultFromFirebase in {delayUpdateAuctionResultFromFirebase}");
