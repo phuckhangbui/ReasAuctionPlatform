@@ -1,6 +1,7 @@
 ﻿using BusinessObject.Enum;
 using Hangfire;
 using Microsoft.Extensions.Logging;
+using Repository.DTOs;
 using Repository.Interface;
 using Service.Interface;
 using Service.Mail;
@@ -15,17 +16,36 @@ namespace Service.Implement
         private readonly IParticipantHistoryRepository _participantHistoryRepository;
         private readonly ILogger<BackgroundTaskService> _logger;
 
+        private readonly IFirebaseAuctionService _firebaseAuctionService;
+        private readonly INotificatonService _notificatonService;
+        private readonly IAuctionAccountingService _auctionAccountingService;
+        private readonly IDepositAmountService _depositAmountService;
+        private readonly IParticipantHistoryService _participantHistoryService;
+        private readonly IRealEstateService _realEstateService;
+
         public BackgroundTaskService(IAuctionRepository auctionRepository,
             ILogger<BackgroundTaskService> logger,
             IRealEstateRepository realEstateRepository,
             IDepositAmountRepository depositAmountRepository,
-            IParticipantHistoryRepository participantHistoryRepository)
+            IParticipantHistoryRepository participantHistoryRepository,
+            IFirebaseAuctionService firebaseAuctionService,
+            INotificatonService notificatonService,
+            IAuctionAccountingService auctionAccountingService,
+            IDepositAmountService depositAmountService,
+            IParticipantHistoryService participantHistoryService,
+            IRealEstateService realEstateService)
         {
             _auctionRepository = auctionRepository;
             _logger = logger;
             _realEstateRepository = realEstateRepository;
             _depositAmountRepository = depositAmountRepository;
             _participantHistoryRepository = participantHistoryRepository;
+            _firebaseAuctionService = firebaseAuctionService;
+            _notificatonService = notificatonService;
+            _auctionAccountingService = auctionAccountingService;
+            _depositAmountService = depositAmountService;
+            _participantHistoryService = participantHistoryService;
+            _realEstateService = realEstateService;
         }
 
         public async Task ChangeAuctionStatusToPending(int auctionId)
@@ -90,15 +110,110 @@ namespace Service.Implement
                 {
                     _logger.LogInformation($"Auction id: {auction.AuctionId} is in status 'OnGoing'");
                     var currentDateTime = DateTime.Now;
-                    TimeSpan delayToSchedule = auction.DateEnd.AddMinutes(1) - currentDateTime;
+                    TimeSpan delayScheduleSendMailToLoser = auction.DateEnd.AddMinutes(5) - currentDateTime;
+                    TimeSpan delayUpdateAuctionResultFromFirebase = auction.DateEnd.AddMinutes(1) - currentDateTime;
 
-                    BackgroundJob.Schedule(() => ScheduleSendMailForLoserAttendees(auction), delayToSchedule);
-                    _logger.LogInformation($"Send mail for loser attendees scheduled in {delayToSchedule}");
+                    BackgroundJob.Schedule(() => UpdateAuctionResultFromFirebase(auction.AuctionId), delayUpdateAuctionResultFromFirebase);
+                    _logger.LogInformation($"UpdateAuctionResultFromFirebase in {delayUpdateAuctionResultFromFirebase}");
+
+                    BackgroundJob.Schedule(() => ScheduleSendMailForLoserAttendees(auction), delayScheduleSendMailToLoser);
+                    _logger.LogInformation($"Send mail for loser attendees scheduled in {delayScheduleSendMailToLoser}");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while updating auction status.");
+            }
+        }
+
+        public async Task UpdateAuctionResultFromFirebase(int auctionId)
+        {
+            try
+            {
+                var auctionResult = await _firebaseAuctionService.GetAuctionDataAsync(auctionId);
+
+                if (auctionResult != null)
+                {
+                    _logger.LogInformation($"Auction result with id {auctionId}: {auctionResult}");
+
+                    var auctionDetailDto = new AuctionDetailDto()
+                    {
+                        AuctionId = auctionResult.Auction.AuctionId,
+                        AccountWinId = auctionResult.GetAccountWinId(),
+                        WinAmount = auctionResult.CurrentBid
+                    };
+
+                    var auctionHistoryDtos = new List<ParticipantAuctionHistoryDto>();
+                    
+                    foreach (var participate in auctionResult.Users)
+                    {
+                        var auctionHistoryDto = new ParticipantAuctionHistoryDto()
+                        {
+                            AccountId = int.Parse(participate.Value.UserId),
+                            LastBidAmount = participate.Value.CurrentUserBid,
+                        };
+
+                        auctionHistoryDtos.Add(auctionHistoryDto);
+                    }
+
+                    var auctionAccountingDto = await _auctionAccountingService.CreateAuctionAccounting(auctionDetailDto);
+
+                    //get the list of all user register in auction
+                    List<int> userIdRegisterInAuction = await _auctionRepository.GetUserIdInAuctionUsingReasId(auctionAccountingDto.ReasId);
+
+                    List<int> userIdParticipateInAuction = auctionHistoryDtos.Select(a => a.AccountId).ToList();
+
+                    List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
+
+                    //update status for user participate
+                    foreach (int userId in userIdParticipateInAuction)
+                    {
+                        await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.Waiting_for_refund);
+                    }
+
+                    //update status for user who not participate
+                    foreach (int userId in userIdsRegisteredNotParticipated)
+                    {
+                        await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.LostDeposit);
+                    }
+
+                    // change the status of winner
+                    await _depositAmountService.UpdateStatus(auctionDetailDto.AccountWinId, auctionAccountingDto.ReasId, (int)UserDepositEnum.Winner);
+
+
+                    //add to participant history
+                    await _participantHistoryService.CreateParticipantHistory(auctionHistoryDtos, auctionAccountingDto.AuctionAccountingId, auctionDetailDto.WinAmount);
+
+
+                    //update auction status
+                    int statusFinish = (int)AuctionStatus.Finish;
+                    bool result = await _auctionRepository.EditAuctionStatus(auctionDetailDto.AuctionId.ToString(), statusFinish.ToString());
+
+                    //update real estate status
+                    await _realEstateService.UpdateRealEstateStatus(auctionAccountingDto.ReasId, (int)RealEstateStatus.Sold);
+
+                    if (result)
+                    {
+                        //send email
+                        await _auctionAccountingService.SendWinnerEmail(auctionAccountingDto);
+
+                        userIdParticipateInAuction.Remove(auctionDetailDto.AccountWinId);
+
+                        //send notification
+                        await _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
+
+                        await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId);
+
+                        await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
+
+                        await _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating auction result from firebase");
             }
         }
 
