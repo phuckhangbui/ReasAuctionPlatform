@@ -141,7 +141,7 @@ namespace Repository.Implement
                 ReasName = x.ReasName,
                 ReasPrice = Convert.ToDouble(x.ReasPrice),
                 ReasArea = x.ReasArea,
-                Flag = x.IsReupYet,
+                Flag = x.IsReupYet.HasValue ? (bool)x.IsReupYet : false,
                 UriPhotoFirst = _context.RealEstatePhoto.Where(y => y.ReasId == x.ReasId).Select(z => z.ReasPhotoUrl).FirstOrDefault(),
                 ReasTypeName = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(z => z.Type_Reas_Name).FirstOrDefault(),
                 ReasStatus = statusName.GetRealEstateStatusName(x.ReasStatus),
