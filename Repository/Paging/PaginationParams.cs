@@ -2,9 +2,9 @@ namespace Repository.Paging;
 
 public class PaginationParams
 {
-    private const int MaxPageSize = 100;
+    private const int MaxPageSize = 1000;
     public int PageNumber { get; set; } = 1;
-    private int _pageSize = 15;
+    private int _pageSize = 1000;
 
     public int PageSize
     {
