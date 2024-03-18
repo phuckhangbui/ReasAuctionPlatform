@@ -252,7 +252,9 @@ const TransactionList: React.FC = () => {
     ];
     return items.map((item) => (
       <Descriptions.Item key={item.key} label={item.label}>
-        {typeof item.children === 'number' && item.render ? item.render(item.children) : item.children}
+        {typeof item.children === "number" && item.render
+          ? item.render(item.children)
+          : item.children}
       </Descriptions.Item>
     ));
   };

@@ -33,7 +33,13 @@ const HomePage = () => {
         setNewsList(response);
       };
       const fetchAuctions = async () => {
-        const response = await getAuctionHome();
+        const response = await getAuctionHome({
+          pageNumber: 1,
+          pageSize: 100,
+          keyword: "",
+          timeStart: "",
+          timeEnd: "",
+        });
         setAuctionsList(response);
       };
 
