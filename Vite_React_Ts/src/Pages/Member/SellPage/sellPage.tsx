@@ -10,6 +10,7 @@ import CloudinaryUploadWidget, {
   CloudinaryConfig,
 } from "../../../Config/cloudinary";
 import toast from "react-hot-toast";
+import dayjs from "dayjs";
 
 const validate = (values: createRealEstate) => {
   const errors: Partial<validateRealEstate> = {};
@@ -39,7 +40,7 @@ const validate = (values: createRealEstate) => {
     errors.reasPrice = "Price must be more than 100.000.000";
   } else if (values.reasPrice > 100000000000) {
     errors.reasPrice = "Price must be less than 100.000.000.000 đ";
-  } else if (!values.reasPrice.toString().endsWith('000')) {
+  } else if (!values.reasPrice.toString().endsWith("000")) {
     errors.reasPrice = "Price must end with 000 at the end";
   }
 
@@ -55,12 +56,8 @@ const validate = (values: createRealEstate) => {
     errors.type_Reas = "Required";
   }
 
-  if (!values.dateStart) {
-    errors.dateStart = "Required";
-  }
-
   if (!values.dateEnd) {
-    errors.reasName = "Required";
+    errors.dateEnd = "Required";
   }
 
   return errors;
@@ -81,7 +78,6 @@ const SellPage = () => {
   const [noPhotoMessage, setNoPhotoMessage] = useState<boolean>(false);
   const [noInputMessage, setNoInputMessage] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { RangePicker } = DatePicker;
 
   useEffect(() => {
     try {
@@ -240,7 +236,6 @@ const SellPage = () => {
       !formik.values.reasPrice ||
       !formik.values.reasArea ||
       !formik.values.reasDescription ||
-      !formik.values.dateStart ||
       !formik.values.dateEnd ||
       !formik.values.type_Reas
     ) {
@@ -447,8 +442,7 @@ const SellPage = () => {
                       // }
                     }}
                   />
-                  {formik.touched.reasPrice &&
-                  formik.errors.reasPrice ? (
+                  {formik.touched.reasPrice && formik.errors.reasPrice ? (
                     <div className="text-red-700">
                       {formik.errors.reasPrice}
                     </div>
@@ -459,38 +453,32 @@ const SellPage = () => {
                 <div className="col-span-2">
                   <label
                     htmlFor="dateRange"
-                    className=" mb-1 text-md font-medium text-gray-900 dark:text-white grid grid-cols-2"
+                    className=" mb-1 text-md font-medium text-gray-900 grid grid-cols-2"
                   >
-                    <div>Start Date</div>
                     <div>End Date</div>
                   </label>
-                  <RangePicker
-                    id="dateRange"
-                    className=" w-full p-2.5 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue "
-                    onChange={(dateStrings: any) => {
-                      formik.setFieldValue("dateStart", dateStrings[0]);
-                      formik.setFieldValue("dateEnd", dateStrings[1]);
+                  <DatePicker
+                    className="w-full p-2.5 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue"
+                    value={
+                      formik.values.dateEnd
+                        ? dayjs(formik.values.dateEnd)
+                        : null
+                    }
+                    disabledDate={(current) =>
+                      current && current < dayjs().startOf("day")
+                    }
+                    onChange={(_date, dateString) => {
+                      formik.setFieldValue("dateEnd", dateString);
                     }}
-                    required
+                    format="YYYY-MM-DD"
                   />
-                  <div className="grid grid-cols-2">
-                    {formik.touched.reasDescription &&
-                    formik.errors.reasDescription ? (
-                      <div className="text-red-700">
-                        {formik.errors.reasDescription}
-                      </div>
-                    ) : (
-                      <div className="text-white ">'</div>
-                    )}
-                    {formik.touched.reasDescription &&
-                    formik.errors.reasDescription ? (
-                      <div className="text-red-700">
-                        {formik.errors.reasDescription}
-                      </div>
-                    ) : (
-                      <div className="text-white pointer-events-none ">'</div>
-                    )}
-                  </div>
+                  {/* {formik.touched.dateEnd && formik.errors.dateEnd !== undefined ? (
+                    <div className="text-red-700">
+                      {formik.errors.dateEnd.toLocaleString()}
+                    </div>
+                  ) : (
+                    <div className="text-white pointer-events-none ">'</div>
+                  )} */}
                 </div>
                 <div className="col-span-2">
                   <label
