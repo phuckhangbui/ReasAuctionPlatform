@@ -1,4 +1,9 @@
 ﻿using Repository.DTOs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Service.Mail
 {
@@ -16,11 +21,11 @@ namespace Service.Mail
                 mailSetting.Passwork = "zgtj veex szof becd";
                 mailSetting.DisplayName = "REAS";
                 mailContext.To = email.EmailName;
-                mailContext.Subject = "THÔNG BÁO DIỄN RA AUCTION"; ;
-                mailContext.Body = "<h3>Lời nói đầu tiên chúng tôi xin chúc bạn một ngày tốt lành.</h3>" +
-                                    "<br><br><h4>Chúng tôi thông báo bất động sản với tên " + "<strong>" + reasName + "</strong></h4>" +
-                                    "<br><br><h4>Thời gian diễn ra vào lúc : " + dateStart.TimeOfDay.ToString() + " ngày " + dateStart.Date.ToString() + "</h4>" +
-                                    "<br><br><h4>Reas xin cảm ơn!</h4>";
+                mailContext.Subject = "AUCTION NOTIFICATION"; ;
+                mailContext.Body = "<h3>First of all, we wish you a good day.</h3>" +
+                                    "<br><br><h4>We inform you about the real estate named " + "<strong>" + reasName + "</strong></h4>" +
+                                    "<br><br><h4>The event will take place at: " + dateStart.TimeOfDay.ToString() + " on " + dateStart.Date.ToString() + "</h4>" +
+                                    "<br><br><h4>Reas thank you!</h4>";
                 var sendmailservice = new SendMailService(mailSetting);
                 sendmailservice.SendMail(mailContext);
             }

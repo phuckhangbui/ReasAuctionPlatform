@@ -5,6 +5,7 @@ using Repository.DTOs;
 using Repository.Interface;
 using Repository.Param;
 using Service.Interface;
+using Service.Mail;
 
 namespace Service.Implement
 {
@@ -187,7 +188,7 @@ namespace Service.Implement
             }
         }
 
-        public async Task SendNotificationWhenWinAuction(int auctionId)
+        public async Task SendNotificationWhenWinAuction(int auctionId, float maxAmount)
         {
             AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
             Account winnerAccount = await _accountRepository.GetAccountOnId(auctionAccounting.AccountWinId);
@@ -217,6 +218,7 @@ namespace Service.Implement
             if (!winnerAccount.FirebaseToken.IsNullOrEmpty())
             {
                 await _messagingService.SendPushNotification(winnerAccount.FirebaseToken, title, body, data);
+                SendMailWhenChangeWinner.SendMailWhenChangeWinnerAuction(winnerAccount.AccountEmail, realEstate.ReasName, realEstate.ReasAddress, DateTime.Now.AddDays(10), maxAmount, auctionAccounting.DepositAmount);
             }
 
         }
@@ -251,6 +253,7 @@ namespace Service.Implement
             if (!winnerAccount.FirebaseToken.IsNullOrEmpty())
             {
                 await _messagingService.SendPushNotification(winnerAccount.FirebaseToken, title, body, data);
+                SendMailWhenChangeWinner.SendMailWhenForFirstWinnerChangeWinnerAuction(winnerAccount.AccountEmail, winnerAccount.AccountName, realEstate.ReasName, realEstate.ReasAddress);
             }
 
         }

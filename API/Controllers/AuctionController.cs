@@ -236,7 +236,7 @@ namespace API.Controllers
                     //send notification
                     await _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
 
-                    await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId);
+                    await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId, auctionAccountingDto.MaxAmount);
 
                     await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
 
@@ -558,7 +558,7 @@ namespace API.Controllers
                 await _depositAmountService.UpdateStatus(newAuctionAccounting.AccountWinId, auction.ReasId, (int)UserDepositEnum.Winner);
 
                 //send noti + mail for new winner
-                await _notificatonService.SendNotificationWhenWinAuction(updateAuctionWinnerDto.auctionId);
+                await _notificatonService.SendNotificationWhenWinAuction(updateAuctionWinnerDto.auctionId, newAuctionAccounting.MaxAmount);
 
                 return Ok(new ApiResponseMessage("MSG27", "", newAuctionAccounting.MaxAmount));
 
@@ -570,6 +570,7 @@ namespace API.Controllers
 
                 //update auction accounting to floor level
                 auctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWhenNoWinnerRemain(updateAuctionWinnerDto.auctionId);
+
 
                 //send noti + mail for owner notif ther real estate status
                 _notificatonService.SendNotificationToOwnerWhenChangeStatusOfRealEstate(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);

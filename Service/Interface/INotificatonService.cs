@@ -12,7 +12,7 @@ namespace Service.Interface
         Task SendNotificationWhenCreateAuction(int auctionId);
         Task SendNotificationWhenAuctionAboutToStart(int auctionId);
         Task SendNotificationToStaffandAdminWhenAuctionFinish(int auctionId);
-        Task SendNotificationWhenWinAuction(int auctionId);
+        Task SendNotificationWhenWinAuction(int auctionId, float maxAmount);
         Task SendNotificationWhenLoseAuction(List<int> accountIdParticipateInAuction, int auctionId);
         Task SendNotificationWhenNotAttendAuction(List<int> accountIdParticipateInAuction, int auctionId);
         Task SendNotificationToOwnerWhenChangeStatusOfRealEstate(int reasId, int status);
