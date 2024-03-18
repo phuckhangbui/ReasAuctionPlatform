@@ -16,7 +16,7 @@ const AdminAddNews: React.FC = () => {
     newsTitle: "",
     thumbnailUri: "",
   });
-  const [uploadedImage, setUploadedImage] = useState<string>("");
+  const [_uploadedImage, setUploadedImage] = useState<string>("");
   const [_publicId, setPublicId] = useState<string>("");
   const [uwConfig] = useState<CloudinaryConfig>({
     cloudName: "dqpsvl3nu",

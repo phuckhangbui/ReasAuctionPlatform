@@ -346,7 +346,7 @@ function App() {
                 <Route path="user/create" element={<AdminAddStaff />} />
               </Route>
 
-              <Route path="news" element={<NewsList />} />
+              <Route path="news" element={<AdminNewsList />} />
               <Route path="news/create" element={<AdminCreateNews />} />
 
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
