@@ -3,7 +3,6 @@ using AutoMapper.QueryableExtensions;
 using BusinessObject.Entity;
 using BusinessObject.Enum;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using Repository.Data;
 using Repository.DTOs;
 using Repository.Interface;

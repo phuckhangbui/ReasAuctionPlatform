@@ -1,4 +1,7 @@
 ﻿using API.MessageResponse;
+using FireSharp;
+using FireSharp.Config;
+using FireSharp.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository.Data;
@@ -58,6 +61,19 @@ namespace API.Extensions
                 // Assuming jsonCredentialsPath is configured elsewhere, possibly in appsettings.json
                 var jsonCredentialsPath = config["Firebase:CredentialsPath"];
                 return new FirebaseMessagingService(jsonCredentialsPath);
+            });
+
+            services.AddSingleton<IFirebaseAuctionService>(provider =>
+            {
+                IFirebaseConfig config = new FirebaseConfig
+                {
+                    AuthSecret = "BKzPJclM4rnmLoj8JXIgWKkjwP0aprY6NK266RL9",
+                    BasePath = "https://swd-reas-default-rtdb.asia-southeast1.firebasedatabase.app/"
+                };
+
+
+                IFirebaseClient client = new FirebaseClient(config);
+                return new FirebaseAuctionService(config);
             });
 
             services.AddDbContext<DataContext>(opt =>
