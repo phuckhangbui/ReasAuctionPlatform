@@ -102,7 +102,7 @@ namespace Service.Implement
                     BackgroundJob.Schedule(() => ScheduleSendMailForLoserAttendees(auction), delayScheduleSendMailToLoser);
                     _logger.LogInformation($"Send mail for loser attendees scheduled in {delayScheduleSendMailToLoser}");
                 }
-            } 
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while getting auction result from firebase.");
@@ -174,7 +174,7 @@ namespace Service.Implement
                     };
 
                     var auctionHistoryDtos = new List<ParticipantAuctionHistoryDto>();
-                    
+
                     foreach (var participate in auctionResult.Users)
                     {
                         var auctionHistoryDto = new ParticipantAuctionHistoryDto()
