@@ -47,10 +47,23 @@ export const getAuctionUserList = async (reasId: number) => {
   }
 };
 
-export const StartAuction = async (auctionId: number, token: string) => {
+export const StartAuction = async (
+  { auctionId, accountWinId, winAmount }: auctionFinish,
+  userList: userHistory[],
+  token: string
+) => {
   try {
-    const fetchData = await axios.get<Message>(
+    const param = {
+      auctionDetailDto: {
+        auctionId,
+        accountWinId,
+        winAmount,
+      },
+      auctionHistory: userList,
+    };
+    const fetchData = await axios.post<Message>(
       `${baseUrl}/api/Auction/start?auctionId=${auctionId}`,
+      param,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -59,7 +72,6 @@ export const StartAuction = async (auctionId: number, token: string) => {
       }
     );
     const response = fetchData.data;
-    console.log(response);
     return response;
   } catch (error) {
     console.log("Error: " + error);

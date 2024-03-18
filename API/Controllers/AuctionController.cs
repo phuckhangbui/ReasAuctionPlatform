@@ -211,11 +211,11 @@ namespace API.Controllers
                 }
 
                 //get the list of all user register in auction
-                List<int> userIdRegisterInAuction = await _auctionService.GetUserInAuction(auctionAccountingDto.ReasId);
+                //List<int> userIdRegisterInAuction = await _auctionService.GetUserInAuction(auctionAccountingDto.ReasId);
 
                 List<int> userIdParticipateInAuction = auctionSuccessDto.AuctionHistory.Select(a => a.AccountId).ToList();  // include winner in here
 
-                List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
+                //List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
 
                 //update status for user participate
                 foreach (int userId in userIdParticipateInAuction)
@@ -224,10 +224,10 @@ namespace API.Controllers
                 }
 
                 //update status for user who not participate
-                foreach (int userId in userIdsRegisteredNotParticipated)
-                {
-                    await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.LostDeposit);
-                }
+                //foreach (int userId in userIdsRegisteredNotParticipated)
+                //{
+                //    await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.LostDeposit);
+                //}
 
                 // change the status of winner
                 await _depositAmountService.UpdateStatus(auctionSuccessDto.AuctionDetailDto.AccountWinId, auctionAccountingDto.ReasId, (int)UserDepositEnum.Winner);
@@ -256,7 +256,7 @@ namespace API.Controllers
 
                     await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId);
 
-                    await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
+                    //await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
 
                     await _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
 
