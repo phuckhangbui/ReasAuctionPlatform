@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SearchBar from "../../../components/SearchBar/searchBar";
-import { DatePicker } from "antd";
+import { DatePicker, Empty } from "antd";
 import dayjs from "dayjs";
 import AuctionList from "../../../components/Auction/auctionList";
 import { getAuctionHome } from "../../../api/auctions";
@@ -114,7 +114,14 @@ const AuctionPage = () => {
               Participate and try your best to win your dream home
             </div>
           </div>
-          <AuctionList auctionsList={auctionsList} />
+          
+          {auctionsList && auctionsList?.length > 0 ? (
+            <AuctionList auctionsList={auctionsList} />
+          ) : (
+            <div className="mt-20">
+              <Empty />
+            </div>
+          )}
         </div>
       </div>
     </div>

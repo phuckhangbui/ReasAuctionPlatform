@@ -64,9 +64,14 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
         if (responseData?.token) {
           login(user, responseData?.token);
         }
+        console.log(user);
+        if (user.roleId === 1) {
+          navigate("/admin");
+        } else if (user.roleId === 2) {
+          navigate("/admin/auction/ongoing");
+        }
       };
       loginStaff();
-      navigate("/admin");
     } catch (error) {
       console.log(error);
     }

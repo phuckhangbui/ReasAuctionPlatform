@@ -93,19 +93,15 @@ const AdminAddNews: React.FC = () => {
         children: "",
         span: 3,
         render: (_url: string) => (
-          <div>
-            <img
-              className="h-96 w-full object-cover object-center"
-              src={uploadedImage}
-              alt="Uploaded"
-              style={{ maxWidth: "200px", maxHeight: "200px" }}
-            />
-            <CloudinaryUploadWidget
-              uwConfig={uwConfig}
-              setPublicId={setPublicId}
-              setUploadedUrl={handleImageUpload}
-              notList={true}
-            />
+          <div className="grid grid-cols-4">
+            <div className="col-span-1">
+              <CloudinaryUploadWidget
+                uwConfig={uwConfig}
+                setPublicId={setPublicId}
+                setUploadedUrl={handleImageUpload}
+                notList={true}
+              />
+            </div>
           </div>
         ),
       },
@@ -156,7 +152,7 @@ const AdminAddNews: React.FC = () => {
   };
   return (
     <>
-      <Descriptions bordered title="Add News">
+      <Descriptions bordered title="Add News" className="mt-5 text-4xl">
         {renderBorderedItems()}
       </Descriptions>
       <br />

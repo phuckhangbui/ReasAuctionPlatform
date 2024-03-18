@@ -34,47 +34,51 @@ function getItem(
   } as MenuItem;
 }
 
-const items: MenuItem[] = [
-  getItem("Dashboard", "1", <PieChartOutlined />),
-  getItem("Auction", "sub1", <DesktopOutlined />, [
-    getItem("InProgress Auction", "2"),
-    getItem("Completed Auction", "3"),
-    getItem("Create Auction", "4"),
-  ]),
-  getItem("User", "sub2", <UserOutlined />, [
-    getItem("Staffs", "5"),
-    getItem("Members", "6"),
-    getItem("Create New Staff", "7"),
-  ]),
-  getItem("Real Estate", "sub3", <HomeOutlined />, [
-    getItem("All Real Estates", "8"),
-    getItem("Pending Real Estate", "9"),
-  ]),
-  getItem("News", "sub4", <GlobalOutlined />, [
-    getItem("News", "10"),
-    getItem("Add News", "11"),
-  ]),
-  getItem("Term", "sub5", <BookOutlined />, [
-    getItem("Term", "12"),
-    getItem("Add Term", "13"),
-  ]),
-  getItem("Task", "sub6", <SnippetsOutlined />, [
-    getItem("Task", "14"),
-    getItem("Add Task", "15"),
-  ]),
-  getItem("Transaction", "16", <DollarOutlined />),
-  getItem("Deposit", "17", <PieChartOutlined />),
-  getItem("Logout", 18),
-];
-
 const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { logout } = useContext(UserContext);
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+  const { userRole } = useContext(UserContext);
 
   const navigate = useNavigate();
+
+  const items: MenuItem[] = [
+    userRole === 1
+      ? getItem("Dashboard", "1", <PieChartOutlined />)
+      : undefined,
+    getItem("Auction", "sub1", <DesktopOutlined />, [
+      getItem("InProgress Auction", "2"),
+      getItem("Completed Auction", "3"),
+      getItem("Create Auction", "4"),
+    ]),
+    userRole === 1
+      ? getItem("User", "sub2", <UserOutlined />, [
+          getItem("Staffs", "5"),
+          getItem("Members", "6"),
+          getItem("Create New Staff", "7"),
+        ])
+      : getItem("Members", "6", <UserOutlined />),
+    getItem("Real Estate", "sub3", <HomeOutlined />, [
+      getItem("All Real Estates", "8"),
+      getItem("Pending Real Estate", "9"),
+    ]),
+    getItem("News", "sub4", <GlobalOutlined />, [
+      getItem("News", "10"),
+      getItem("Add News", "11"),
+    ]),
+    userRole === 1
+      ? getItem("Term", "sub5", <BookOutlined />, [
+          getItem("Term", "12"),
+          getItem("Add Term", "13"),
+        ])
+      : undefined,
+
+    getItem("Transaction", "14", <DollarOutlined />),
+    getItem("Deposit", "15", <PieChartOutlined />),
+    getItem("Logout", "16"),
+  ].filter(Boolean) as MenuItem[];
 
   const handleMenuClick = (key: React.Key) => {
     switch (key) {
@@ -118,18 +122,12 @@ const Sidebar: React.FC = () => {
         navigate("/admin/term/create");
         break;
       case "14":
-        navigate("/admin/task");
-        break;
-      case "15":
-        navigate("/admin/task/create");
-        break;
-      case "16":
         navigate("/admin/transaction");
         break;
-      case "17":
+      case "15":
         navigate("/admin/deposit");
         break;
-      case "18":
+      case "16":
         logout();
         navigate("/");
         break;
