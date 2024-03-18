@@ -210,8 +210,8 @@ namespace Repository.Implement
             query = query.OrderByDescending(a => a.DateStart);
             return await PageList<RealEstateDto>.CreateAsync(
             query.AsNoTracking().ProjectTo<RealEstateDto>(_mapper.ConfigurationProvider),
-            page.PageNumber,
-            page.PageSize);
+            searchRealEstateDto.PageNumber,
+            searchRealEstateDto.PageSize);
         }
 
         public async Task<PageList<RealEstateDto>> GetAllRealEstateOnRealEstatePage()
