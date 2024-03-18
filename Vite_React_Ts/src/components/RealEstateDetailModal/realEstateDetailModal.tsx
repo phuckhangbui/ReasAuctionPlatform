@@ -636,7 +636,6 @@ const RealEstateDetailModal = ({
                   src={photo.reasPhotoUrl}
                   alt="Real Estate Photos"
                   className="md:h-120 sm:h-96 w-full object-fill rounded-lg"
-                  key={photo.reasPhotoId}
                 />
               ))}
             </Carousel>
@@ -704,7 +703,9 @@ const RealEstateDetailModal = ({
                 <div>
                   <div className="text-xl font-bold ">
                     {realEstateDetail?.reasPrice
-                      ? formatVietnameseDong(realEstateDetail?.reasPrice)
+                      ? formatVietnameseDong(
+                          realEstateDetail?.reasPrice.toString()
+                        )
                       : realEstateDetail?.reasPrice}{" "}
                     VND
                   </div>
@@ -1025,6 +1026,12 @@ const RealEstateDetailModal = ({
                 ) : (
                   <></>
                 )
+              ) : userId === realEstateDetail?.accountOwnerId ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    You Are The Owner of This Real Estate
+                  </div>
+                </div>
               ) : (
                 <div className="flex justify-center flex-col items-center py-10">
                   <div className="text-xl text-gray-500">

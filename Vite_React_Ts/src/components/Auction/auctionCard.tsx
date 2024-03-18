@@ -40,13 +40,13 @@ const AuctionCard = ({ auction }: AuctionProps) => {
 
   return (
     <div className="max-w-sm bg-white border border-gray-200 rounded-lg mx-auto sm:my-2 md:my-0 shadow-lg hover:shadow-xl transition-all delay-100">
-      {/* <div className="">
+      <div className="">
         <img
           className="rounded-t-lg h-52 w-full"
-          src={auctionDetail?.}
+          src={auctionDetail?.thumbnailUrl}
           alt=""
         />
-      </div> */}
+      </div>
       <div className="p-5">
         <div>
           <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900 xl:line-clamp-2 md:line-clamp-3 break-all">

@@ -8,7 +8,7 @@ import {
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { NumberFormat } from "../../../Utils/numbetFormat";
-import { DatePicker, Pagination, Select } from "antd";
+import { Pagination } from "antd";
 import { useContext } from "react";
 import { UserContext } from "../../../context/userContext";
 import { GetAuctionHistory } from "../../../api/memberAuction";
@@ -63,34 +63,34 @@ const AuctionHistory: React.FC = () => {
     setCurrentPage(page);
   };
 
-  const options = [
-    {
-      value: "department",
-      label: "Department",
-    },
-  ];
-  const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
-  };
-  const { RangePicker } = DatePicker;
-  const optionsOrderBy = [
-    {
-      value: "name_acs",
-      label: "Name from A-Z",
-    },
-    {
-      value: "decs",
-      label: "Name from Z-A",
-    },
-    {
-      value: "price_asc",
-      label: "Price gradually increase",
-    },
-    {
-      value: "price_decs",
-      label: "Price gradually decrease",
-    },
-  ];
+  // const options = [
+  //   {
+  //     value: "department",
+  //     label: "Department",
+  //   },
+  // ];
+  // const handleChange = (value: string) => {
+  //   console.log(`selected ${value}`);
+  // };
+  // const { RangePicker } = DatePicker;
+  // const optionsOrderBy = [
+  //   {
+  //     value: "name_acs",
+  //     label: "Name from A-Z",
+  //   },
+  //   {
+  //     value: "decs",
+  //     label: "Name from Z-A",
+  //   },
+  //   {
+  //     value: "price_asc",
+  //     label: "Price gradually increase",
+  //   },
+  //   {
+  //     value: "price_decs",
+  //     label: "Price gradually decrease",
+  //   },
+  // ];
 
   const getColorForDepositStatus = (depositStatus: number) => {
     switch (depositStatus) {
