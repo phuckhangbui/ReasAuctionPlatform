@@ -45,7 +45,8 @@ namespace Repository.Mapper
                 .ReverseMap();
             CreateMap<Account, AuctionAttenderDto>();
             CreateMap<Auction, AuctionNotCancelDto>()
-                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
+                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
+                .ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src => src.RealEstate.Photos.FirstOrDefault(r => r.ReasId == src.ReasId).ReasPhotoUrl));
             CreateMap<Notification, NotificationDto>();
         }
     }

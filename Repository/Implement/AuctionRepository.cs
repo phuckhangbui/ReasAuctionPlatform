@@ -367,38 +367,28 @@ namespace Repository.Implement
             return depositedAccounts;
         }
 
-        public async Task<PageList<AuctionNotCancelDto>> GetAuctionNotCancelsAsync(AuctionParam auctionParam)
+        public async Task<PageList<AuctionNotCancelDto>> GetAuctionNotCancelsAsync(AuctionNotCancelParam auctionParam)
         {
-            var statusName = new GetStatusName();
+            var query = _context.Auction.AsQueryable();
 
-            var query = _context.Auction
-                .Where(a => a.Status != (int)AuctionStatus.Cancel)
-                .OrderByDescending(a => a.DateStart)
-                .Join(_context.RealEstate,
-                    a => a.ReasId,
-                    re => re.ReasId,
-                    (a, re) => new { Auction = a, RealEstate = re })
-                .Select(join => new AuctionNotCancelDto
-                {
-                    AuctionId = join.Auction.AuctionId,
-                    ReasId = join.Auction.ReasId,
-                    DateStart = join.Auction.DateStart,
-                    DateEnd = join.Auction.DateEnd,
-                    ReasName = join.RealEstate.ReasName,
-                    FloorBid = join.Auction.FloorBid,
-                    Status = statusName.GetStatusAuctionName(join.Auction.Status),
-                    ThumbnailUrl = _context.RealEstatePhoto
-                                       .Where(rp => rp.ReasId == join.RealEstate.ReasId)
-                                       .Select(rp => rp.ReasPhotoUrl)
-                                       .FirstOrDefault()
-                })
-                .AsQueryable();
+            query = query.Where(a => a.Status != (int)AuctionStatus.NotYet);
+            query = query.OrderByDescending(a => a.DateStart);
 
-            var pageList = await PageList<AuctionNotCancelDto>.CreateAsync(query, auctionParam.PageNumber, auctionParam.PageSize);
+            if (!string.IsNullOrEmpty(auctionParam.Keyword))
+            {
+                query = query.Where(a =>
+                    a.RealEstate.ReasName.ToLower().Contains(auctionParam.Keyword.ToLower()));
+            }
 
-            var auctionDtos = _mapper.Map<List<AuctionNotCancelDto>>(pageList);
+            if (DateTime.TryParse(auctionParam.TimeStart, out DateTime timeStart) && DateTime.TryParse(auctionParam.TimeEnd, out DateTime timeEnd))
+            {
+                query = query.Where(a => a.DateStart >= timeStart && a.DateStart <= timeEnd);
+            }
 
-            return new PageList<AuctionNotCancelDto>(auctionDtos, pageList.TotalCount, pageList.CurrentPage, pageList.PageSize);
+            return await PageList<AuctionNotCancelDto>.CreateAsync(
+            query.AsNoTracking().ProjectTo<AuctionNotCancelDto>(_mapper.ConfigurationProvider),
+            auctionParam.PageNumber,
+            auctionParam.PageSize);
         }
     }
 }

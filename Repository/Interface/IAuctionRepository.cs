@@ -28,6 +28,6 @@ namespace Repository.Interface
         Task<List<string>> GetAuctionAttendersEmail(int auctionId);
         Task<List<int>> GetUserIdInAuctionUsingReasId(int reasId);
         Task<List<Account>> GetAccoutnDepositedInAuctionUsingReasId(int reasId);
-        Task<PageList<AuctionNotCancelDto>> GetAuctionNotCancelsAsync(AuctionParam auctionParam);
+        Task<PageList<AuctionNotCancelDto>> GetAuctionNotCancelsAsync(AuctionNotCancelParam auctionParam);
     }
 }

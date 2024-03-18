@@ -24,6 +24,6 @@ namespace Service.Interface
         Task<Auction> UpdateAuctionWhenStart(int auctionId);
         Task<List<int>> GetUserInAuction(int reasId);
         Task<Auction> GetAuctionByAuctionId(int auctionId);
-        Task<PageList<AuctionNotCancelDto>> GetAuctionsNotCancel(AuctionParam auctionParam);
+        Task<PageList<AuctionNotCancelDto>> GetAuctionsNotCancel(AuctionNotCancelParam auctionParam);
     }
 }
