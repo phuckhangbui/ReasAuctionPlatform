@@ -1,16 +1,40 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LoginModal from "../LoginModal/loginModal";
 import { UserContext } from "../../context/userContext";
 import { AvatarDropdown } from "../AvatarDropdown/AvatarDropdown";
 import NotificationList from "../NotificationList/notificationList";
+import { getNotification } from "../../api/member";
+import { NotificationContext } from "../../context/notificationContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isNotiOpen, setIsNotiOpen] = useState(false);
+  const [notificationList, setNotificationList] = useState<
+    notification[] | undefined
+  >([]);
   const currentUrl = useLocation();
-  const { userRole } = useContext(UserContext);
+  const { userRole, token } = useContext(UserContext);
+  const { hasNewNoti, updateNotiStatus } = useContext(NotificationContext);
+  const notificationRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    try {
+      const fetchNotificationList = async () => {
+        if (token) {
+          const response = await getNotification(token);
+          if (response) {
+            setNotificationList(response);
+            updateNotiStatus(false);
+          }
+        }
+      };
+      fetchNotificationList();
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  }, [hasNewNoti, token]);
 
   const getActiveLink = (url: string) => {
     return `${
@@ -19,6 +43,10 @@ const Header = () => {
         : "text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-mainBlue"
     } block py-2 px-3 md:p-0`;
   };
+
+  useEffect(() => {
+    console.log("isNotiOpe:", isNotiOpen);
+  }, [isNotiOpen]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -32,15 +60,18 @@ const Header = () => {
     setShowModal((prevShowModal) => !prevShowModal);
   };
 
+  const toggleNotiList = () => {
+    setIsNotiOpen(!isNotiOpen);
+  };
+  const closeNotiList = () => {
+    setIsNotiOpen(false);
+  };
+
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       // If the click occurs on the overlay (not on the modal content), close the modal
       closeModal();
     }
-  };
-
-  const toggleNotiList = () => {
-    setIsNotiOpen(!isNotiOpen);
   };
 
   useEffect(() => {
@@ -50,12 +81,27 @@ const Header = () => {
     } else {
       document.body.style.overflow = "auto";
     }
-
     // Cleanup function
     return () => {
       document.body.style.overflow = "auto";
     };
   }, [showModal]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        // Click occurred outside of the notification list, so close it
+        closeNotiList();
+      }
+    };
+    // Add event listener when component mounts
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "auto";
+    };
+  },[isNotiOpen])
 
   return (
     <nav className="bg-white fixed w-full top-0 start-0 border-gray-200 z-10">
@@ -76,7 +122,6 @@ const Header = () => {
         <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
           {userRole ? (
             <div className="flex items-center">
-              {/* <NotificationList /> */}
               <button
                 onClick={toggleNotiList}
                 type="button"
@@ -88,7 +133,7 @@ const Header = () => {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                   className="w-6 h-6"
                 >
@@ -165,11 +210,6 @@ const Header = () => {
                 <></>
               )}
             </li>
-            {/* <li>
-              <Link to={"/help"} className={getActiveLink("help")}>
-                Help
-              </Link>
-            </li> */}
           </ul>
         </div>
       </div>
@@ -190,9 +230,10 @@ const Header = () => {
           isNotiOpen ? "block" : "hidden"
         } z-50 w-full max-w-sm bg-white divide-y divide-gray-100 absolute flex right-3 transition-all duration-300 ease-in rounded-lg `}
         aria-labelledby="dropdownNotificationButton"
+        ref={notificationRef}
       >
         <div className="rounded-lg shadow ">
-          <NotificationList />
+          <NotificationList notificationList={notificationList} />
         </div>
       </div>
     </nav>

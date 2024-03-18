@@ -32,9 +32,9 @@ const DepositProvider = ({ children }: DepositProviderProps) => {
     }
   }, []);
 
-  useEffect(() => {
-    console.log("depositId:", depositId);
-  }, [depositId]);
+  // useEffect(() => {
+  //   console.log("depositId:", depositId);
+  // }, [depositId]);
 
   const getDeposit = (id: number) => {
     localStorage.setItem("depositId", id.toString());

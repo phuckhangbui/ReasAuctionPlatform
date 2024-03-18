@@ -59,9 +59,9 @@ const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, []);
 
-  useEffect(() => {
-    console.log("User ID: ", userId);
-  }, [userId]);
+  // useEffect(() => {
+  //   console.log("User ID: ", userId);
+  // }, [userId]);
 
   const login = (user: loginUser, token: string) => {
     const stringUser = JSON.stringify(user);
