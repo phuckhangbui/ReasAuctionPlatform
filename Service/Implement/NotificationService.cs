@@ -291,7 +291,7 @@ namespace Service.Implement
                     }
                 }
 
-                SendNotificationWhenNotWinAuction(accounts, auctionId, true);
+
 
             }
 
@@ -408,18 +408,28 @@ namespace Service.Implement
 
         public async Task SendNotificationWhenNotWinAuction(List<Account> accounts, int auctionId, bool isNotAttendAuction)
         {
-            AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
-            RealEstate realEstate = _realEstateRepository.GetRealEstate(auctionAccounting.ReasId);
+            string title;
+            string body;
+            int type;
 
-            string title = "Auction Bid Confirmation: You Lost";
-            string body = $"The auction on real estate as {realEstate.ReasAddress} has finished!. The real estate has been bought with {auctionAccounting.MaxAmount}VND. Our staff will contact you for the refund process";
-
-            int type = (int)NotificationTypeEnum.AuctionFinishLoser;
+            Auction auction = _auctionRepository.GetAuction(auctionId);
+            RealEstate realEstate = _realEstateRepository.GetRealEstate(auction.ReasId);
 
             if (isNotAttendAuction)
             {
+                title = "Fail To attend auction!";
                 body = $"You did not attend the auction for the real estate at {realEstate.ReasAddress}, and as a result, you have lost your deposit. If you have any questions, please contact our staff for assistance.";
                 type = (int)NotificationTypeEnum.AuctionFinishNotAttender;
+            }
+            else
+            {
+                AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
+
+                title = "Auction has finished! You lost";
+                body = $"The auction on real estate as {realEstate.ReasAddress} has finished!. The real estate has been bought with {auctionAccounting.MaxAmount}VND. Our staff will contact you for the refund process";
+
+                type = (int)NotificationTypeEnum.AuctionFinishLoser;
+
             }
 
             Notification notification = new Notification
