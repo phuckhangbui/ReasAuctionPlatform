@@ -20,5 +20,6 @@ namespace Repository.Interface
         RealEstate GetRealEstate(int id);
         Task<string> GetRealEstateName(int id);
         Task<RealEstate> CreateRealEstateAsync(NewRealEstateParam newRealEstateParam, int userMember);
+        Task<PageList<RealEstateDto>> GetRealEstatesAsync(SearchRealEstateParam searchRealEstateParam);
     }
 }

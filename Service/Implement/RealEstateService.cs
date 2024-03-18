@@ -77,6 +77,9 @@ namespace Service.Implement
             return false;
         }
 
-
+        public async Task<PageList<RealEstateDto>> GetRealEstates(SearchRealEstateParam searchRealEstateParam)
+        {
+            return await _real_estate_repository.GetRealEstatesAsync(searchRealEstateParam);
+        }
     }
 }

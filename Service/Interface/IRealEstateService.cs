@@ -14,5 +14,6 @@ namespace Service.Interface
         RealEstate GetRealEstate(int reasId);
         Task<bool> UpdateRealEstateStatus(int reasId, int status, bool IsReupYet);
         Task<bool> UpdateRealEstateIsReupYet(int reasId, bool IsReupYet);
+        Task<PageList<RealEstateDto>> GetRealEstates(SearchRealEstateParam searchRealEstateParam);
     }
 }

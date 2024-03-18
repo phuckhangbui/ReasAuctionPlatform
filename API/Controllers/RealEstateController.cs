@@ -22,6 +22,16 @@ namespace API.Controllers
             _depositAmountService = depositAmountService;
         }
 
+        [HttpGet(BaseUri + "realEstates")]
+        public async Task<IActionResult> GetRealEstates([FromQuery] SearchRealEstateParam searchRealEstateParam)
+        {
+            var reals = await _realEstateService.GetRealEstates(searchRealEstateParam);
+            Response.AddPaginationHeader(new PaginationHeader(reals.CurrentPage, reals.PageSize,
+            reals.TotalCount, reals.TotalPages));
+            
+            return Ok(reals);
+        }
+
         [HttpGet(BaseUri + "real_estate")]
         public async Task<IActionResult> ListRealEstate([FromQuery] PaginationParams paginationParams)
         {

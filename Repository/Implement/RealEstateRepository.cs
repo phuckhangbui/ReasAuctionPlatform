@@ -351,5 +351,38 @@ namespace Repository.Implement
                 return null;
             }
         }
+
+        public async Task<PageList<RealEstateDto>> GetRealEstatesAsync(SearchRealEstateParam searchRealEstateParam)
+        {
+            var query = _context.RealEstate.AsQueryable();
+            query = query.OrderByDescending(r => r.DateStart);
+
+            query = query
+                .Include(r => r.Type_REAS)
+                .Include(r => r.Photos);
+
+            if (!string.IsNullOrEmpty(searchRealEstateParam.ReasName))
+            {
+                query = query.Where(r => r.ReasName.ToLower().Contains(searchRealEstateParam.ReasName.ToLower()));
+            }
+
+            if(searchRealEstateParam.ReasPriceFrom >= 0 && 
+                searchRealEstateParam.ReasPriceTo >= 0 && 
+                searchRealEstateParam.ReasPriceFrom < searchRealEstateParam.ReasPriceTo)
+            {
+                query = query.Where(r => r.ReasPrice >= searchRealEstateParam.ReasPriceFrom && 
+                r.ReasPrice <= searchRealEstateParam.ReasPriceTo);
+            }
+
+            if(searchRealEstateParam.ReasStatus != -1)
+            {
+                query = query.Where(r => r.ReasStatus == searchRealEstateParam.ReasStatus);
+            }
+
+            return await PageList<RealEstateDto>.CreateAsync(
+            query.AsNoTracking().ProjectTo<RealEstateDto>(_mapper.ConfigurationProvider),
+            searchRealEstateParam.PageNumber,
+            searchRealEstateParam.PageSize);
+        }
     }
 }
