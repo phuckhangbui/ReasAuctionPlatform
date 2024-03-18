@@ -158,7 +158,7 @@ const UpdateRealEstatePage = () => {
       },
     } as createRealEstate,
     validate,
-    onSubmit: async (values) => {
+    onSubmit: async (values: any) => {
       try {
         console.log(values);
         const response = await createRealEstate(token, values);
@@ -460,7 +460,7 @@ const UpdateRealEstatePage = () => {
                     Real Estate Pictures
                   </div>
                   {formik.values.photos ? (
-                    formik.values.photos.map((photo, index) => (
+                    formik.values.photos.map((photo: any, index: any) => (
                       <div className="col-span-1 h-64 rounded-lg">
                         <img
                           key={index}

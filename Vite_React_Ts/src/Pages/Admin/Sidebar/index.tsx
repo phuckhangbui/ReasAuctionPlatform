@@ -9,7 +9,6 @@ import {
   GlobalOutlined,
   BookOutlined,
   DollarOutlined,
-  SnippetsOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Button, Col, Layout, Menu, Row, theme } from "antd";
