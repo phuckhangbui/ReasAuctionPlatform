@@ -40,8 +40,6 @@ const AuctionHistory: React.FC = () => {
     }
   }, []);
 
-  
-
   // Update displayed auctions when currentPage or auctionAccounting changes
   useEffect(() => {
     // Calculate the start index and end index of auctions to display based on currentPage
@@ -62,35 +60,6 @@ const AuctionHistory: React.FC = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  // const options = [
-  //   {
-  //     value: "department",
-  //     label: "Department",
-  //   },
-  // ];
-  // const handleChange = (value: string) => {
-  //   console.log(`selected ${value}`);
-  // };
-  // const { RangePicker } = DatePicker;
-  // const optionsOrderBy = [
-  //   {
-  //     value: "name_acs",
-  //     label: "Name from A-Z",
-  //   },
-  //   {
-  //     value: "decs",
-  //     label: "Name from Z-A",
-  //   },
-  //   {
-  //     value: "price_asc",
-  //     label: "Price gradually increase",
-  //   },
-  //   {
-  //     value: "price_decs",
-  //     label: "Price gradually decrease",
-  //   },
-  // ];
 
   const getColorForDepositStatus = (depositStatus: number) => {
     switch (depositStatus) {

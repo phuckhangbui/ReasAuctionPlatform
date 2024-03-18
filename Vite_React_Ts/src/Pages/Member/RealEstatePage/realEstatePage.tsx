@@ -20,7 +20,7 @@ const RealEstatePage = () => {
   >([]);
   const [searchParams, setSearchParams] = useState<searchRealEstate | null>({
     pageNumber: 1,
-    pageSize: 10,
+    pageSize: 100,
     reasName: "",
     reasPriceFrom: 0,
     reasPriceTo: 0,
