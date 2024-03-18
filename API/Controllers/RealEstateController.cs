@@ -82,6 +82,7 @@ namespace API.Controllers
             // 4: User is the owner of real estate
             // 5: RealEstate is auctionning
             // 6: RealEstate is waiting
+            // 7: LostDeposit - k the tham gia auction do no da tre
 
             if (GetLoginAccountId() != int.Parse(customerId))
             {
@@ -94,6 +95,18 @@ namespace API.Controllers
             {
                 return BadRequest(new ApiResponse(401));
             }
+            var depositAmount = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
+
+            if (depositAmount.Status == (int)(UserDepositEnum.LostDeposit) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Auctioning))
+            {
+                return Ok(new
+                {
+                    message = "Lost Deposit, You was late to the auction",
+                    status = 7,
+                    depositAmount = depositAmount
+                });
+            }
+
 
             if (realEsateDetail.AccountOwnerId == int.Parse(customerId))
             {
@@ -122,7 +135,6 @@ namespace API.Controllers
                 });
             }
 
-            var depositAmount = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
 
             if (depositAmount == null && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
             {

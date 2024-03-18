@@ -3,7 +3,6 @@ using AutoMapper.QueryableExtensions;
 using BusinessObject.Entity;
 using BusinessObject.Enum;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using Repository.Data;
 using Repository.DTOs;
 using Repository.Interface;
@@ -17,13 +16,14 @@ namespace Repository.Implement
         private readonly DataContext _context;
         private readonly IMapper _mapper;
 
+
         public RealEstateRepository(DataContext context, IMapper mapper) : base(context)
         {
             _context = context;
             _mapper = mapper;
         }
 
-        public async Task<Account> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto)
+        public async Task<BusinessObject.Entity.Account> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto)
         {
             var realEstate = await _context.RealEstate.Where(r => r.ReasId == reasStatusDto.reasId).Select(x => new RealEstate
             {
@@ -49,7 +49,28 @@ namespace Repository.Implement
                 realEstate.Message = reasStatusDto.messageString;
                 try
                 {
+                    if (realEstate.ReasStatus == (int)RealEstateStatus.Approved)
+                    {
+                        if (accountOwner.NumberReupVocher > 0)
+                        {
+                            accountOwner.NumberReupVocher -= 1;
+                            realEstate.ReasStatus = (int)RealEstateStatus.Selling;
+
+                            try
+                            {
+                                var tracker = _context.Attach(accountOwner);
+                                tracker.State = EntityState.Modified;
+                                await _context.SaveChangesAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+
+                        }
+                    }
+
                     bool check = await UpdateAsync(realEstate);
+
                     if (check) return accountOwner;
                     else
                     {
@@ -120,7 +141,7 @@ namespace Repository.Implement
                 ReasName = x.ReasName,
                 ReasPrice = Convert.ToDouble(x.ReasPrice),
                 ReasArea = x.ReasArea,
-                Flag = x.IsReupYet,
+                Flag = x.IsReupYet.HasValue ? (bool)x.IsReupYet : false,
                 UriPhotoFirst = _context.RealEstatePhoto.Where(y => y.ReasId == x.ReasId).Select(z => z.ReasPhotoUrl).FirstOrDefault(),
                 ReasTypeName = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(z => z.Type_Reas_Name).FirstOrDefault(),
                 ReasStatus = statusName.GetRealEstateStatusName(x.ReasStatus),
@@ -168,7 +189,7 @@ namespace Repository.Implement
             var statusName = new GetStatusName();
             var page = new PaginationParams();
             var query = _context.RealEstate.Where(x =>
-                (new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning, (int)RealEstateStatus.WaitingAuction}.Contains(x.ReasStatus) && searchRealEstateDto.ReasStatus == -1
+                (new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning, (int)RealEstateStatus.WaitingAuction }.Contains(x.ReasStatus) && searchRealEstateDto.ReasStatus == -1
                 || searchRealEstateDto.ReasStatus == x.ReasStatus) &&
                 (searchRealEstateDto.ReasName == null || x.ReasName.Contains(searchRealEstateDto.ReasName)) &&
                 (searchRealEstateDto.ReasPriceFrom == 0 && searchRealEstateDto.ReasPriceTo == 0 ||
@@ -317,6 +338,7 @@ namespace Repository.Implement
                     newDetail.ReasId = newRealEstate.ReasId;
                     _context.Set<RealEstateDetail>().Add(newDetail);
                     await _context.SaveChangesAsync();
+
                     return newRealEstate;
                 }
                 catch (Exception ex)

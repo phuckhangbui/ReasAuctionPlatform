@@ -2,8 +2,7 @@ import { Button, Carousel, Typography } from "@material-tailwind/react";
 import { useContext, useEffect, useState } from "react";
 import { getRealEstateById } from "../../api/realEstate";
 import { NumberFormat } from "../../Utils/numbetFormat";
-import { InputNumber, Modal, Statistic } from "antd";
-import { Button as ButtonAnt } from "antd";
+import { InputNumber, Statistic } from "antd";
 import { UserContext } from "../../context/userContext";
 import dayjs, { Dayjs } from "dayjs";
 import { ref, get, child, update, onValue } from "firebase/database";
@@ -36,23 +35,17 @@ const RealEstateDetailModal = ({
   const [tabStatus, setTabStatus] = useState(index);
   const [currentBid, setCurrentBid] = useState(0);
   const [currentInputBid, setCurrentInputBid] = useState(currentBid);
-  const [currentAutoBidValue, setCurrentAutoBidValue] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAuctionOpen, setIsAuctionOpen] = useState(true);
-  const [checked, setChecked] = useState(false);
-  const [isInputValid, setIsInputValid] = useState(false);
   const [dateEnd, setDateEnd] = useState<any>();
   const [auction, setAuction] = useState<memberAuction | undefined>();
   const [totalUsers, setTotalUsers] = useState(0);
   const [isUsersAttend, setIsUserAttend] = useState(false);
   const [isOneParticipant, setIsOneParticipant] = useState(true);
-  // const [countdownValue, setCountdownValue] = useState(60000);
   const [countDownWaiting, setCountDownWaiting] = useState<Dayjs | undefined>();
   const [userRegisterList, setUserRegisterList] = useState<
     number[] | undefined
   >();
   const [isUserRegistered, setIsUserRegistered] = useState(false);
-  // const [isBidded, setIsBidded] = useState(false);
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
@@ -65,7 +58,6 @@ const RealEstateDetailModal = ({
   // 4: User is the owner of real estate
   // 5: Reas is auctioning
 
-  const [statusUserList, setStatusUserList] = useState<number>(0);
   const [isAuctionEnd, setIsAuctionEnd] = useState(false);
   const { getDeposit } = useContext(DepositContext);
   const { token, userId } = useContext(UserContext);
@@ -222,7 +214,7 @@ const RealEstateDetailModal = ({
     get(child(auctionRef, "auction"))
       .then((snapshot) => {
         const auctionData = snapshot.exists() ? snapshot.val() : null;
-        const status = userAlreadyRegistered ? (snapshot.exists() ? 2 : 1) : 0;
+        const status = 0;
 
         if (!auctionData) {
           update(auctionRef, {
@@ -261,6 +253,9 @@ const RealEstateDetailModal = ({
                   status: 1,
                   statusChangeTime: Date.now(),
                 });
+                setCountDownWaiting(
+                  dayjs(auction.dateStart).add(10, "minutes")
+                );
               }
               if (totalUsers == 1) {
                 update(auctionRef, {
@@ -370,25 +365,25 @@ const RealEstateDetailModal = ({
     return `${index === tabStatus ? "" : "hidden"} mt-2 space-y-4 `;
   };
 
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
+  // const showModal = () => {
+  //   setIsModalOpen(true);
+  // };
 
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
+  // const handleOk = () => {
+  //   setIsModalOpen(false);
+  // };
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
+  // const handleCancel = () => {
+  //   setIsModalOpen(false);
+  // };
 
-  const handleDecrease = () => {
-    setCurrentAutoBidValue(currentAutoBidValue - 1000); // Decrease currentBid by 1
-  };
+  // const handleDecrease = () => {
+  //   setCurrentAutoBidValue(currentAutoBidValue - 1000); // Decrease currentBid by 1
+  // };
 
-  const handleIncrease = () => {
-    setCurrentAutoBidValue(currentAutoBidValue + 1000); // Increase currentBid by 1
-  };
+  // const handleIncrease = () => {
+  //   setCurrentAutoBidValue(currentAutoBidValue + 1000); // Increase currentBid by 1
+  // };
 
   const toggleLogin = () => {
     setShowLogin((prevLogIn) => !prevLogIn);
@@ -422,52 +417,10 @@ const RealEstateDetailModal = ({
       });
 
       setCurrentBid(currentInputBid);
-      if (auction && token) {
-        StartAuction(auction.auctionId, token);
-      }
     } catch (error) {
       console.error("Error updating bid in Firebase:", error);
     }
   };
-
-  //subcribe the lastBid and then plus 60 seconds when lastbid updated
-  // useEffect(() => {
-  //   const lastBidRef = ref(db, `auctions/${realEstateId}/lastBid`);
-  //   const unsubscribe = onValue(lastBidRef, (snapshot) => {
-  //     const lastBid = snapshot.val();
-  //     const newCountdownValue = lastBid + 60000;
-  //     setCountdownValue(newCountdownValue);
-  //   });
-
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, [realEstateId]);
-
-  //set count down for status change
-  useEffect(() => {
-    const lastStatusChangeRef = ref(
-      db,
-      `auctions/${realEstateId}/statusChangeTime`
-    );
-    const unsubscribe = onValue(lastStatusChangeRef, () => {
-      // const lastChange = snapshot.val();
-      let newCountdownValue;
-      if (auction) {
-        if (statusUserList == 1) {
-          newCountdownValue = dayjs(auction.dateStart).add(10, "minutes");
-        } else if (statusUserList == 2) {
-          newCountdownValue = dayjs(auction.dateStart).add(15, "minutes");
-        }
-      }
-
-      setCountDownWaiting(newCountdownValue);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [realEstateId]);
 
   //subcribe for the new bid
   useEffect(() => {
@@ -511,21 +464,20 @@ const RealEstateDetailModal = ({
       } else if (statusValue == 1) {
         setIsUserRegistered(true);
         setIsOneParticipant(true);
-        setStatusUserList(statusValue);
       } else if (statusValue == 2) {
+        setIsUserRegistered(true);
         setIsOneParticipant(false);
         setIsUserAttend(false);
-        setStatusUserList(statusValue);
       } else if (statusValue == 3) {
         setIsOneParticipant(false);
         setIsUserAttend(true);
         setIsAuctionOpen(true);
+        setIsUserRegistered(true);
       } else if (statusValue == 4) {
         setIsUserRegistered(true);
         setIsAuctionOpen(false);
         setIsOneParticipant(false);
         setIsUserAttend(true);
-        // setIsBidded(false);
         setIsAuctionEnd(true);
         identifyWinner();
       }
@@ -535,59 +487,73 @@ const RealEstateDetailModal = ({
     };
   }, [realEstateId]);
 
-  // useEffect(() => {
-  //   const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
-  //   const unsubscribe = onValue(statusRef, (snapshot) => {
-  //     const statusValue = snapshot.val();
-  //     if (statusValue == 0) {
-  //       setIsBidded(false);
-  //     } else if (statusValue == 1) {
-  //       setIsBidded(true);
-  //     }
-  //   });
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, [realEstateId]);
+  useEffect(() => {
+    const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
+    const unsubscribe = onValue(statusRef, (snapshot) => {
+      const statusValue = snapshot.val();
+      if (statusValue == 0) {
+        return;
+      } else if (statusValue == 1) {
+        const userList: userHistory[] = [];
+        const usersRef = ref(db, `auctions/${realEstateId}/users`);
 
-  // const handleOnFinish = () => {
-  //   if (auction) {
-  //     if (currentBid > auction?.floorBid) {
-  //       const auctionRef = ref(db, `auctions/${realEstateId}`);
-  //       update(auctionRef, {
-  //         status: 4,
-  //       });
-  //       setIsAuctionOpen(false);
-  //     }
-  //   }
-  // };
+        // Get all users and their bids
+        const StartTheAuction = async () => {
+          const usersSnapshot = await get(usersRef);
+          const usersData = usersSnapshot.val();
 
-  const handleOnFinishWaiting10Mins = () => {
+          if (auction && token) {
+            const auctionDetailDto = {
+              auctionId: auction.auctionId,
+              accountWinId: 0,
+              winAmount: 0,
+            };
+
+            Object.keys(usersData).forEach((userId) => {
+              userList.push({
+                accountId: parseInt(usersData[userId].userId, 10),
+                lastBidAmount: usersData[userId].currentUserBid,
+              });
+            });
+            StartAuction(auctionDetailDto, userList, token);
+          }
+        };
+        StartTheAuction();
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [realEstateId]);
+
+  const handleOnFinish = () => {
     const auctionRef = ref(db, `auctions/${realEstateId}`);
     update(auctionRef, {
       status: 4,
     });
+    setIsAuctionOpen(false);
+    setIsAuctionEnd(true);
   };
 
-  const handleOnFinishWaiting5Mins = () => {
+  const handleOnFinishWaiting10Mins = () => {
     const auctionRef = ref(db, `auctions/${realEstateId}`);
     update(auctionRef, {
       status: 3,
     });
   };
 
-  const toggleChecked = () => {
-    if (checked == true) {
-      setChecked(!checked);
-    } else {
-      if (currentAutoBidValue > 0) {
-        setIsInputValid(true); // Set validation state to true if input value is larger than 0
-        setChecked(!checked);
-      } else {
-        setIsInputValid(false); // Set validation state to false otherwise
-      }
-    }
-  };
+  // const toggleChecked = () => {
+  //   if (checked == true) {
+  //     setChecked(!checked);
+  //   } else {
+  //     if (currentAutoBidValue > 0) {
+  //       setIsInputValid(true); // Set validation state to true if input value is larger than 0
+  //       setChecked(!checked);
+  //     } else {
+  //       setIsInputValid(false); // Set validation state to false otherwise
+  //     }
+  //   }
+  // };
 
   const handleRegister = () => {
     try {
@@ -895,24 +861,23 @@ const RealEstateDetailModal = ({
                     </button>
                   </div>
                 ) : auctionStatus === 3 ? (
-                  <></>
+                  <div className="flex justify-center p-10">
+                    <div className="text-4xl text-blue-700">
+                      Register auction success
+                    </div>
+                  </div>
                 ) : auctionStatus === 4 ? (
-                  <></>
+                  <div className="flex justify-center p-10">
+                    <div className="text-4xl text-red-700">
+                      You Are The Owner of This Real Estate
+                    </div>
+                  </div>
                 ) : auctionStatus === 5 ? (
                   <>
                     <div>
                       <Typography variant="h3" className="text-center">
                         Current bid: {NumberFormat(currentBid)}
                       </Typography>
-                      {/* {isBidded ? (
-                        <>
-                          <Countdown
-                            value={countdownValue}
-                            format=" m [minutes] s [secs]"
-                            onFinish={() => handleOnFinish()}
-                          />
-                        </>
-                      ) : null} */}
                     </div>
 
                     <div className="grid grid-cols-5 gap-4">
@@ -931,140 +896,72 @@ const RealEstateDetailModal = ({
                             value={dayjs(auction.dateEnd).toDate().toString()}
                             format="H [hours] m [minutes] s [secs]"
                             prefix="Remain time"
+                            onFinish={handleOnFinish}
                           />
                         ) : (
-                          <></>
+                          <Typography variant="h5">
+                            Auction end:{" "}
+                            {dayjs(auction?.dateEnd).format(
+                              "DD/MM/YYYY HH:mm:ss"
+                            )}
+                          </Typography>
                         )}
                       </div>
 
-                      {isUserRegistered ? (
+                      {!isOneParticipant ? (
                         <>
-                          {!isOneParticipant ? (
+                          {isUsersAttend ? (
                             <>
-                              {isUsersAttend ? (
+                              {isAuctionOpen ? (
                                 <>
-                                  {isAuctionOpen ? (
-                                    <>
-                                      {" "}
-                                      <div className="col-span-2 flex flex-col space-y-4">
-                                        <div className="flex space-x-4">
-                                          <div className="flex">
-                                            <Button
-                                              size="sm"
-                                              onClick={() => {
-                                                setCurrentInputBid(
-                                                  currentInputBid - 1000000
-                                                );
-                                              }}
-                                              disabled={
-                                                currentInputBid === currentBid
-                                              }
-                                            >
-                                              -
-                                            </Button>
-                                            <InputNumber
-                                              style={{
-                                                width: "auto",
-                                              }}
-                                              value={NumberFormat(
-                                                currentInputBid
-                                              )}
-                                            />
-                                            <Button
-                                              size="sm"
-                                              onClick={() => {
-                                                setCurrentInputBid(
-                                                  currentInputBid + 1000000
-                                                );
-                                              }}
-                                            >
-                                              +
-                                            </Button>
-                                          </div>
-                                          <Button
-                                            onClick={handleBid}
-                                            disabled={
-                                              currentInputBid === currentBid
-                                            }
-                                          >
-                                            Bid
-                                          </Button>
-                                        </div>
-                                        <div className="flex flex-row justify-center w-full items-center space-x-4">
-                                          <Button onClick={showModal}>
-                                            Set auto bid
-                                          </Button>
-                                          <Typography variant="h6">
-                                            {NumberFormat(currentAutoBidValue)}
-                                          </Typography>
-                                          <Modal
-                                            title="Auto Bid"
-                                            open={isModalOpen}
-                                            onOk={handleOk}
-                                            okType={"default"}
-                                            onCancel={handleCancel}
-                                            width={300}
-                                          >
-                                            <div className="space-y-4">
-                                              <div className="flex">
-                                                <Button
-                                                  size="sm"
-                                                  onClick={handleDecrease}
-                                                >
-                                                  -
-                                                </Button>
-                                                <InputNumber
-                                                  className="w-full"
-                                                  value={NumberFormat(
-                                                    currentAutoBidValue
-                                                  )}
-                                                />
-                                                <Button
-                                                  size="sm"
-                                                  onClick={handleIncrease}
-                                                >
-                                                  +
-                                                </Button>
-                                              </div>
-                                              <div>
-                                                <ButtonAnt
-                                                  type="default"
-                                                  size="small"
-                                                  onClick={toggleChecked}
-                                                >
-                                                  {!checked
-                                                    ? "Enable"
-                                                    : "Unable"}
-                                                </ButtonAnt>
-                                              </div>
-                                              {!isInputValid && (
-                                                <div className="text-red-500">
-                                                  Input must be larger than 0!
-                                                </div>
-                                              )}
-                                            </div>
-                                          </Modal>
-                                        </div>
+                                  {" "}
+                                  <div className="col-span-2 flex flex-col space-y-4">
+                                    <div className="flex space-x-4">
+                                      <div className="flex">
+                                        <Button
+                                          size="sm"
+                                          onClick={() => {
+                                            setCurrentInputBid(
+                                              currentInputBid - 1000000
+                                            );
+                                          }}
+                                          disabled={
+                                            currentInputBid === currentBid
+                                          }
+                                        >
+                                          -
+                                        </Button>
+                                        <InputNumber
+                                          style={{
+                                            width: "auto",
+                                          }}
+                                          value={NumberFormat(currentInputBid)}
+                                        />
+                                        <Button
+                                          size="sm"
+                                          onClick={() => {
+                                            setCurrentInputBid(
+                                              currentInputBid + 1000000
+                                            );
+                                          }}
+                                        >
+                                          +
+                                        </Button>
                                       </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Typography>Auction complete</Typography>
-                                    </>
-                                  )}
+                                      <Button
+                                        onClick={handleBid}
+                                        disabled={
+                                          currentInputBid === currentBid
+                                        }
+                                      >
+                                        Bid
+                                      </Button>
+                                    </div>
+                                  </div>
                                 </>
                               ) : (
                                 <>
-                                  <Countdown
-                                    value={countDownWaiting?.toString()}
-                                    format=" m [minutes] s [secs]"
-                                    onFinish={() =>
-                                      handleOnFinishWaiting5Mins()
-                                    }
-                                  />
-                                  <Typography>
-                                    Auction will start in 5 minutes
-                                  </Typography>
+                                  <Typography>Auction complete</Typography>
                                 </>
                               )}
                             </>
@@ -1074,24 +971,20 @@ const RealEstateDetailModal = ({
                                 value={countDownWaiting?.toString()}
                                 format=" m [minutes] s [secs]"
                                 onFinish={() => handleOnFinishWaiting10Mins()}
+                                prefix={<>Auction will start in </>}
                               />
-                              <div>
-                                <Typography>
-                                  Waiting for users in 10 minutes.
-                                </Typography>
-                                <Typography>
-                                  After 10 minutes, no more users. You win
-                                </Typography>
-                              </div>
                             </>
                           )}
                         </>
                       ) : (
-                        <div className="flex justify-center p-10">
-                          <div className="text-4xl text-red-700">
-                            You Didn't Register This Auction
-                          </div>
-                        </div>
+                        <>
+                          <Countdown
+                            value={countDownWaiting?.toString()}
+                            format=" m [minutes] s [secs]"
+                            onFinish={() => handleOnFinishWaiting10Mins()}
+                            prefix={<>Waiting for users in </>}
+                          />
+                        </>
                       )}
                     </div>
                   </>
@@ -1107,13 +1000,19 @@ const RealEstateDetailModal = ({
                       />
                     </div>
                   </div>
+                ) : auctionStatus === 7 ? (
+                  <div className="flex justify-center p-10">
+                    <div className="text-4xl text-red-700">
+                      Lost Deposit, You was late to the auction
+                    </div>
+                  </div>
                 ) : (
                   <></>
                 )
               ) : (
                 <div className="flex justify-center flex-col items-center py-10">
                   <div className="text-xl text-gray-500">
-                    You have not register to take part in auction yet
+                    This real estate is currently not created
                   </div>
                   <button
                     onClick={() => handleRegister()}
@@ -1133,267 +1032,6 @@ const RealEstateDetailModal = ({
                 </button>
               </div>
             )}
-            {/* {userId ? (
-              auctionStatus === 0 ? (
-                <div className="flex justify-center p-10">
-                  <div className="text-4xl text-red-700">
-                    Real Estate Is Currently Not Available For Selling
-                  </div>
-                </div>
-              ) : auctionStatus === 1 ? (
-                <div className="flex justify-center flex-col items-center py-10">
-                  <div className="text-xl text-gray-500">
-                    You have not register to take part in auction yet
-                  </div>
-                  <button
-                    onClick={() => handleRegister()}
-                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    Register
-                  </button>
-                </div>
-              ) : auctionStatus === 2 ? (
-                <div className="flex justify-center flex-col items-center py-10">
-                  <div className="text-xl text-gray-500">
-                    You have not register to take part in auction yet
-                  </div>
-                  <button
-                    onClick={() => handleRegister()}
-                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                  >
-                    Register
-                  </button>
-                </div>
-              ) : auctionStatus === 3 || auctionStatus === 4 ? (
-                auction ? (
-                  <>
-                    <div>
-                      <Typography variant="h3" className="text-center">
-                        Current bid: {NumberFormat(currentBid)}
-                      </Typography>
-                      {isBidded ? (
-                        <>
-                          <Countdown
-                            value={countdownValue}
-                            format=" m [minutes] s [secs]"
-                            onFinish={() => handleOnFinish()}
-                          />
-                        </>
-                      ) : null}
-                    </div>
-
-                    <div className="grid grid-cols-5 gap-4">
-                      <div className="col-span-3">
-                        <Typography variant="h5">
-                          Auction start:{" "}
-                          {dayjs(auction?.dateStart).format(
-                            "DD/MM/YYYY HH:mm:ss"
-                          )}
-                        </Typography>
-                        <div className="font-semibold flex items-center">
-                          Total user: {totalUsers}
-                        </div>
-                        <Countdown
-                          value={dayjs(auction.dateEnd).toDate().toString()}
-                          format="m [minutes] s [secs]"
-                          prefix="Remain time"
-                        />
-                      </div>
-                      {!isAuthenticated ? (
-                        <>
-                          <Typography>Please login first</Typography>
-                        </>
-                      ) : (
-                        <>
-                          {isUserRegistered ? (
-                            <>
-                              {!isOneParticipant ? (
-                                <>
-                                  {isUsersAttend ? (
-                                    <>
-                                      {isAuctionOpen ? (
-                                        <>
-                                          {" "}
-                                          <div className="col-span-2 flex flex-col space-y-4">
-                                            <div className="flex space-x-4">
-                                              <div className="flex">
-                                                <Button
-                                                  size="sm"
-                                                  onClick={() => {
-                                                    setCurrentInputBid(
-                                                      currentInputBid - 1000000
-                                                    );
-                                                  }}
-                                                  disabled={
-                                                    currentInputBid ===
-                                                    currentBid
-                                                  }
-                                                >
-                                                  -
-                                                </Button>
-                                                <InputNumber
-                                                  style={{
-                                                    width: "auto",
-                                                  }}
-                                                  value={NumberFormat(
-                                                    currentInputBid
-                                                  )}
-                                                />
-                                                <Button
-                                                  size="sm"
-                                                  onClick={() => {
-                                                    setCurrentInputBid(
-                                                      currentInputBid + 1000000
-                                                    );
-                                                  }}
-                                                >
-                                                  +
-                                                </Button>
-                                              </div>
-                                              <Button
-                                                onClick={handleBid}
-                                                disabled={
-                                                  currentInputBid === currentBid
-                                                }
-                                              >
-                                                Bid
-                                              </Button>
-                                            </div>
-                                            <div className="flex flex-row justify-center w-full items-center space-x-4">
-                                              <Button onClick={showModal}>
-                                                Set auto bid
-                                              </Button>
-                                              <Typography variant="h6">
-                                                {NumberFormat(
-                                                  currentAutoBidValue
-                                                )}
-                                              </Typography>
-                                              <Modal
-                                                title="Auto Bid"
-                                                open={isModalOpen}
-                                                onOk={handleOk}
-                                                okType={"default"}
-                                                onCancel={handleCancel}
-                                                width={300}
-                                              >
-                                                <div className="space-y-4">
-                                                  <div className="flex">
-                                                    <Button
-                                                      size="sm"
-                                                      onClick={handleDecrease}
-                                                    >
-                                                      -
-                                                    </Button>
-                                                    <InputNumber
-                                                      className="w-full"
-                                                      value={NumberFormat(
-                                                        currentAutoBidValue
-                                                      )}
-                                                    />
-                                                    <Button
-                                                      size="sm"
-                                                      onClick={handleIncrease}
-                                                    >
-                                                      +
-                                                    </Button>
-                                                  </div>
-                                                  <div>
-                                                    <ButtonAnt
-                                                      type="default"
-                                                      size="small"
-                                                      onClick={toggleChecked}
-                                                    >
-                                                      {!checked
-                                                        ? "Enable"
-                                                        : "Unable"}
-                                                    </ButtonAnt>
-                                                  </div>
-                                                  {!isInputValid && (
-                                                    <div className="text-red-500">
-                                                      Input must be larger than
-                                                      0!
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              </Modal>
-                                            </div>
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Typography>
-                                            Auction complete
-                                          </Typography>
-                                        </>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Countdown
-                                        value={countdownValue}
-                                        format=" m [minutes] s [secs]"
-                                        onFinish={() =>
-                                          handleOnFinishWaiting5Mins()
-                                        }
-                                      />
-                                      <Typography>
-                                        Auction will start in 5 minutes
-                                      </Typography>
-                                    </>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  <Countdown
-                                    value={dayjs(auction.dateStart)
-                                      .add(10, "minutes")
-                                      .toString()}
-                                    onFinish={() =>
-                                      handleOnFinishWaiting10Mins()
-                                    }
-                                  />
-                                  <Typography>
-                                    Waiting for users in 10 minutes.
-                                  </Typography>
-                                  <Typography>
-                                    After 10 minutes, no more users. You win
-                                  </Typography>
-                                </>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <Typography>
-                                You didn't register this auction
-                              </Typography>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex justify-center p-10">
-                    <div className="text-4xl text-gray-500">
-                      Auction Is Currently Not Available
-                    </div>
-                  </div>
-                )
-              ) : (
-                <>
-                  <Empty />
-                </>
-              )
-            ) : (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => toggleLogin()}
-                  className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
-                  Sign In
-                </button>
-              </div>
-            )} */}
           </div>
           <div className={getActiveTabDetail("ownership")}>
             <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-2">

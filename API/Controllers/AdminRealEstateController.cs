@@ -153,7 +153,7 @@ namespace API.Controllers
         }
 
         [Authorize(policy: "AdminAndStaff")]
-        [HttpGet(BaseUri + "real-estate/sucess/{reasId}")]
+        [HttpGet(BaseUri + "real-estate/success/{reasId}")]
         public async Task<IActionResult> UpdateToRealEstateSuccess(int reasId)
         {
             RealEstate realEstate = _realEstateService.GetRealEstate(reasId);

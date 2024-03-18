@@ -14,5 +14,7 @@ namespace Repository.Param
         public List<PhotoFileDto> Photos { get; set; }
 
         public DetailFileReasDto Detail { get; set; }
+
+        public int OldReasId { get; set; }
     }
 }
