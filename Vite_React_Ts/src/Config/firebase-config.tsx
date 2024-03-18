@@ -32,16 +32,16 @@ export const generateToken = async () => {
   try {
     const permission = await Notification.requestPermission();
     console.log("Notification is", permission);
-    // if (permission === "granted") {
-    const token = await getToken(messaging, {
-      vapidKey: process.env.REACT_APP_VAP_ID_KEY,
-    });
-    console.log("Message token:", token);
-    return token;
-    // } else {
-    //   const token = "";
-    //   return token;
-    // }
+    if (permission === "granted") {
+      const token = await getToken(messaging, {
+        vapidKey: process.env.REACT_APP_VAP_ID_KEY,
+      });
+      console.log("Message token:", token);
+      return token;
+    } else {
+      const token = "";
+      return token;
+    }
   } catch (error) {
     console.log("An error occured while getting the token: ", error);
   }
