@@ -17,7 +17,7 @@ namespace Service.Implement
 
             vnPayPaymentUrlDto.Amount = (long)dto.Amount;
             vnPayPaymentUrlDto.CreateDate = DateTime.Now;
-            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(1);
+            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(5);
             vnPayPaymentUrlDto.Locale = "vn";
             vnPayPaymentUrlDto.OrderInfo = "Auction Deposit Fee";
             vnPayPaymentUrlDto.ReturnUrl = returnUrl;
@@ -38,7 +38,7 @@ namespace Service.Implement
 
             vnPayPaymentUrlDto.Amount = 100000;
             vnPayPaymentUrlDto.CreateDate = DateTime.Now;
-            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(1);
+            vnPayPaymentUrlDto.ExpireDate = DateTime.Now.AddMinutes(5);
             vnPayPaymentUrlDto.Locale = "vn";
             vnPayPaymentUrlDto.OrderInfo = "Real Estate Fee";
             vnPayPaymentUrlDto.ReturnUrl = returnUrl;
