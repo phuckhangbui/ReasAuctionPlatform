@@ -95,18 +95,6 @@ namespace API.Controllers
             {
                 return BadRequest(new ApiResponse(401));
             }
-            var depositAmount = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
-
-            if (depositAmount.Status == (int)(UserDepositEnum.LostDeposit) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Auctioning))
-            {
-                return Ok(new
-                {
-                    message = "Lost Deposit, You was late to the auction",
-                    status = 7,
-                    depositAmount = depositAmount
-                });
-            }
-
 
             if (realEsateDetail.AccountOwnerId == int.Parse(customerId))
             {
@@ -115,6 +103,54 @@ namespace API.Controllers
                     message = "User is the onwer of real estate",
                     status = 4,
                 });
+            }
+
+
+
+            var depositAmount = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
+
+            if (depositAmount == null && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
+            {
+                return Ok(new
+                {
+                    message = "User have not yet registered in auction",
+                    status = 1
+                });
+            }
+
+            if (depositAmount != null)
+            {
+
+                if (depositAmount.Status == (int)(UserDepositEnum.LostDeposit) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Auctioning))
+                {
+                    return Ok(new
+                    {
+                        message = "Lost Deposit, You was late to the auction",
+                        status = 7,
+                        depositAmount = depositAmount
+                    });
+                }
+
+
+                if (depositAmount.Status == (int)(UserDepositEnum.Pending) && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
+                {
+                    return Ok(new
+                    {
+                        message = "Auction register is pending",
+                        status = 2,
+                        depositAmount = depositAmount
+                    });
+                }
+
+                if (depositAmount.Status == (int)(UserDepositEnum.Deposited) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling || realEsateDetail.ReasStatus == (int)RealEstateStatus.WaitingAuction))
+                {
+                    return Ok(new
+                    {
+                        message = "Auction register is success",
+                        status = 3,
+                        depositAmount = depositAmount
+                    });
+                }
             }
 
             if (realEsateDetail.ReasStatus == (int)RealEstateStatus.Auctioning)
@@ -132,36 +168,6 @@ namespace API.Controllers
                 {
                     message = "Real estate is waiting",
                     status = 6
-                });
-            }
-
-
-            if (depositAmount == null && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
-            {
-                return Ok(new
-                {
-                    message = "User have not yet registered in auction",
-                    status = 1
-                });
-            }
-
-            if (depositAmount.Status == (int)(UserDepositEnum.Pending) && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
-            {
-                return Ok(new
-                {
-                    message = "Auction register is pending",
-                    status = 2,
-                    depositAmount = depositAmount
-                });
-            }
-
-            if (depositAmount.Status == (int)(UserDepositEnum.Deposited) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling || realEsateDetail.ReasStatus == (int)RealEstateStatus.WaitingAuction))
-            {
-                return Ok(new
-                {
-                    message = "Auction register is success",
-                    status = 3,
-                    depositAmount = depositAmount
                 });
             }
 
