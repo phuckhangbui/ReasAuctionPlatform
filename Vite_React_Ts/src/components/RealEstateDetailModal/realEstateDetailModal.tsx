@@ -45,7 +45,7 @@ const RealEstateDetailModal = ({
   const [userRegisterList, setUserRegisterList] = useState<
     number[] | undefined
   >();
-  const [isUserRegistered, setIsUserRegistered] = useState(false);
+  const [_isUserRegistered, setIsUserRegistered] = useState(false);
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();

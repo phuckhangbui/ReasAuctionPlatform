@@ -1,5 +1,4 @@
 import { ReactNode, createContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface UserProviderProps {
   children: ReactNode;
