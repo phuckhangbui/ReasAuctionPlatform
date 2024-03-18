@@ -236,7 +236,7 @@ const CompleteList: React.FC = () => {
         key: "10",
         label: "Final Amount",
         children: auctionDetailData?.finalAmount
-          ? NumberFormat(auctionDetailData?.floorBid)
+          ? NumberFormat(auctionDetailData?.finalAmount)
           : "",
       },
       {
@@ -348,8 +348,8 @@ const CompleteList: React.FC = () => {
   };
 
   let noteReason: string = "";
-  const onChangeMember = (note: any) => {
-    noteReason = note;
+  const onChangeMember = (e: React.ChangeEvent<HTMLInputElement>) => {
+    noteReason = e.target.value;
   };
 
   const openNotificationWithIcon = (
@@ -428,30 +428,37 @@ const CompleteList: React.FC = () => {
                 <Button disabled>Contact Success</Button>
               </div>
             )}
-
-            <Button onClick={showModal}>Change Member Win</Button>
-            <Modal
-              title="Fill information to create Auction"
-              open={isModalOpen}
-              onOk={handleOk}
-              onCancel={handleCancel}
-              footer={[
-                <Button key="submit" onClick={handleOk}>
-                  Create
-                </Button>,
-              ]}
-            >
-              <div style={{ alignContent: "center" }}>
-                <p>
-                  <strong>Note :</strong>
-                </p>
-                <InputAntd
-                  placeholder="Note reason to change winner"
-                  onChange={onChangeMember}
-                />
+            {statusReas === 8 || statusReas === 6 ? (
+              <div>
+                <Button onClick={showModal}>Change Member Win</Button>
+                <Modal
+                  title="Fill information to create Auction"
+                  open={isModalOpen}
+                  onOk={handleOk}
+                  onCancel={handleCancel}
+                  footer={[
+                    <Button key="submit" onClick={handleOk}>
+                      Create
+                    </Button>,
+                  ]}
+                >
+                  <div style={{ alignContent: "center" }}>
+                    <p>
+                      <strong>Note :</strong>
+                    </p>
+                    <InputAntd
+                      placeholder="Note reason to change winner"
+                      onChange={onChangeMember}
+                    />
+                  </div>
+                  <br />
+                </Modal>
               </div>
-              <br />
-            </Modal>
+            ) : (
+              <div>
+                <Button disabled>Contact Success</Button>
+              </div>
+            )}
           </div>
           <br />
           <br />

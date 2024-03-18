@@ -82,6 +82,7 @@ namespace API.Controllers
             // 4: User is the owner of real estate
             // 5: RealEstate is auctionning
             // 6: RealEstate is waiting
+            // 7: LostDeposit - k the tham gia auction do no da tre
 
             if (GetLoginAccountId() != int.Parse(customerId))
             {
@@ -104,6 +105,54 @@ namespace API.Controllers
                 });
             }
 
+
+
+            var depositAmount = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
+
+            if (depositAmount == null && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
+            {
+                return Ok(new
+                {
+                    message = "User have not yet registered in auction",
+                    status = 1
+                });
+            }
+
+            if (depositAmount != null)
+            {
+
+                if (depositAmount.Status == (int)(UserDepositEnum.LostDeposit) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Auctioning))
+                {
+                    return Ok(new
+                    {
+                        message = "Lost Deposit, You was late to the auction",
+                        status = 7,
+                        depositAmount = depositAmount
+                    });
+                }
+
+
+                if (depositAmount.Status == (int)(UserDepositEnum.Pending) && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
+                {
+                    return Ok(new
+                    {
+                        message = "Auction register is pending",
+                        status = 2,
+                        depositAmount = depositAmount
+                    });
+                }
+
+                if (depositAmount.Status == (int)(UserDepositEnum.Deposited) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling || realEsateDetail.ReasStatus == (int)RealEstateStatus.WaitingAuction))
+                {
+                    return Ok(new
+                    {
+                        message = "Auction register is success",
+                        status = 3,
+                        depositAmount = depositAmount
+                    });
+                }
+            }
+
             if (realEsateDetail.ReasStatus == (int)RealEstateStatus.Auctioning)
             {
                 return Ok(new
@@ -119,37 +168,6 @@ namespace API.Controllers
                 {
                     message = "Real estate is waiting",
                     status = 6
-                });
-            }
-
-            var depositAmount = _depositAmountService.GetDepositAmount(int.Parse(customerId), int.Parse(reasId));
-
-            if (depositAmount == null && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
-            {
-                return Ok(new
-                {
-                    message = "User have not yet registered in auction",
-                    status = 1
-                });
-            }
-
-            if (depositAmount.Status == (int)(UserDepositEnum.Pending) && realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling)
-            {
-                return Ok(new
-                {
-                    message = "Auction register is pending",
-                    status = 2,
-                    depositAmount = depositAmount
-                });
-            }
-
-            if (depositAmount.Status == (int)(UserDepositEnum.Deposited) && (realEsateDetail.ReasStatus == (int)RealEstateStatus.Selling || realEsateDetail.ReasStatus == (int)RealEstateStatus.WaitingAuction))
-            {
-                return Ok(new
-                {
-                    message = "Auction register is success",
-                    status = 3,
-                    depositAmount = depositAmount
                 });
             }
 

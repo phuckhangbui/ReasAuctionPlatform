@@ -16,13 +16,14 @@ namespace Repository.Implement
         private readonly DataContext _context;
         private readonly IMapper _mapper;
 
+
         public RealEstateRepository(DataContext context, IMapper mapper) : base(context)
         {
             _context = context;
             _mapper = mapper;
         }
 
-        public async Task<Account> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto)
+        public async Task<BusinessObject.Entity.Account> UpdateRealEstateStatusAsync(ReasStatusParam reasStatusDto)
         {
             var realEstate = await _context.RealEstate.Where(r => r.ReasId == reasStatusDto.reasId).Select(x => new RealEstate
             {
@@ -48,7 +49,28 @@ namespace Repository.Implement
                 realEstate.Message = reasStatusDto.messageString;
                 try
                 {
+                    if (realEstate.ReasStatus == (int)RealEstateStatus.Approved)
+                    {
+                        if (accountOwner.NumberReupVocher > 0)
+                        {
+                            accountOwner.NumberReupVocher -= 1;
+                            realEstate.ReasStatus = (int)RealEstateStatus.Selling;
+
+                            try
+                            {
+                                var tracker = _context.Attach(accountOwner);
+                                tracker.State = EntityState.Modified;
+                                await _context.SaveChangesAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+
+                        }
+                    }
+
                     bool check = await UpdateAsync(realEstate);
+
                     if (check) return accountOwner;
                     else
                     {
@@ -119,6 +141,7 @@ namespace Repository.Implement
                 ReasName = x.ReasName,
                 ReasPrice = Convert.ToDouble(x.ReasPrice),
                 ReasArea = x.ReasArea,
+                Flag = x.IsReupYet.HasValue ? (bool)x.IsReupYet : false,
                 UriPhotoFirst = _context.RealEstatePhoto.Where(y => y.ReasId == x.ReasId).Select(z => z.ReasPhotoUrl).FirstOrDefault(),
                 ReasTypeName = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(z => z.Type_Reas_Name).FirstOrDefault(),
                 ReasStatus = statusName.GetRealEstateStatusName(x.ReasStatus),
@@ -166,7 +189,7 @@ namespace Repository.Implement
             var statusName = new GetStatusName();
             var page = new PaginationParams();
             var query = _context.RealEstate.Where(x =>
-                (new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning, (int)RealEstateStatus.WaitingAuction}.Contains(x.ReasStatus) && searchRealEstateDto.ReasStatus == -1
+                (new[] { (int)RealEstateStatus.Selling, (int)RealEstateStatus.Auctioning, (int)RealEstateStatus.WaitingAuction }.Contains(x.ReasStatus) && searchRealEstateDto.ReasStatus == -1
                 || searchRealEstateDto.ReasStatus == x.ReasStatus) &&
                 (searchRealEstateDto.ReasName == null || x.ReasName.Contains(searchRealEstateDto.ReasName)) &&
                 (searchRealEstateDto.ReasPriceFrom == 0 && searchRealEstateDto.ReasPriceTo == 0 ||
@@ -271,6 +294,62 @@ namespace Repository.Implement
         {
             var reasName = _context.RealEstate.Where(x => x.ReasId == id).Select(y => y.ReasName).FirstOrDefault();
             return reasName;
+        }
+
+        public async Task<RealEstate> CreateRealEstateAsync(NewRealEstateParam newRealEstateParam, int userMember)
+        {
+            var newRealEstate = new RealEstate();
+            var newPhotoList = new RealEstatePhoto();
+            var newDetail = new RealEstateDetail();
+            bool checkProcess = false;
+            newRealEstate.ReasName = newRealEstateParam.ReasName;
+            newRealEstate.ReasPrice = newRealEstateParam.ReasPrice;
+            newRealEstate.ReasAddress = newRealEstateParam.ReasAddress;
+            newRealEstate.ReasArea = newRealEstateParam.ReasArea;
+            newRealEstate.ReasDescription = newRealEstateParam.ReasDescription;
+            newRealEstate.Message = "";
+            newRealEstate.AccountOwnerId = userMember;
+            newRealEstate.DateCreated = DateTime.Now;
+            newRealEstate.Type_Reas = newRealEstateParam.Type_Reas;
+            newRealEstate.DateStart = DateTime.Now;
+            newRealEstate.DateEnd = newRealEstateParam.DateEnd;
+            newRealEstate.ReasStatus = (int)RealEstateStatus.InProgress;
+            try
+            {
+                newRealEstate.AccountOwnerName = await _context.Account.Where(x => x.AccountId == userMember).Select(x => x.AccountName).FirstOrDefaultAsync();
+                await CreateAsync(newRealEstate);
+                foreach (PhotoFileDto photos in newRealEstateParam.Photos)
+                {
+                    newPhotoList.ReasPhotoId = 0;
+                    newPhotoList.ReasId = newRealEstate.ReasId;
+                    newPhotoList.ReasPhotoUrl = photos.ReasPhotoUrl;
+                    _context.Set<RealEstatePhoto>().Add(newPhotoList);
+                    await _context.SaveChangesAsync();
+                }
+                try
+                {
+                    newDetail.ReasDetailId = 0;
+                    newDetail.Reas_Cert_Of_Land_Img_Front = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_Front;
+                    newDetail.Reas_Cert_Of_Land_Img_After = newRealEstateParam.Detail.Reas_Cert_Of_Land_Img_After;
+                    newDetail.Reas_Cert_Of_Home_Ownership = newRealEstateParam.Detail.Reas_Cert_Of_Home_Ownership;
+                    newDetail.Reas_Registration_Book = newRealEstateParam.Detail.Reas_Registration_Book;
+                    newDetail.Sales_Authorization_Contract = newRealEstateParam.Detail.Sales_Authorization_Contract;
+                    newDetail.Documents_Proving_Marital_Relationship = newRealEstateParam.Detail.Documents_Proving_Marital_Relationship;
+                    newDetail.ReasId = newRealEstate.ReasId;
+                    _context.Set<RealEstateDetail>().Add(newDetail);
+                    await _context.SaveChangesAsync();
+
+                    return newRealEstate;
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

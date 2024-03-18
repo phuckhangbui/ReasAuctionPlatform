@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from "react";
-import realEstate from "../../interface/RealEstate/realEstate";
 import RealEstateDetailModal from "../RealEstateDetailModal/realEstateDetailModal";
 import AuctionCard from "./auctionCard";
 
-interface RealEstateListProps {
-  realEstatesList?: realEstate[];
+interface AuctionListProps {
+  auctionsList?: auction[];
 }
 
-const AuctionList = ({ realEstatesList = [] }: RealEstateListProps) => {
-  const [realEstates] = useState(realEstatesList);
+const AuctionList = ({ auctionsList }: AuctionListProps) => {
+  const [auctions, setAuctions] = useState<auction[] | undefined>([]);
   const [showModal, setShowModal] = useState(false);
-  const [realEstateId, setRealEstateId] = useState<number>(-1);
+  const [realEstateId, setRealEstateId] = useState<number>(0);
 
   const toggleModal = (realEstateId: number) => {
     setShowModal((prevShowModal) => !prevShowModal);
     setRealEstateId(realEstateId);
   };
+
+  useEffect(() => {
+    if (auctionsList) {
+      setAuctions(auctionsList);
+    }
+  }, [auctionsList]);
 
   useEffect(() => {
     // Disable scroll on body when modal is open
@@ -44,17 +49,16 @@ const AuctionList = ({ realEstatesList = [] }: RealEstateListProps) => {
 
   return (
     <div>
-      <div>
-        <div className="mt-4 grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 md:gap-3 sm:grid-cols-1">
-          {realEstates.map((realEstate) => (
+      <div className="mt-4 grid lg:grid-cols-4 md:grid-cols-2 md:gap-3 sm:grid-cols-1">
+        {auctions &&
+          auctions.map((auction) => (
             <div
-              key={realEstate.reasId}
-              onClick={() => toggleModal(realEstate.reasId)}
+              key={auction.auctionId}
+              onClick={() => toggleModal(auction.reasId)}
             >
-              <AuctionCard realEstate={realEstate} />
+              <AuctionCard auction={auction} />
             </div>
           ))}
-        </div>
       </div>
       {showModal && (
         <div

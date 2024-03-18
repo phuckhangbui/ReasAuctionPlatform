@@ -124,7 +124,7 @@ export const updateMemberProfile = async (
         citizenIdentification: updatedMember?.citizenIdentification,
         majorId: updatedMember?.majorId,
         phoneNumber: updatedMember?.phoneNumber,
-        userName: updatedMember?.userName,
+        userName: updatedMember?.username,
       },
       {
         headers: {
@@ -133,6 +133,21 @@ export const updateMemberProfile = async (
         },
       }
     );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error: " + error);
+  }
+};
+
+export const getNotification = async (token: string) => {
+  try {
+    const fetchData = await axios.get<notification[]>(`${baseUrl}/account`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
     const response = fetchData.data;
     return response;
   } catch (error) {

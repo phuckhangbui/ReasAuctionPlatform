@@ -1,9 +1,12 @@
 ﻿using BusinessObject.Entity;
 using BusinessObject.Enum;
 using Microsoft.IdentityModel.Tokens;
+using Repository.DTOs;
 using Repository.Interface;
 using Repository.Param;
 using Service.Interface;
+using Service.Mail;
+using Account = BusinessObject.Entity.Account;
 
 namespace Service.Implement
 {
@@ -26,7 +29,7 @@ namespace Service.Implement
             _auctionAccountingRepository = auctionAccountingRepository;
         }
 
-        public async Task<List<Notification>> GetNotificationsOrderByDateCreate(int accountId)
+        public async Task<List<NotificationDto>> GetNotificationsOrderByDateCreate(int accountId)
         {
             var notificationList = await _notificationRepository.GetNotificationsBaseOnAccountId(accountId);
             var orderNotificationList = notificationList.OrderByDescending(n => n.DateCreated).ToList();
@@ -52,13 +55,15 @@ namespace Service.Implement
                 DateCreated = DateTime.Now,
             };
 
-            Dictionary<string, string> data = new Dictionary<string, string>
-            {
-                { "type", type.ToString() }
-            };
+
 
             foreach (var account in staffAndAdminAccount)
             {
+                Dictionary<string, string> data = new Dictionary<string, string>
+                {
+                    { "type", type.ToString() },
+                    { "accountId", account.AccountId.ToString() }
+                };
                 notification.AccountReceiveId = account.AccountId;
                 notification.NotificationId = 0;
                 await _notificationRepository.CreateAsync(notification);
@@ -90,7 +95,7 @@ namespace Service.Implement
                 body = body + reasStatusParam.messageString;
             }
 
-            Account ownerAccount = await _accountRepository.GetAccountByAccountIdAsync(realEstate.AccountOwnerId);
+            BusinessObject.Entity.Account ownerAccount = await _accountRepository.GetAccountByAccountIdAsync(realEstate.AccountOwnerId);
             Notification notification = new Notification
             {
                 NotificationType = type,
@@ -102,7 +107,8 @@ namespace Service.Implement
 
             Dictionary<string, string> data = new Dictionary<string, string>
             {
-                { "type", type.ToString() }
+                { "type", type.ToString() },
+                { "accountId", ownerAccount.AccountId.ToString() }
             };
 
             if (!ownerAccount.FirebaseToken.IsNullOrEmpty())
@@ -130,18 +136,20 @@ namespace Service.Implement
                 DateCreated = DateTime.Now,
             };
 
-            Dictionary<string, string> data = new Dictionary<string, string>
-            {
-                { "type", type.ToString() }
-            };
 
-            List<Account> userLists = await _auctionRepository.GetAccoutnDepositedInAuctionUsingReasId(auction.ReasId);
+            List<BusinessObject.Entity.Account> userLists = await _auctionRepository.GetAccoutnDepositedInAuctionUsingReasId(auction.ReasId);
 
             foreach (var account in userLists)
             {
                 notification.AccountReceiveId = account.AccountId;
                 notification.NotificationId = 0;
                 await _notificationRepository.CreateAsync(notification);
+
+                Dictionary<string, string> data = new Dictionary<string, string>
+                {
+                    { "type", type.ToString() },
+                    { "accountId", account.AccountId.ToString() }
+                };
 
                 if (!account.FirebaseToken.IsNullOrEmpty())
                 {
@@ -166,10 +174,7 @@ namespace Service.Implement
                 DateCreated = DateTime.Now,
             };
 
-            Dictionary<string, string> data = new Dictionary<string, string>
-            {
-                { "type", type.ToString() }
-            };
+
 
             List<Account> userLists = await _auctionRepository.GetAccoutnDepositedInAuctionUsingReasId(auction.ReasId);
 
@@ -179,6 +184,12 @@ namespace Service.Implement
                 notification.NotificationId = 0;
                 await _notificationRepository.CreateAsync(notification);
 
+                Dictionary<string, string> data = new Dictionary<string, string>
+                {
+                    { "type", type.ToString() },
+                    { "accountId", account.AccountId.ToString() }
+                };
+
                 if (!account.FirebaseToken.IsNullOrEmpty())
                 {
                     await _messagingService.SendPushNotification(account.FirebaseToken, title, body, data);
@@ -186,7 +197,7 @@ namespace Service.Implement
             }
         }
 
-        public async Task SendNotificationWhenWinAuction(int auctionId)
+        public async Task SendNotificationWhenWinAuction(int auctionId, float maxAmount)
         {
             AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
             Account winnerAccount = await _accountRepository.GetAccountOnId(auctionAccounting.AccountWinId);
@@ -208,7 +219,8 @@ namespace Service.Implement
 
             Dictionary<string, string> data = new Dictionary<string, string>
             {
-                { "type", type.ToString() }
+                { "type", type.ToString() },
+                { "accountId", winnerAccount.AccountId.ToString() }
             };
 
             await _notificationRepository.CreateAsync(notification);
@@ -216,6 +228,7 @@ namespace Service.Implement
             if (!winnerAccount.FirebaseToken.IsNullOrEmpty())
             {
                 await _messagingService.SendPushNotification(winnerAccount.FirebaseToken, title, body, data);
+                SendMailWhenChangeWinner.SendMailWhenChangeWinnerAuction(winnerAccount.AccountEmail, realEstate.ReasName, realEstate.ReasAddress, DateTime.Now.AddDays(10), maxAmount, auctionAccounting.DepositAmount);
             }
 
         }
@@ -242,7 +255,8 @@ namespace Service.Implement
 
             Dictionary<string, string> data = new Dictionary<string, string>
             {
-                { "type", type.ToString() }
+                { "type", type.ToString() },
+                { "accountId", winnerAccount.AccountId.ToString() }
             };
 
             await _notificationRepository.CreateAsync(notification);
@@ -250,6 +264,7 @@ namespace Service.Implement
             if (!winnerAccount.FirebaseToken.IsNullOrEmpty())
             {
                 await _messagingService.SendPushNotification(winnerAccount.FirebaseToken, title, body, data);
+                SendMailWhenChangeWinner.SendMailWhenForFirstWinnerChangeWinnerAuction(winnerAccount.AccountEmail, winnerAccount.AccountName, realEstate.ReasName, realEstate.ReasAddress);
             }
 
         }
@@ -289,9 +304,6 @@ namespace Service.Implement
                         accounts.Add(account);
                     }
                 }
-
-                SendNotificationWhenNotWinAuction(accounts, auctionId, true);
-
             }
 
         }
@@ -316,16 +328,19 @@ namespace Service.Implement
                 DateCreated = DateTime.Now,
             };
 
-            Dictionary<string, string> data = new Dictionary<string, string>
-            {
-                { "type", type.ToString() }
-            };
+
 
             foreach (var account in staffAndAdminAccount)
             {
                 notification.AccountReceiveId = account.AccountId;
                 notification.NotificationId = 0;
                 await _notificationRepository.CreateAsync(notification);
+
+                Dictionary<string, string> data = new Dictionary<string, string>
+                {
+                    { "type", type.ToString() },
+                    { "accountId", account.AccountId.ToString() }
+                };
 
                 if (!account.FirebaseToken.IsNullOrEmpty())
                 {
@@ -387,15 +402,19 @@ namespace Service.Implement
                 DateCreated = DateTime.Now,
             };
 
-            Dictionary<string, string> data = new Dictionary<string, string>
-            {
-                { "type", type.ToString() }
-            };
+
 
             Account owner = await _accountRepository.GetAccountByAccountIdAsync(realEstate.AccountOwnerId);
 
             notification.AccountReceiveId = owner.AccountId;
             notification.NotificationId = 0;
+
+            Dictionary<string, string> data = new Dictionary<string, string>
+            {
+                { "type", type.ToString() },
+                { "accountId", owner.AccountId.ToString() }
+            };
+
             await _notificationRepository.CreateAsync(notification);
 
             if (!owner.FirebaseToken.IsNullOrEmpty())
@@ -407,18 +426,28 @@ namespace Service.Implement
 
         public async Task SendNotificationWhenNotWinAuction(List<Account> accounts, int auctionId, bool isNotAttendAuction)
         {
-            AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
-            RealEstate realEstate = _realEstateRepository.GetRealEstate(auctionAccounting.ReasId);
+            string title;
+            string body;
+            int type;
 
-            string title = "Auction Bid Confirmation: You Lost";
-            string body = $"The auction on real estate as {realEstate.ReasAddress} has finished!. The real estate has been bought with {auctionAccounting.MaxAmount}VND. Our staff will contact you for the refund process";
-
-            int type = (int)NotificationTypeEnum.AuctionFinishLoser;
+            Auction auction = _auctionRepository.GetAuction(auctionId);
+            RealEstate realEstate = _realEstateRepository.GetRealEstate(auction.ReasId);
 
             if (isNotAttendAuction)
             {
+                title = "Fail To attend auction!";
                 body = $"You did not attend the auction for the real estate at {realEstate.ReasAddress}, and as a result, you have lost your deposit. If you have any questions, please contact our staff for assistance.";
                 type = (int)NotificationTypeEnum.AuctionFinishNotAttender;
+            }
+            else
+            {
+                AuctionAccounting auctionAccounting = _auctionAccountingRepository.GetAuctionAccountingByAuctionId(auctionId);
+
+                title = "Auction has finished! You lost";
+                body = $"The auction on real estate as {realEstate.ReasAddress} has finished!. The real estate has been bought with {auctionAccounting.MaxAmount}VND. Our staff will contact you for the refund process";
+
+                type = (int)NotificationTypeEnum.AuctionFinishLoser;
+
             }
 
             Notification notification = new Notification
@@ -429,16 +458,19 @@ namespace Service.Implement
                 DateCreated = DateTime.Now,
             };
 
-            Dictionary<string, string> data = new Dictionary<string, string>
-            {
-                { "type", type.ToString() }
-            };
+
 
             foreach (var account in accounts)
             {
                 notification.AccountReceiveId = account.AccountId;
                 notification.NotificationId = 0;
                 await _notificationRepository.CreateAsync(notification);
+
+                Dictionary<string, string> data = new Dictionary<string, string>
+                {
+                    { "type", type.ToString() },
+                    { "accountId", account.AccountId.ToString() }
+                };
 
                 if (!account.FirebaseToken.IsNullOrEmpty())
                 {

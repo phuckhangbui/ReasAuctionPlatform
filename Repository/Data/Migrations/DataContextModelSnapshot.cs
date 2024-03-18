@@ -64,6 +64,9 @@ namespace API.Data.Migrations
                     b.Property<int?>("MajorId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("NumberReupVocher")
+                        .HasColumnType("int");
+
                     b.Property<byte[]>("PasswordHash")
                         .HasColumnType("varbinary(max)");
 
@@ -452,6 +455,9 @@ namespace API.Data.Migrations
 
                     b.Property<DateTime>("DateStart")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsReupYet")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Message")
                         .IsRequired()

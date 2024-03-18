@@ -29,10 +29,10 @@ namespace Repository.Implement
                 AccountOwnerName = x.AccountOwnerName,
                 Photos = _context.RealEstatePhoto.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePhotoDto
                 {
-                    ReasPhotoId = z.ReasPhotoId,
                     ReasPhotoUrl = z.ReasPhotoUrl,
                 }).ToList(),
                 Type_REAS_Name = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(y => y.Type_Reas_Name).FirstOrDefault(),
+                Type_Id = x.Type_Reas,
                 ReasStatus = x.ReasStatus,
                 DateStart = x.DateStart,
                 DateEnd = x.DateEnd,
@@ -55,7 +55,6 @@ namespace Repository.Implement
                 AccountOwnerName = x.AccountOwnerName,
                 Photos = _context.RealEstatePhoto.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePhotoDto
                 {
-                    ReasPhotoId = z.ReasPhotoId,
                     ReasPhotoUrl = z.ReasPhotoUrl,
                 }).ToList(),
                 Type_REAS_Name = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(y => y.Type_Reas_Name).FirstOrDefault(),
@@ -63,6 +62,7 @@ namespace Repository.Implement
                 DateStart = x.DateStart,
                 DateEnd = x.DateEnd,
                 DateCreated = x.DateCreated,
+                Type_Id = x.Type_Reas,
                 Detail = _context.RealEstateDetail.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePaper
                 {
                     Documents_Proving_Marital_Relationship = z.Documents_Proving_Marital_Relationship,
@@ -90,7 +90,6 @@ namespace Repository.Implement
                 AccountOwnerName = x.AccountOwnerName,
                 Photos = _context.RealEstatePhoto.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePhotoDto
                 {
-                    ReasPhotoId = z.ReasPhotoId,
                     ReasPhotoUrl = z.ReasPhotoUrl,
                 }).ToList(),
                 Type_REAS_Name = _context.type_REAS.Where(y => y.Type_ReasId == x.Type_Reas).Select(y => y.Type_Reas_Name).FirstOrDefault(),
@@ -98,6 +97,7 @@ namespace Repository.Implement
                 DateStart = x.DateStart,
                 DateEnd = x.DateEnd,
                 DateCreated = x.DateCreated,
+                Type_Id = x.Type_Reas,
                 Detail = _context.RealEstateDetail.Where(z => z.ReasId == x.ReasId).Select(z => new RealEstatePaper
                 {
                     Documents_Proving_Marital_Relationship = z.Documents_Proving_Marital_Relationship,
