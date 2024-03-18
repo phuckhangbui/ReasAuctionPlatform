@@ -232,7 +232,7 @@ const Header = () => {
         aria-labelledby="dropdownNotificationButton"
         ref={notificationRef}
       >
-        <div className="rounded-lg shadow ">
+        <div className="rounded-lg shadow w-full">
           <NotificationList notificationList={notificationList} />
         </div>
       </div>

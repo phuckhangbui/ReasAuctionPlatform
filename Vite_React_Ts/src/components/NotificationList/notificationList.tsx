@@ -1,3 +1,4 @@
+import { Empty } from "antd";
 import { useEffect, useState } from "react";
 interface NotificationList {
   notificationList?: notification[];
@@ -260,31 +261,34 @@ const NotificationList = ({ notificationList }: NotificationList) => {
       <div className="block px-4 py-2 font-medium text-center text-gray-700 rounded-t-lg bg-gray-100 ">
         Notifications
       </div>
-      {notifications?.map((notification) => (
-        <div className="divide-y divide-gray-100 dark:divide-gray-700">
-          <div className="flex px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <div className="flex-shrink-0">
-              {iconChooser(notification.notificationType)}
-            </div>
-            <div className="w-full ps-3">
-              <div className="text-gray-500 text-sm mb-1.5 dark:text-gray-400">
-                <p className="text-base font-medium text-gray-900">
-                  {notification.title}
-                </p>
-                <p className=" text-sm text-gray-500">{notification.body}</p>
+      {notifications && notifications?.length >= 1 ? (
+        notifications?.map((notification) => (
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="flex px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div className="flex-shrink-0">
+                {iconChooser(notification.notificationType)}
               </div>
-              <div className="text-xs text-blue-600 dark:text-blue-500">
-                {formattedDate(notification.dateCreated)}
+              <div className="w-full ps-3">
+                <div className="text-gray-500 text-sm mb-1.5 dark:text-gray-400">
+                  <p className="text-base font-medium text-gray-900">
+                    {notification.title}
+                  </p>
+                  <p className=" text-sm text-gray-500">{notification.body}</p>
+                </div>
+                <div className="text-xs text-blue-600 dark:text-blue-500">
+                  {formattedDate(notification.dateCreated)}
+                </div>
               </div>
             </div>
           </div>
+        ))
+      ) : (
+        <div className="py-2">
+          <Empty />
         </div>
-      ))}
+      )}
       <div className="flex justify-center space-x-4 py-2 bg-gray-100">
-        <button
-          onClick={handlePreviousPage}
-          disabled={page === 1}
-        >
+        <button onClick={handlePreviousPage} disabled={page === 1}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -300,10 +304,7 @@ const NotificationList = ({ notificationList }: NotificationList) => {
             />
           </svg>
         </button>
-        <button
-          onClick={handleNextPage}
-          disabled={handleDisable()}
-        >
+        <button onClick={handleNextPage} disabled={handleDisable()}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
