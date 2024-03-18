@@ -20,4 +20,20 @@ export const getMemberRealEstates = async (token: string) => {
   }
 };
 
-
+export const memberRealEstateDetail = async (id: number, token: string) => {
+  try {
+    const fetchData = await axios.get<realEstateDetail>(
+      `${baseUrl}/api/home/my_real_estate/detail/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error:", error);
+  }
+};

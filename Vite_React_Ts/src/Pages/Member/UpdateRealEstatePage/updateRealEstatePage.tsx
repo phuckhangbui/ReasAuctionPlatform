@@ -3,32 +3,14 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { UserContext } from "../../../context/userContext";
 import { createRealEstate, getRealEstateType } from "../../../api/realEstate";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { DatePicker } from "antd";
-import CloudinaryUploadWidget, {
-  CloudinaryConfig,
-} from "../../../Config/cloudinary";
 import toast from "react-hot-toast";
+import { useParams } from "react-router-dom";
+import { memberRealEstateDetail } from "../../../api/memberRealEstate";
+import dayjs from "dayjs";
 
 const validate = (values: createRealEstate) => {
   const errors: Partial<validateRealEstate> = {};
-  if (!values.reasName) {
-    errors.reasName = "Required";
-  } else if (values.reasName.length < 30) {
-    errors.reasName = "Title is too short!";
-  }
-
-  if (values.reasArea < 0) {
-    errors.reasArea = "Area cannot be negative";
-  } else if (!values.reasArea || values.reasArea == 0) {
-    errors.reasArea = "Required";
-  } else if (isNaN(values.reasArea)) {
-    errors.reasArea = "Area must be a number";
-  } else if (values.reasArea < 100) {
-    errors.reasArea = "Are of land must be more than 100";
-  }
-
   if (values.reasPrice < 0) {
     errors.reasPrice = "Price cannot be negative";
   } else if (!values.reasPrice || values.reasPrice == 0) {
@@ -39,24 +21,8 @@ const validate = (values: createRealEstate) => {
     errors.reasPrice = "Price must be more than 100.000.000";
   } else if (values.reasPrice > 100000000000) {
     errors.reasPrice = "Price must be less than 100.000.000.000 đ";
-  } else if (!values.reasPrice.toString().endsWith('000')) {
+  } else if (!values.reasPrice.toString().endsWith("000")) {
     errors.reasPrice = "Price must end with 000 at the end";
-  }
-
-  if (!values.reasAddress) {
-    errors.reasAddress = "Required";
-  }
-
-  if (!values.reasDescription) {
-    errors.reasDescription = "Required";
-  }
-
-  if (!values.type_Reas) {
-    errors.type_Reas = "Required";
-  }
-
-  if (!values.dateStart) {
-    errors.dateStart = "Required";
   }
 
   if (!values.dateEnd) {
@@ -66,34 +32,83 @@ const validate = (values: createRealEstate) => {
   return errors;
 };
 
-const SellPage = () => {
-  const { token, userId, userAccountName } = useContext(UserContext);
+const UpdateRealEstatePage = () => {
+  let { reasId } = useParams();
+  const { token } = useContext(UserContext);
+  const [_realEstateDetail, setRealEstateDetail] = useState<realEstateDetail>();
+  const [formikDetail, setFormikDetail] = useState<createRealEstate>();
   const [realEstateTypes, setRealEstateTypes] = useState<realEstateType[]>();
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [_publicId, setPublicId] = useState<string>("");
-  const [_photoFront, setPhotoFront] = useState<string>("");
-  const [_photoBack, setPhotoBack] = useState<string>("");
-  const [_photoOwnership, setPhotoOwnership] = useState<string>("");
-  const [_photoBook, setPhotoBook] = useState<string>("");
-  const [_photoDocu, setPhotoDocu] = useState<string>("");
-  const [_photoContract, setPhotoContract] = useState<string>("");
+  const [realEstateTypeName, setRealEstateTypeName] = useState<string>();
   const [tabStatus, setTabStatus] = useState<string>("information");
   const [noPhotoMessage, setNoPhotoMessage] = useState<boolean>(false);
   const [noInputMessage, setNoInputMessage] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { RangePicker } = DatePicker;
 
   useEffect(() => {
     try {
+      const fetchRealEstateDetail = async () => {
+        if (reasId && token) {
+          const response = await memberRealEstateDetail(
+            parseInt(reasId),
+            token
+          );
+          console.log(response);
+          if (response) {
+            setRealEstateDetail(response);
+            const {
+              reasName,
+              reasAddress,
+              reasPrice,
+              reasArea,
+              reasDescription,
+              dateEnd,
+              type_Id,
+              photos,
+              detail,
+            } = response;
+
+            setFormikDetail({
+              reasName,
+              reasAddress,
+              reasPrice,
+              reasArea,
+              reasDescription,
+              dateEnd,
+              type_Reas: type_Id,
+              photos: photos,
+              detail,
+            });
+          }
+        }
+      };
       const fetchRealEstateTypes = async () => {
         const response = await getRealEstateType(token);
         setRealEstateTypes(response);
       };
+
       fetchRealEstateTypes();
+      fetchRealEstateDetail();
     } catch (error) {
       console.log("Error: ", error);
     }
   }, []);
+
+  useEffect(() => {
+    console.log(formikDetail);
+    if (formikDetail) {
+      formik.setValues(formikDetail);
+    }
+  }, [formikDetail]);
+
+  useEffect(() => {
+    realEstateTypes?.map((realEstateType) => {
+      if (realEstateType.typeReasId === formikDetail?.type_Reas) {
+        if (realEstateType.typeName) {
+          setRealEstateTypeName(realEstateType.typeName);
+        }
+      }
+    });
+  }, [realEstateTypes]);
 
   useEffect(() => {
     if (noPhotoMessage) {
@@ -117,71 +132,45 @@ const SellPage = () => {
 
   const formik = useFormik({
     initialValues: {
-      reasName: "",
-      reasAddress: "",
-      reasPrice: 100000000,
-      reasArea: 100000,
-      reasDescription: "",
-      dateStart: new Date(),
-      dateEnd: new Date(),
-      type_Reas: 1,
-      photos: [
-        {
-          reasPhotoUrl: "",
-        },
-      ],
+      reasName: formikDetail?.reasName || "",
+      reasAddress: formikDetail?.reasAddress || "",
+      reasPrice: formikDetail?.reasPrice || 100000000,
+      reasArea: formikDetail?.reasArea || 100000,
+      reasDescription: formikDetail?.reasDescription || "",
+      dateEnd: formikDetail?.dateEnd || new Date(),
+      type_Reas: formikDetail?.type_Reas || 1,
+      photos: (formikDetail?.photos || []).map((photo) => ({
+        reasPhotoUrl: photo.reasPhotoUrl,
+      })),
       detail: {
-        reas_Cert_Of_Land_Img_Front: "",
-        reas_Cert_Of_Land_Img_After: "",
-        reas_Cert_Of_Home_Ownership: "",
-        reas_Registration_Book: "",
-        documents_Proving_Marital_Relationship: "",
-        sales_Authorization_Contract: "",
+        reas_Cert_Of_Land_Img_Front:
+          formikDetail?.detail.reas_Cert_Of_Land_Img_Front || "",
+        reas_Cert_Of_Land_Img_After:
+          formikDetail?.detail.reas_Cert_Of_Land_Img_After || "",
+        reas_Cert_Of_Home_Ownership:
+          formikDetail?.detail.reas_Cert_Of_Home_Ownership || "",
+        reas_Registration_Book:
+          formikDetail?.detail.reas_Registration_Book || "",
+        documents_Proving_Marital_Relationship:
+          formikDetail?.detail.documents_Proving_Marital_Relationship || "",
+        sales_Authorization_Contract:
+          formikDetail?.detail.sales_Authorization_Contract || "",
       },
     } as createRealEstate,
     validate,
     onSubmit: async (values) => {
       try {
         console.log(values);
-        if (
-          !values.detail.reas_Cert_Of_Land_Img_Front ||
-          !values.detail.reas_Cert_Of_Land_Img_After ||
-          !values.detail.reas_Cert_Of_Home_Ownership ||
-          !values.detail.reas_Registration_Book ||
-          !values.detail.documents_Proving_Marital_Relationship ||
-          !values.detail.sales_Authorization_Contract ||
-          !values.photos.length
-        ) {
-          toast.error("Photos of Real Estate Are Required");
-        } else {
-          const response = await createRealEstate(token, values);
-          if (response) {
-            formik.resetForm();
-            navigate("/memberReas");
-          }
+        const response = await createRealEstate(token, values);
+        if (response) {
+          formik.resetForm();
+          navigate("/memberReas");
         }
       } catch (error) {
         console.log("Error: ", error);
       }
     },
   });
-
-  const [uwConfig] = useState<CloudinaryConfig>({
-    cloudName: "dqpsvl3nu",
-    uploadPreset: "i0yxovxe",
-    folder: `${userId || ""}-${userAccountName || ""}`,
-  });
-
-  const handleImageUpload = (imageUrl: string) => {
-    setUploadedImages((prevImages) => [...prevImages, imageUrl]);
-  };
-
-  useEffect(() => {
-    const updatedPhotos = uploadedImages.map((imageUrl) => ({
-      reasPhotoUrl: imageUrl,
-    }));
-    formik.setFieldValue("photos", updatedPhotos);
-  }, [uploadedImages]);
 
   const toggleTab = (index: string) => {
     setTabStatus(index);
@@ -191,43 +180,6 @@ const SellPage = () => {
     return `${index === tabStatus ? "" : "hidden"}`;
   };
 
-  const resetPhotosList = () => {
-    setUploadedImages([]);
-    formik.setFieldValue("photos", []);
-  };
-
-  const handleCertUpload = (imageUrl: string, index: string) => {
-    switch (index) {
-      case "front":
-        setPhotoFront(imageUrl);
-        formik.setFieldValue("detail.reas_Cert_Of_Land_Img_Front", imageUrl);
-        break;
-      case "back":
-        setPhotoBack(imageUrl);
-        formik.setFieldValue("detail.reas_Cert_Of_Land_Img_After", imageUrl);
-        break;
-      case "ownership":
-        setPhotoOwnership(imageUrl);
-        formik.setFieldValue("detail.reas_Cert_Of_Home_Ownership", imageUrl);
-        break;
-      case "book":
-        setPhotoBook(imageUrl);
-        formik.setFieldValue("detail.reas_Registration_Book", imageUrl);
-        break;
-      case "docu":
-        setPhotoDocu(imageUrl);
-        formik.setFieldValue(
-          "detail.documents_Proving_Marital_Relationship",
-          imageUrl
-        );
-        break;
-      case "contract":
-        setPhotoContract(imageUrl);
-        formik.setFieldValue("detail.sales_Authorization_Contract", imageUrl);
-        break;
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     formik.handleSubmit();
@@ -235,14 +187,9 @@ const SellPage = () => {
 
   const handleChangeTab = () => {
     if (
-      !formik.values.reasName ||
-      !formik.values.reasAddress ||
       !formik.values.reasPrice ||
-      !formik.values.reasArea ||
-      !formik.values.reasDescription ||
-      !formik.values.dateStart ||
       !formik.values.dateEnd ||
-      !formik.values.type_Reas
+      formik.errors.reasPrice
     ) {
       toast.error("You Are Missing Some Inputs");
     } else {
@@ -344,18 +291,8 @@ const SellPage = () => {
                     required
                     value={formik.values.reasName}
                     onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 80) {
-                        formik.handleChange(e);
-                      }
-                    }}
+                    disabled
                   />
-                  {formik.touched.reasName && formik.errors.reasName ? (
-                    <div className="text-red-700">{formik.errors.reasName}</div>
-                  ) : (
-                    <div className="text-white pointer-events-none ">'</div>
-                  )}
                 </div>
                 <div className="col-span-2">
                   <label
@@ -376,20 +313,13 @@ const SellPage = () => {
                     required
                     value={formik.values.reasAddress}
                     onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
+                    disabled
                   />
-                  {formik.touched.reasAddress && formik.errors.reasAddress ? (
-                    <div className="text-red-700">
-                      {formik.errors.reasAddress}
-                    </div>
-                  ) : (
-                    <div className="text-white pointer-events-none ">'</div>
-                  )}
                 </div>
                 <div className="col-span-1">
                   <label
                     htmlFor="reasArea"
-                    className="block mb-1 text-md font-medium text-gray-900 dark:text-white "
+                    className="block mb-1 text-md font-medium text-gray-900 "
                   >
                     Area <span className="text-sm text-gray-500">(m²)</span>
                   </label>
@@ -405,18 +335,8 @@ const SellPage = () => {
                     required
                     value={formik.values.reasArea}
                     onBlur={formik.handleBlur}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 6) {
-                        formik.handleChange(e);
-                      }
-                    }}
+                    disabled
                   />
-                  {formik.touched.reasArea && formik.errors.reasArea ? (
-                    <div className="text-red-700">{formik.errors.reasArea}</div>
-                  ) : (
-                    <div className="text-white pointer-events-none ">'</div>
-                  )}
                 </div>
                 <div className="col-span-1">
                   <label
@@ -442,13 +362,9 @@ const SellPage = () => {
                       if (value.length <= 12) {
                         formik.handleChange(e);
                       }
-                      // if (value.length >= 9) {
-                      //   formik.handleChange(e);
-                      // }
                     }}
                   />
-                  {formik.touched.reasPrice &&
-                  formik.errors.reasPrice ? (
+                  {formik.touched.reasPrice && formik.errors.reasPrice ? (
                     <div className="text-red-700">
                       {formik.errors.reasPrice}
                     </div>
@@ -461,10 +377,9 @@ const SellPage = () => {
                     htmlFor="dateRange"
                     className=" mb-1 text-md font-medium text-gray-900 dark:text-white grid grid-cols-2"
                   >
-                    <div>Start Date</div>
                     <div>End Date</div>
                   </label>
-                  <RangePicker
+                  {/* <RangePicker
                     id="dateRange"
                     className=" w-full p-2.5 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue "
                     onChange={(dateStrings: any) => {
@@ -473,24 +388,22 @@ const SellPage = () => {
                     }}
                     required
                   />
-                  <div className="grid grid-cols-2">
-                    {formik.touched.reasDescription &&
-                    formik.errors.reasDescription ? (
-                      <div className="text-red-700">
-                        {formik.errors.reasDescription}
-                      </div>
-                    ) : (
-                      <div className="text-white ">'</div>
-                    )}
-                    {formik.touched.reasDescription &&
-                    formik.errors.reasDescription ? (
-                      <div className="text-red-700">
-                        {formik.errors.reasDescription}
-                      </div>
-                    ) : (
-                      <div className="text-white pointer-events-none ">'</div>
-                    )}
-                  </div>
+                </div> */}
+                  <DatePicker
+                    className="w-full p-2.5 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue"
+                    value={
+                      formik.values.dateEnd
+                        ? dayjs(formik.values.dateEnd)
+                        : null
+                    }
+                    disabledDate={(current) =>
+                      current && current < dayjs().startOf("day")
+                    }
+                    onChange={(_date, dateString) => {
+                      formik.setFieldValue("dateEnd", dateString);
+                    }}
+                    format="YYYY-MM-DD"
+                  />
                 </div>
                 <div className="col-span-2">
                   <label
@@ -499,7 +412,8 @@ const SellPage = () => {
                   >
                     Real Estate Type
                   </label>
-                  <select
+
+                  {/* <select
                     id="type_Reas"
                     className="w-full p-3 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue"
                     onChange={formik.handleChange}
@@ -515,88 +429,51 @@ const SellPage = () => {
                         {realEstateType.typeName}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
+                  <input
+                    type="type_Reas"
+                    id="type_Reas"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue focus:border-1 focus:ring-2 block w-full p-2.5 outline-none text-sm rounded-lg"
+                    placeholder="Price of Land"
+                    required
+                    value={realEstateTypeName}
+                    onBlur={formik.handleBlur}
+                    disabled
+                  />
                 </div>
-                <div className="col-span-4 h-120">
+                <div className="col-span-4">
                   <label
                     htmlFor="reasDescription"
                     className="block mb-1 text-md font-medium text-gray-900 dark:text-white "
                   >
                     Description
                   </label>
-                  <CKEditor
-                    id="reasDescription"
-                    editor={ClassicEditor}
-                    onChange={(_event: any, editor: any) => {
-                      const data = editor.getData();
-                      formik.setFieldValue("reasDescription", data);
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: formik.values?.reasDescription || "",
                     }}
-                    data={formik.values.reasDescription}
-                    onBlur={formik.handleBlur}
-                    onReady={(editor: any) => {
-                      // You can store the "editor" and use when it is needed.
-                      // console.log("Editor is ready to use!", editor);
-                      editor.editing.view.change((writer: any) => {
-                        writer.setStyle(
-                          "height",
-                          "400px",
-                          editor.editing.view.document.getRoot()
-                        );
-                      });
-                    }}
-                  />
-                  {formik.touched.reasDescription &&
-                  formik.errors.reasDescription ? (
-                    <div className="text-red-700">
-                      {formik.errors.reasDescription}
-                    </div>
+                    className="mt-"
+                  ></div>
+                </div>
+                <div className="">
+                  <div className="block mb-1 text-md font-medium text-gray-900 col-span-1">
+                    Real Estate Pictures
+                  </div>
+                  {formik.values.photos ? (
+                    formik.values.photos.map((photo, index) => (
+                      <div className="col-span-1 h-64 rounded-lg">
+                        <img
+                          key={index}
+                          src={photo.reasPhotoUrl}
+                          alt={`Uploaded ${index + 1}`}
+                          className="w-full h-full object-fill"
+                        />
+                      </div>
+                    ))
                   ) : (
-                    <div className="text-white pointer-events-none ">'</div>
+                    <div></div>
                   )}
                 </div>
-                <div className="block mb-1 text-md font-medium text-gray-900 col-span-3">
-                  Real Estate Pictures
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  {uploadedImages.length !== 0 ? (
-                    <div
-                      className="bg-red-700 px-3 py-1 text-white rounded-lg hover:bg-red-800 hover:cursor-pointer"
-                      onClick={() => {
-                        resetPhotosList();
-                      }}
-                    >
-                      Reset List
-                    </div>
-                  ) : (
-                    <></>
-                  )}
-                </div>
-                <div className="col-span-1 ">
-                  {realEstateTypes && (
-                    <CloudinaryUploadWidget
-                      uwConfig={uwConfig}
-                      setPublicId={setPublicId}
-                      setUploadedUrl={(imageUrl) => {
-                        handleImageUpload(imageUrl);
-                      }}
-                      notList={false}
-                    />
-                  )}
-                </div>
-                {uploadedImages ? (
-                  uploadedImages.map((image, index) => (
-                    <div className="col-span-1 h-64 rounded-lg">
-                      <img
-                        key={index}
-                        src={image}
-                        alt={`Uploaded ${index + 1}`}
-                        className="w-full h-full object-fill"
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <div></div>
-                )}
               </div>
               <div className="p-4 flex items-center justify-center ">
                 <div
@@ -637,92 +514,84 @@ const SellPage = () => {
               <div className="grid grid-cols-3 gap-4 p-5">
                 <div>
                   <div className="text-center text-lg">Front Certificate</div>
-                  {realEstateTypes && (
-                    <CloudinaryUploadWidget
-                      uwConfig={uwConfig}
-                      setPublicId={setPublicId}
-                      setUploadedUrl={(imageUrl) => {
-                        handleCertUpload(imageUrl, "front");
-                      }}
-                      notList={true}
-                    />
+                  {formik.values.detail.reas_Cert_Of_Land_Img_Front && (
+                    <div className="flex items-center justify-center w-full h-64">
+                      <img
+                        className="text-transparent w-full h-full object-fill rounded-lg"
+                        src={formik.values.detail.reas_Cert_Of_Land_Img_Front}
+                      />
+                    </div>
                   )}
                 </div>
                 <div>
                   <div className="text-center text-lg">Back Certificate</div>
-                  {realEstateTypes && (
-                    <CloudinaryUploadWidget
-                      uwConfig={uwConfig}
-                      setPublicId={setPublicId}
-                      setUploadedUrl={(imageUrl) => {
-                        handleCertUpload(imageUrl, "back");
-                      }}
-                      notList={true}
-                    />
+                  {formik.values.detail.reas_Cert_Of_Land_Img_After && (
+                    <div className="flex items-center justify-center w-full h-64">
+                      <img
+                        className="text-transparent w-full h-full object-fill rounded-lg"
+                        src={formik.values.detail.reas_Cert_Of_Land_Img_After}
+                      />
+                    </div>
                   )}
                 </div>
                 <div>
                   <div className="text-center text-lg">
                     Ownership Certificate
                   </div>
-                  {realEstateTypes && (
-                    <CloudinaryUploadWidget
-                      uwConfig={uwConfig}
-                      setPublicId={setPublicId}
-                      setUploadedUrl={(imageUrl) => {
-                        handleCertUpload(imageUrl, "ownership");
-                      }}
-                      notList={true}
-                    />
+                  {formik.values.detail.reas_Cert_Of_Home_Ownership && (
+                    <div className="flex items-center justify-center w-full h-64">
+                      <img
+                        className="text-transparent w-full h-full object-fill rounded-lg"
+                        src={formik.values.detail.reas_Cert_Of_Home_Ownership}
+                      />
+                    </div>
                   )}
                 </div>
                 <div>
                   <div className="text-center text-lg">Registration Book</div>
-                  {realEstateTypes && (
-                    <CloudinaryUploadWidget
-                      uwConfig={uwConfig}
-                      setPublicId={setPublicId}
-                      setUploadedUrl={(imageUrl) => {
-                        handleCertUpload(imageUrl, "book");
-                      }}
-                      notList={true}
-                    />
+                  {formik.values.detail.reas_Registration_Book && (
+                    <div className="flex items-center justify-center w-full h-64">
+                      <img
+                        className="text-transparent w-full h-full object-fill rounded-lg"
+                        src={formik.values.detail.reas_Registration_Book}
+                      />
+                    </div>
                   )}
                 </div>
                 <div>
                   <div className="text-center text-lg">
                     Relationship Document
                   </div>
-                  {realEstateTypes && (
-                    <CloudinaryUploadWidget
-                      uwConfig={uwConfig}
-                      setPublicId={setPublicId}
-                      setUploadedUrl={(imageUrl) => {
-                        handleCertUpload(imageUrl, "docu");
-                      }}
-                      notList={true}
-                    />
+                  {formik.values.detail
+                    .documents_Proving_Marital_Relationship && (
+                    <div className="flex items-center justify-center w-full h-64">
+                      <img
+                        className="text-transparent w-full h-full object-fill rounded-lg"
+                        src={
+                          formik.values.detail
+                            .documents_Proving_Marital_Relationship
+                        }
+                      />
+                    </div>
                   )}
                 </div>
                 <div>
                   <div className="text-center text-lg">
                     Authorization Contract
                   </div>
-                  {realEstateTypes && (
-                    <CloudinaryUploadWidget
-                      uwConfig={uwConfig}
-                      setPublicId={setPublicId}
-                      setUploadedUrl={(imageUrl) => {
-                        handleCertUpload(imageUrl, "contract");
-                      }}
-                      notList={true}
-                    />
+                  {formik.values.detail.sales_Authorization_Contract && (
+                    <div className="flex items-center justify-center w-full h-64">
+                      <img
+                        className="text-transparent w-full h-full object-fill rounded-lg"
+                        src={formik.values.detail.sales_Authorization_Contract}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
               <div className="flex justify-center p-4">
                 <button className="bg-mainBlue px-5 py-2 text-white rounded-lg hover:bg-darkerMainBlue">
-                  Create
+                  Re-Up
                 </button>
               </div>
             </div>
@@ -733,4 +602,4 @@ const SellPage = () => {
   );
 };
 
-export default SellPage;
+export default UpdateRealEstatePage;

@@ -17,6 +17,9 @@ module.exports = withMT({
         mainBlue: "#2482c2",
         darkerMainBlue: "#2075ae",
         secondaryYellow: "#fda720",
+        greenSuccess: "#16c60c",
+        redFailed: "#f03a17",
+        yellowWinner: "#ffc83d",
       },
       spacing: {
         17: "4.25rem",
