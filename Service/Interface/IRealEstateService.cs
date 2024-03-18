@@ -12,5 +12,7 @@ namespace Service.Interface
         Task<RealEstateDetailDto> ViewRealEstateDetail(int id);
         Task<bool> UpdateRealEstateStatus(int reasId, int status);
         RealEstate GetRealEstate(int reasId);
+        Task<bool> UpdateRealEstateStatus(int reasId, int status, bool IsReupYet);
+        Task<bool> UpdateRealEstateIsReupYet(int reasId, bool IsReupYet);
     }
 }

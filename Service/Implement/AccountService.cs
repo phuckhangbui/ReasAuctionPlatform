@@ -149,6 +149,28 @@ namespace Service.Implement
             return account.FirebaseToken;
         }
 
-        //public async Task<>
+        public async Task<int> UpdateReupVoucher(int accountId, bool isAddReupVoucher)
+        {
+            Account account = await _accountRepository.GetAccountByAccountIdAsync(accountId);
+
+            if (account == null) { return 0; }
+
+            if (isAddReupVoucher)
+            {
+                account.NumberReupVocher += 1;
+            }
+            else
+            {
+                if (account.NumberReupVocher == 0)
+                {
+                    return -1;  //when reup is already = 0
+                }
+                account.NumberReupVocher -= 1;
+            }
+
+            await _accountRepository.UpdateAsync(account);
+
+            return (int)account.NumberReupVocher;
+        }
     }
 }

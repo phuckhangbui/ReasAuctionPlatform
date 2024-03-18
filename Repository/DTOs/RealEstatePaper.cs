@@ -2,7 +2,6 @@
 {
     public class RealEstatePaper
     {
-        public int ReasId { get; set; }
         public string Reas_Cert_Of_Land_Img_Front { get; set; }
         public string Reas_Cert_Of_Land_Img_After { get; set; }
         public string Reas_Cert_Of_Home_Ownership { get; set; }

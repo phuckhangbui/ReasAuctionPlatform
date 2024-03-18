@@ -22,6 +22,7 @@ public class Account
     public string? BankingNumber { get; set; }
     public string? BankingCode { get; set; } //ACB, NCB, AGR ...
     public string? FirebaseToken { get; set; }
+    public int? NumberReupVocher { get; set; }
 
 
     public List<RealEstate> RealEstate { get; set; }

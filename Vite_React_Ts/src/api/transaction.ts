@@ -1,5 +1,6 @@
 import axios from "axios";
 const baseUrl = process.env.REACT_APP_BACK_END_URL;
+const returnUrl = process.env.REACT_APP_FRONT_URL;
 
 export const getTransaction = async (
   token: string,
@@ -45,11 +46,17 @@ export const getTransactionDetail = async (token: string, id: number) => {
   }
 };
 
-export const CreateTransactionRefund = async (token: string, {accountReceiveId,depositId,money,reasId} : TransactionCreateRefund) => {
+export const CreateTransactionRefund = async (
+  token: string,
+  { accountReceiveId, depositId, money, reasId }: TransactionCreateRefund
+) => {
   try {
-    const param ={
-      accountReceiveId, depositId, money, reasId
-  }
+    const param = {
+      accountReceiveId,
+      depositId,
+      money,
+      reasId,
+    };
     const fetchData = await axios.post<Message>(
       `${baseUrl}/api/deposits/update/refund`,
       param,
@@ -79,7 +86,7 @@ export const registerParticipateAuction = async (
       {
         accountId: userId,
         reasId: reasId,
-        returnUrl: "http://localhost:5173/success",
+        returnUrl: returnUrl,
       },
       {
         headers: {
@@ -133,7 +140,7 @@ export const payRealEstatePostingFee = async (
       {
         accountId: userId,
         reasId: reasId,
-        returnUrl: "http://localhost:5173/success",
+        returnUrl: returnUrl,
       },
       {
         headers: {
@@ -169,7 +176,7 @@ export const payRealEstate = async (
       }
     );
     const response = fetchData.data;
-    console.log(response)
+    console.log(response);
     return response;
   } catch (error) {
     console.log("Error:", error);

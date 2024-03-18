@@ -2,13 +2,14 @@ import { Button, Carousel, Typography } from "@material-tailwind/react";
 import { useContext, useEffect, useState } from "react";
 import { getRealEstateById } from "../../api/realEstate";
 import { NumberFormat } from "../../Utils/numbetFormat";
-import { Empty, InputNumber, Modal, Statistic } from "antd";
+import { InputNumber, Modal, Statistic } from "antd";
 import { Button as ButtonAnt } from "antd";
 import { UserContext } from "../../context/userContext";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { ref, get, child, update, onValue } from "firebase/database";
 import { db } from "../../Config/firebase-config";
 import {
+  StartAuction,
   auctionSuccess,
   getAuctionHome,
   getAuctionStatus,
@@ -17,6 +18,7 @@ import {
 import { DepositContext } from "../../context/depositContext";
 import { registerParticipateAuction } from "../../api/transaction";
 import LoginModal from "../LoginModal/loginModal";
+import { memberRealEstateDetail } from "../../api/memberRealEstate";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -44,12 +46,13 @@ const RealEstateDetailModal = ({
   const [totalUsers, setTotalUsers] = useState(0);
   const [isUsersAttend, setIsUserAttend] = useState(false);
   const [isOneParticipant, setIsOneParticipant] = useState(true);
-  const [countdownValue, setCountdownValue] = useState(60000);
+  // const [countdownValue, setCountdownValue] = useState(60000);
+  const [countDownWaiting, setCountDownWaiting] = useState<Dayjs | undefined>();
   const [userRegisterList, setUserRegisterList] = useState<
     number[] | undefined
   >();
   const [isUserRegistered, setIsUserRegistered] = useState(false);
-  const [isBidded, setIsBidded] = useState(false);
+  // const [isBidded, setIsBidded] = useState(false);
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
@@ -60,11 +63,12 @@ const RealEstateDetailModal = ({
   // 2: Register but pending payment
   // 3: Register success
   // 4: User is the owner of real estate
+  // 5: Reas is auctioning
 
+  const [statusUserList, setStatusUserList] = useState<number>(0);
+  const [isAuctionEnd, setIsAuctionEnd] = useState(false);
   const { getDeposit } = useContext(DepositContext);
-  const { isAuth, token, userId } = useContext(UserContext);
-  // Use the isAuth function to determine if the user is authenticated
-  const isAuthenticated = isAuth();
+  const { token, userId } = useContext(UserContext);
 
   //get reasDetail
   useEffect(() => {
@@ -79,6 +83,22 @@ const RealEstateDetailModal = ({
       console.log(error);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      if (userId === realEstateDetail?.accountOwnerId) {
+        const fetchOwnerRealEstateDetail = async () => {
+          if (token) {
+            const response = await memberRealEstateDetail(realEstateId, token);
+            setRealEstateDetail(response);
+          }
+        };
+        fetchOwnerRealEstateDetail();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [realEstateDetail?.detail === null]);
 
   //get userRegisterList
   useEffect(() => {
@@ -99,7 +119,7 @@ const RealEstateDetailModal = ({
     }
   }, []);
 
-  //get real-time currentBid
+  //get auction status
   useEffect(() => {
     try {
       const fetchAuctionStatus = async () => {
@@ -111,6 +131,7 @@ const RealEstateDetailModal = ({
               token
             );
             if (response) {
+              console.log(response?.status);
               setAuctionStatus(response?.status);
             }
           }
@@ -120,6 +141,7 @@ const RealEstateDetailModal = ({
     } catch (error) {}
   }, [realEstateDetail]);
 
+  //get real-time currentBid
   useEffect(() => {
     try {
       const fetchCurrentBid = async () => {
@@ -174,21 +196,6 @@ const RealEstateDetailModal = ({
     }
   }, [realEstateDetail?.dateEnd]);
 
-  function formatVietnameseDong(price: string) {
-    // Convert the string to a number
-    const numberPrice = parseInt(price, 10);
-    // Check if the conversion was successful
-    if (isNaN(numberPrice)) {
-      // Return the original string if it's not a valid number
-      return price;
-    }
-    // Format the number
-    const formattedNumber = numberPrice
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return formattedNumber;
-  }
-
   // Change the tab index
   const toggleTab = (index: string) => {
     setTabStatus(index);
@@ -224,6 +231,7 @@ const RealEstateDetailModal = ({
             status,
             lastBid: auction.dateStart,
             statusChangeTime: Date.now(),
+            isBidded: 0,
           });
         }
 
@@ -295,33 +303,53 @@ const RealEstateDetailModal = ({
       // Get all users and their bids
       const usersSnapshot = await get(usersRef);
       const usersData = usersSnapshot.val();
+      const userId = localStorage.getItem("userId");
 
       let highestBid = 0;
       let winningUserId = 0;
       const userList: userHistory[] = [];
       // Iterate over users to find the highest bid and winning user
-      if (usersData) {
-        Object.keys(usersData).forEach((userId) => {
+      if (auction) {
+        if (Object.keys(usersData).length === 1) {
+          const userId = Object.keys(usersData)[0];
+          const userBid = auction.floorBid;
+          highestBid = userBid; // Set highestBid as user's bid
+          winningUserId = parseInt(userId, 10); // Set winningUserId as user's ID
           userList.push({
             accountId: parseInt(usersData[userId].userId, 10),
-            lastBidAmount: usersData[userId].currentUserBid,
+            lastBidAmount: auction.floorBid,
           });
-          const userBid = usersData[userId].currentUserBid;
-          if (userBid > highestBid) {
-            highestBid = userBid;
-            winningUserId = parseInt(userId, 10);
-          }
-        });
+        } else {
+          // Iterate over users to find the highest bid and winning user
+          Object.keys(usersData).forEach((userId) => {
+            userList.push({
+              accountId: parseInt(usersData[userId].userId, 10),
+              lastBidAmount: usersData[userId].currentUserBid,
+            });
+            const userBid = usersData[userId].currentUserBid;
+            if (userBid >= highestBid) {
+              highestBid = userBid;
+              winningUserId = parseInt(userId, 10);
+            }
+          });
+        }
       }
 
-      console.log(userList);
-      if (auction) {
-        const auctionDetailDto = {
-          auctionId: auction.auctionId,
-          accountWinId: winningUserId,
-          winAmount: highestBid,
-        };
-        await auctionSuccess(auctionDetailDto, userList);
+      if (userId) {
+        console.log(userId);
+        console.log(winningUserId);
+        if (userId == winningUserId.toString()) {
+          if (auction) {
+            const auctionDetailDto = {
+              auctionId: auction.auctionId,
+              accountWinId: winningUserId,
+              winAmount: highestBid,
+            };
+            if (token) {
+              await auctionSuccess(auctionDetailDto, userList, token);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error("Error identifying winner:", error);
@@ -385,6 +413,7 @@ const RealEstateDetailModal = ({
       await update(auctionRef, {
         currentBid: currentInputBid,
         lastBid: Date.now(),
+        isBidded: 1,
       });
 
       const userBidRef = ref(db, `auctions/${auction?.reasId}/users/${userId}`);
@@ -393,25 +422,27 @@ const RealEstateDetailModal = ({
       });
 
       setCurrentBid(currentInputBid);
-      setIsBidded(true);
+      if (auction && token) {
+        StartAuction(auction.auctionId, token);
+      }
     } catch (error) {
       console.error("Error updating bid in Firebase:", error);
     }
   };
 
   //subcribe the lastBid and then plus 60 seconds when lastbid updated
-  useEffect(() => {
-    const lastBidRef = ref(db, `auctions/${realEstateId}/lastBid`);
-    const unsubscribe = onValue(lastBidRef, (snapshot) => {
-      const lastBid = snapshot.val();
-      const newCountdownValue = lastBid + 60000;
-      setCountdownValue(newCountdownValue);
-    });
+  // useEffect(() => {
+  //   const lastBidRef = ref(db, `auctions/${realEstateId}/lastBid`);
+  //   const unsubscribe = onValue(lastBidRef, (snapshot) => {
+  //     const lastBid = snapshot.val();
+  //     const newCountdownValue = lastBid + 60000;
+  //     setCountdownValue(newCountdownValue);
+  //   });
 
-    return () => {
-      unsubscribe();
-    };
-  }, [realEstateId]);
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [realEstateId]);
 
   //set count down for status change
   useEffect(() => {
@@ -419,10 +450,18 @@ const RealEstateDetailModal = ({
       db,
       `auctions/${realEstateId}/statusChangeTime`
     );
-    const unsubscribe = onValue(lastStatusChangeRef, (snapshot) => {
-      const lastChange = snapshot.val();
-      const newCountdownValue = lastChange + 5 * 60000;
-      setCountdownValue(newCountdownValue);
+    const unsubscribe = onValue(lastStatusChangeRef, () => {
+      // const lastChange = snapshot.val();
+      let newCountdownValue;
+      if (auction) {
+        if (statusUserList == 1) {
+          newCountdownValue = dayjs(auction.dateStart).add(10, "minutes");
+        } else if (statusUserList == 2) {
+          newCountdownValue = dayjs(auction.dateStart).add(15, "minutes");
+        }
+      }
+
+      setCountDownWaiting(newCountdownValue);
     });
 
     return () => {
@@ -437,7 +476,6 @@ const RealEstateDetailModal = ({
       const newBid = snapshot.val();
       setCurrentBid(newBid);
       setCurrentInputBid(newBid);
-      setIsBidded(true);
     });
 
     return () => {
@@ -473,9 +511,11 @@ const RealEstateDetailModal = ({
       } else if (statusValue == 1) {
         setIsUserRegistered(true);
         setIsOneParticipant(true);
+        setStatusUserList(statusValue);
       } else if (statusValue == 2) {
         setIsOneParticipant(false);
         setIsUserAttend(false);
+        setStatusUserList(statusValue);
       } else if (statusValue == 3) {
         setIsOneParticipant(false);
         setIsUserAttend(true);
@@ -485,7 +525,8 @@ const RealEstateDetailModal = ({
         setIsAuctionOpen(false);
         setIsOneParticipant(false);
         setIsUserAttend(true);
-        setIsBidded(false);
+        // setIsBidded(false);
+        setIsAuctionEnd(true);
         identifyWinner();
       }
     });
@@ -494,17 +535,32 @@ const RealEstateDetailModal = ({
     };
   }, [realEstateId]);
 
-  const handleOnFinish = () => {
-    if (auction) {
-      if (currentBid > auction?.floorBid) {
-        const auctionRef = ref(db, `auctions/${realEstateId}`);
-        update(auctionRef, {
-          status: 4,
-        });
-        setIsAuctionOpen(false);
-      }
-    }
-  };
+  // useEffect(() => {
+  //   const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
+  //   const unsubscribe = onValue(statusRef, (snapshot) => {
+  //     const statusValue = snapshot.val();
+  //     if (statusValue == 0) {
+  //       setIsBidded(false);
+  //     } else if (statusValue == 1) {
+  //       setIsBidded(true);
+  //     }
+  //   });
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, [realEstateId]);
+
+  // const handleOnFinish = () => {
+  //   if (auction) {
+  //     if (currentBid > auction?.floorBid) {
+  //       const auctionRef = ref(db, `auctions/${realEstateId}`);
+  //       update(auctionRef, {
+  //         status: 4,
+  //       });
+  //       setIsAuctionOpen(false);
+  //     }
+  //   }
+  // };
 
   const handleOnFinishWaiting10Mins = () => {
     const auctionRef = ref(db, `auctions/${realEstateId}`);
@@ -558,6 +614,10 @@ const RealEstateDetailModal = ({
     }
   };
 
+  const handleCountDownStarting = () => {
+    setAuctionStatus(5);
+  };
+
   return (
     <div className="relative w-full max-w-7xl max-h-full ">
       <div className="relative bg-white rounded-lg shadow md:px-10 md:pb-5 sm:px-0 sm:pb-0 ">
@@ -595,7 +655,6 @@ const RealEstateDetailModal = ({
                   src={photo.reasPhotoUrl}
                   alt="Real Estate Photos"
                   className="md:h-120 sm:h-96 w-full object-fill rounded-lg"
-                  key={photo.reasPhotoId}
                 />
               ))}
             </Carousel>
@@ -663,7 +722,7 @@ const RealEstateDetailModal = ({
                 <div>
                   <div className="text-xl font-bold ">
                     {realEstateDetail?.reasPrice
-                      ? formatVietnameseDong(realEstateDetail?.reasPrice)
+                      ? NumberFormat(realEstateDetail?.reasPrice)
                       : realEstateDetail?.reasPrice}{" "}
                     VND
                   </div>
@@ -692,7 +751,7 @@ const RealEstateDetailModal = ({
                   <div className="text-xl font-bold ">
                     {realEstateDetail?.reasArea}
                   </div>
-                  <div className="text-xs text-gray-700">Sqft</div>
+                  <div className="text-xs text-gray-700">m²</div>
                 </div>
               </div>
               <div className="flex items-center">
@@ -804,6 +863,277 @@ const RealEstateDetailModal = ({
           </div>
           <div className={getActiveTabDetail("auction")}>
             {userId ? (
+              auction ? (
+                auctionStatus === 0 ? (
+                  <div className="flex justify-center p-10">
+                    <div className="text-4xl text-red-700">
+                      Real Estate Is Currently Not Available For Selling
+                    </div>
+                  </div>
+                ) : auctionStatus === 1 ? (
+                  <div className="flex justify-center flex-col items-center py-10">
+                    <div className="text-xl text-gray-500">
+                      You have not register to take part in auction yet
+                    </div>
+                    <button
+                      onClick={() => handleRegister()}
+                      className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                    >
+                      Register
+                    </button>
+                  </div>
+                ) : auctionStatus === 2 ? (
+                  <div className="flex justify-center flex-col items-center py-10">
+                    <div className="text-xl text-gray-500">
+                      You have not register to take part in auction yet
+                    </div>
+                    <button
+                      onClick={() => handleRegister()}
+                      className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                    >
+                      Register
+                    </button>
+                  </div>
+                ) : auctionStatus === 3 ? (
+                  <></>
+                ) : auctionStatus === 4 ? (
+                  <></>
+                ) : auctionStatus === 5 ? (
+                  <>
+                    <div>
+                      <Typography variant="h3" className="text-center">
+                        Current bid: {NumberFormat(currentBid)}
+                      </Typography>
+                      {/* {isBidded ? (
+                        <>
+                          <Countdown
+                            value={countdownValue}
+                            format=" m [minutes] s [secs]"
+                            onFinish={() => handleOnFinish()}
+                          />
+                        </>
+                      ) : null} */}
+                    </div>
+
+                    <div className="grid grid-cols-5 gap-4">
+                      <div className="col-span-3">
+                        <Typography variant="h5">
+                          Auction start:{" "}
+                          {dayjs(auction?.dateStart).format(
+                            "DD/MM/YYYY HH:mm:ss"
+                          )}
+                        </Typography>
+                        <div className="font-semibold flex items-center">
+                          Total user: {totalUsers}
+                        </div>
+                        {!isAuctionEnd ? (
+                          <Countdown
+                            value={dayjs(auction.dateEnd).toDate().toString()}
+                            format="H [hours] m [minutes] s [secs]"
+                            prefix="Remain time"
+                          />
+                        ) : (
+                          <></>
+                        )}
+                      </div>
+
+                      {isUserRegistered ? (
+                        <>
+                          {!isOneParticipant ? (
+                            <>
+                              {isUsersAttend ? (
+                                <>
+                                  {isAuctionOpen ? (
+                                    <>
+                                      {" "}
+                                      <div className="col-span-2 flex flex-col space-y-4">
+                                        <div className="flex space-x-4">
+                                          <div className="flex">
+                                            <Button
+                                              size="sm"
+                                              onClick={() => {
+                                                setCurrentInputBid(
+                                                  currentInputBid - 1000000
+                                                );
+                                              }}
+                                              disabled={
+                                                currentInputBid === currentBid
+                                              }
+                                            >
+                                              -
+                                            </Button>
+                                            <InputNumber
+                                              style={{
+                                                width: "auto",
+                                              }}
+                                              value={NumberFormat(
+                                                currentInputBid
+                                              )}
+                                            />
+                                            <Button
+                                              size="sm"
+                                              onClick={() => {
+                                                setCurrentInputBid(
+                                                  currentInputBid + 1000000
+                                                );
+                                              }}
+                                            >
+                                              +
+                                            </Button>
+                                          </div>
+                                          <Button
+                                            onClick={handleBid}
+                                            disabled={
+                                              currentInputBid === currentBid
+                                            }
+                                          >
+                                            Bid
+                                          </Button>
+                                        </div>
+                                        <div className="flex flex-row justify-center w-full items-center space-x-4">
+                                          <Button onClick={showModal}>
+                                            Set auto bid
+                                          </Button>
+                                          <Typography variant="h6">
+                                            {NumberFormat(currentAutoBidValue)}
+                                          </Typography>
+                                          <Modal
+                                            title="Auto Bid"
+                                            open={isModalOpen}
+                                            onOk={handleOk}
+                                            okType={"default"}
+                                            onCancel={handleCancel}
+                                            width={300}
+                                          >
+                                            <div className="space-y-4">
+                                              <div className="flex">
+                                                <Button
+                                                  size="sm"
+                                                  onClick={handleDecrease}
+                                                >
+                                                  -
+                                                </Button>
+                                                <InputNumber
+                                                  className="w-full"
+                                                  value={NumberFormat(
+                                                    currentAutoBidValue
+                                                  )}
+                                                />
+                                                <Button
+                                                  size="sm"
+                                                  onClick={handleIncrease}
+                                                >
+                                                  +
+                                                </Button>
+                                              </div>
+                                              <div>
+                                                <ButtonAnt
+                                                  type="default"
+                                                  size="small"
+                                                  onClick={toggleChecked}
+                                                >
+                                                  {!checked
+                                                    ? "Enable"
+                                                    : "Unable"}
+                                                </ButtonAnt>
+                                              </div>
+                                              {!isInputValid && (
+                                                <div className="text-red-500">
+                                                  Input must be larger than 0!
+                                                </div>
+                                              )}
+                                            </div>
+                                          </Modal>
+                                        </div>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Typography>Auction complete</Typography>
+                                    </>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <Countdown
+                                    value={countDownWaiting?.toString()}
+                                    format=" m [minutes] s [secs]"
+                                    onFinish={() =>
+                                      handleOnFinishWaiting5Mins()
+                                    }
+                                  />
+                                  <Typography>
+                                    Auction will start in 5 minutes
+                                  </Typography>
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <Countdown
+                                value={countDownWaiting?.toString()}
+                                format=" m [minutes] s [secs]"
+                                onFinish={() => handleOnFinishWaiting10Mins()}
+                              />
+                              <div>
+                                <Typography>
+                                  Waiting for users in 10 minutes.
+                                </Typography>
+                                <Typography>
+                                  After 10 minutes, no more users. You win
+                                </Typography>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <div className="flex justify-center p-10">
+                          <div className="text-4xl text-red-700">
+                            You Didn't Register This Auction
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : auctionStatus === 6 ? (
+                  <div className="flex justify-center p-10">
+                    <div className="text-4xl text-green-700">
+                      Auction Is Waiting To Be Start
+                    </div>
+                    <div>
+                      <Countdown
+                        value={auction.dateStart.toString()}
+                        onFinish={handleCountDownStarting}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <></>
+                )
+              ) : (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    You have not register to take part in auction yet
+                  </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              )
+            ) : (
+              <div className="flex justify-center">
+                <button
+                  onClick={() => toggleLogin()}
+                  className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Sign In
+                </button>
+              </div>
+            )}
+            {/* {userId ? (
               auctionStatus === 0 ? (
                 <div className="flex justify-center p-10">
                   <div className="text-4xl text-red-700">
@@ -1063,7 +1393,7 @@ const RealEstateDetailModal = ({
                   Sign In
                 </button>
               </div>
-            )}
+            )} */}
           </div>
           <div className={getActiveTabDetail("ownership")}>
             <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-2">

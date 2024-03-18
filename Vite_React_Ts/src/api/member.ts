@@ -124,7 +124,7 @@ export const updateMemberProfile = async (
         citizenIdentification: updatedMember?.citizenIdentification,
         majorId: updatedMember?.majorId,
         phoneNumber: updatedMember?.phoneNumber,
-        userName: updatedMember?.userName,
+        userName: updatedMember?.username,
       },
       {
         headers: {

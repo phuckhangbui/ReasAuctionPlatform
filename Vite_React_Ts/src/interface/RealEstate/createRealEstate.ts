@@ -4,7 +4,6 @@ interface createRealEstate {
   reasPrice: number;
   reasArea: number;
   reasDescription: string;
-  dateStart: Date;
   dateEnd: Date;
   type_Reas: number;
   photos: [

@@ -1,28 +1,48 @@
-import { DatePicker, Select, Table, Tag } from "antd";
+import { DatePicker, Modal, Table, Tag } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { NumberFormat } from "../../../Utils/numberFormat";
-import { getTransactionHistory } from "../../../api/MoneyTransaction/MemberMoneyTransaction";
+import {
+  getTransactionDetail,
+  getTransactionHistory,
+} from "../../../api/MoneyTransaction/MemberMoneyTransaction";
 import { useContext } from "react";
 import { UserContext } from "../../../context/userContext";
+import { Button } from "@material-tailwind/react";
 
 const TransactionHistory: React.FC = () => {
   const { token } = useContext(UserContext);
   const { userId } = useContext(UserContext);
+  const [open, setOpen] = useState(false);
   const [transaction, setTransaction] = useState<
     transactionHistory[] | undefined
   >([]);
+  const [transactionDetail, setTransactioDetail] = useState<
+    TransactionDetail | undefined
+  >();
+  const [data, setData] = useState<TransactionDetail[]>([]);
+
   const fetchTransaction = async () => {
     if (userId && token) {
       let response = await getTransactionHistory(userId, token);
       setTransaction(response);
-      console.log(
-        transaction?.forEach((history) => {
-          console.log(history.dateExecution);
-        })
-      );
     }
   };
+
+  const fetchTransactionDetail = async (transactionId: number) => {
+    if (userId && token) {
+      let response = await getTransactionDetail(userId, transactionId, token);
+      setTransactioDetail(response);
+    }
+  };
+
+  useEffect(() => {
+    if (transactionDetail) {
+      setData([transactionDetail]); // Set data with transactionDetail
+      console.log(data);
+    }
+  }, [transactionDetail]);
+
   useEffect(() => {
     try {
       fetchTransaction();
@@ -30,10 +50,6 @@ const TransactionHistory: React.FC = () => {
       console.log(error);
     }
   }, []);
-
-  const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
-  };
 
   const handleRangeChange = (dates: any) => {
     console.log("Transaction: " + transaction);
@@ -67,6 +83,11 @@ const TransactionHistory: React.FC = () => {
   };
   const { RangePicker } = DatePicker;
 
+  const handleClicked = (transactionId: number) => {
+    setOpen(true);
+    fetchTransactionDetail(transactionId);
+  };
+
   const columns = [
     {
       title: "Transaction No",
@@ -83,18 +104,55 @@ const TransactionHistory: React.FC = () => {
       render: (date: Date) => dayjs(date).format("DD MMM YYYY HH:mm:ss"),
     },
     {
-      title: "Transaction Type",
-      dataIndex: "transactionType",
-    },
-    {
       title: "Status",
       dataIndex: "transactionStatus",
       render: (status: number) =>
         status == 0 ? (
-          <Tag color="volcano">Error</Tag>
-        ) : (
           <Tag color="green">Success</Tag>
+        ) : (
+          <Tag color="volcano">Error</Tag>
         ),
+    },
+    {
+      title: "",
+      dataIndex: "operation",
+      render: (_: any, record: transactionHistory) => (
+        <Button
+          variant="text"
+          onClick={() => handleClicked(record.transactionId)}
+        >
+          View detail
+        </Button>
+      ),
+      width: "10%",
+    },
+  ];
+
+  const columnDetail = [
+    {
+      title: "Transaction No",
+      dataIndex: "transactionNo",
+    },
+    {
+      title: "Reas name",
+      dataIndex: "reasName",
+    },
+    {
+      title: "Send Name",
+      dataIndex: "accountSendName",
+    },
+    {
+      title: "Receive Name",
+      dataIndex: "accountReceiveName",
+    },
+    {
+      title: "Transaction Type",
+      dataIndex: "transactionType",
+    },
+    {
+      title: "Money",
+      dataIndex: "money",
+      render: (money: number) => NumberFormat(money),
     },
   ];
 
@@ -118,6 +176,19 @@ const TransactionHistory: React.FC = () => {
           />
         </div>
       </div>
+      <Modal
+        centered
+        open={open}
+        onOk={() => setOpen(false)}
+        onCancel={() => setOpen(false)}
+        width={1000}
+      >
+        <Table
+          dataSource={data}
+          columns={columnDetail}
+          rowKey="transactionId"
+        />
+      </Modal>
     </>
   );
 };
