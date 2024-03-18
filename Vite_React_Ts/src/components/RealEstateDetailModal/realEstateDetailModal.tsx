@@ -851,7 +851,7 @@ const RealEstateDetailModal = ({
                 ) : auctionStatus === 2 ? (
                   <div className="flex justify-center flex-col items-center py-10">
                     <div className="text-xl text-gray-500">
-                      You have not register to take part in auction yet
+                      Auction register is pending
                     </div>
                     <button
                       onClick={() => handleRegister()}
@@ -1015,10 +1015,58 @@ const RealEstateDetailModal = ({
                     You Are The Owner of This Real Estate
                   </div>
                 </div>
+              ) : auctionStatus === 0 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    Real Estate Is Currently Not Available For Selling
+                  </div>
+                </div>
+              ) : auctionStatus === 1 ? (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    You have not register to take part in auction yet
+                  </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 2 ? (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    Auction register is pending
+                  </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 3 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-blue-700">
+                    Register auction success
+                  </div>
+                </div>
+              ) : auctionStatus === 4 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    You Are The Owner of This Real Estate
+                  </div>
+                </div>
+              ) : auctionStatus === 7 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    Lost Deposit, You was late to the auction
+                  </div>
+                </div>
               ) : (
                 <div className="flex justify-center flex-col items-center py-10">
                   <div className="text-xl text-gray-500">
-                    This real estate is currently not created
+                    This auction is currently not created
                   </div>
                   <button
                     onClick={() => handleRegister()}
