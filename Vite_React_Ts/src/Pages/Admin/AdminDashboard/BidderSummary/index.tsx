@@ -1,6 +1,5 @@
 import { Card } from "antd";
 import ListBidder from "../ListBidder";
-import { useState } from "react";
 import "./style.css";
 const gridStyle: React.CSSProperties = {
   width: "100%",
@@ -8,12 +7,12 @@ const gridStyle: React.CSSProperties = {
 };
 
 const Bidder: React.FC = () => {
-  const [activeTabKey, setActiveTabKey] = useState("week");
+  // const [activeTabKey, setActiveTabKey] = useState("week");
 
-  const handleTabChange = (key: string) => {
-    setActiveTabKey(key);
-    console.log(key);
-  };
+  // const handleTabChange = (key: string) => {
+  //   setActiveTabKey(key);
+  //   console.log(key);
+  // };
 
   return (
     <>

@@ -28,17 +28,20 @@
         public const string MSG24 = "MSG24";
         public const string MSG25 = "MSG25";
         public const string MSG26 = "MSG26";
-
+        public const string MSG27 = "MSG27";
+        public const string MSG28 = "MSG28";
+        public const string MSG29 = "MSG29";
+        public const string MSG30 = "MSG30";
 
         public string StatusCode { get; set; }
         public string Message { get; set; }
-        public ApiResponseMessage(string statusCode, string message = null)
+        public ApiResponseMessage(string statusCode, string message = null, float money = 0)
         {
             StatusCode = statusCode;
-            Message = message ?? GetMessageForMessageCode(statusCode);
+            Message = message ?? GetMessageForMessageCode(statusCode, money);
         }
 
-        private string GetMessageForMessageCode(string messageCode) => messageCode switch
+        private string GetMessageForMessageCode(string messageCode, float money) => messageCode switch
         {
             MSG01 => "No search results for your key search",
             MSG02 => "The * field is required",
@@ -66,6 +69,10 @@
             MSG24 => "Create task successfully.",
             MSG25 => "Update task successfully.",
             MSG26 => "Refund money successfully.",
+            MSG27 => "Auction now has new winner, with new winning price set at " + money + " VNĐ",
+            MSG28 => "Auction has no available next bidder, process real estate to Decline After Auction",
+            MSG29 => "Re-up Real Estate successfully.",
+            MSG30 => "Real Estate has been sold successfully.",
             _ => null
         };
     }

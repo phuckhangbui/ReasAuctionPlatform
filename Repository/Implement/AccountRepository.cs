@@ -207,9 +207,7 @@ namespace Repository.Implement
         public async Task<UserProfileDto> GetMemberProfileDetail(int accountId)
         {
             Account account = await _context.Account.Include(a => a.Major).FirstOrDefaultAsync(a => a.AccountId == accountId);
-            List<Major> majors = await _context.Major.ToListAsync();
 
-            Dictionary<int, string> majorIdNameMap = majors.ToDictionary(major => major.MajorId, major => major.MajorName);
 
             if (account == null)
             {
@@ -217,12 +215,11 @@ namespace Repository.Implement
             }
 
             UserProfileDto userDto = _mapper.Map<UserProfileDto>(account);
-            userDto.Major = majorIdNameMap;
 
             return userDto;
         }
 
-        public async Task<bool> UpdateMemberProfileDetail(UserUpdateProfileInfo userProfileDto)
+        public async Task<bool> UpdateMemberProfileDetail(UserProfileDto userProfileDto)
         {
             Account account = _mapper.Map<Account>(userProfileDto);
 
@@ -240,5 +237,31 @@ namespace Repository.Implement
             return _context.Account.Where(a => (a.RoleId == (int)RoleEnum.Staff || a.RoleId == (int)RoleEnum.Admin)
                                         && a.Account_Status == (int)AccountStatus.Active).ToList();
         }
+
+        public async Task<int> UpdateReupVoucher(int accountId, bool isAddReupVoucher)
+        {
+            Account account = await _context.Account.FirstOrDefaultAsync(a => a.AccountId == accountId);
+
+            if (account == null) { return 0; }
+
+            if (isAddReupVoucher)
+            {
+                account.NumberReupVocher += 1;
+            }
+            else
+            {
+                if (account.NumberReupVocher == 0)
+                {
+                    return -1;  //when reup is already = 0
+                }
+                account.NumberReupVocher -= 1;
+            }
+
+            await UpdateAsync(account);
+
+            return (int)account.NumberReupVocher;
+        }
+
+
     }
 }

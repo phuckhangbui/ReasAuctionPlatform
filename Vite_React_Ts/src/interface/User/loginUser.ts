@@ -4,5 +4,6 @@ interface loginUser {
     email: string,
     roleId: number,
     username: string,
-    token: string
+    token: string,
+    isNewAccount: boolean
 }

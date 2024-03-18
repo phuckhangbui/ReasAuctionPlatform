@@ -18,7 +18,8 @@ import {
   getAuctionCompleteAdmin,
   getAuctionCompleteAdminById,
   getPaticipateUser,
-  changeMemberWin
+  changeMemberWin,
+  changeSuccessReal,
 } from "../../../../api/adminAuction";
 import { UserContext } from "../../../../context/userContext";
 
@@ -31,7 +32,9 @@ const CompleteList: React.FC = () => {
   const [participateData, setParticipateData] =
     useState<ParticipateAccount[]>();
   const [auctionID, setAuctionID] = useState<number | undefined>();
+  const [reasID, setReasID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [statusReas, setStatusReas] = useState<number | undefined>();
 
   const formatDate = (dateString: Date): string => {
     const dateObject = new Date(dateString);
@@ -75,6 +78,8 @@ const CompleteList: React.FC = () => {
         data = await getAuctionCompleteAdminById(auctionId, token);
         setAuctionDetailData(data);
         setAuctionID(auctionId);
+        setReasID(data?.reasId);
+        setStatusReas(data?.statusReas);
         setShowDetail(true);
       }
     } catch (error) {
@@ -105,6 +110,18 @@ const CompleteList: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching change member:", error);
+    }
+  };
+
+  const fetchChangeContactSuccess = async (reasId: number | undefined) => {
+    try {
+      if (token) {
+        let data: Message | undefined;
+        data = await changeSuccessReal(reasId, token);
+        return data;
+      }
+    } catch (error) {
+      console.error("Error fetching change contact success:", error);
     }
   };
 
@@ -219,7 +236,7 @@ const CompleteList: React.FC = () => {
         key: "10",
         label: "Final Amount",
         children: auctionDetailData?.finalAmount
-          ? NumberFormat(auctionDetailData?.floorBid)
+          ? NumberFormat(auctionDetailData?.finalAmount)
           : "",
       },
       {
@@ -245,7 +262,7 @@ const CompleteList: React.FC = () => {
       },
       {
         key: "14",
-        label: "Account Status",
+        label: "Auction Status",
         children: auctionDetailData?.status || "",
         render: (reas_Status: string) => {
           const color = statusColorMap[reas_Status] || "gray"; // Mặc định là màu xám nếu không có trong ánh xạ
@@ -305,6 +322,11 @@ const CompleteList: React.FC = () => {
       render: (lastBid: number) => NumberFormat(lastBid),
       width: "15%",
     },
+    {
+      title: "Note",
+      dataIndex: "note",
+      width: "20%",
+    },
   ];
 
   const handleBackToList = () => {
@@ -326,8 +348,8 @@ const CompleteList: React.FC = () => {
   };
 
   let noteReason: string = "";
-  const onChangeMember = (note: any) => {
-    noteReason = note;
+  const onChangeMember = (e: React.ChangeEvent<HTMLInputElement>) => {
+    noteReason = e.target.value;
   };
 
   const openNotificationWithIcon = (
@@ -347,7 +369,27 @@ const CompleteList: React.FC = () => {
     };
     const response = await fetchChangeMemberWin(Auction);
     if (response != undefined && response) {
-      if (response.statusCode == "MSG05") {
+      if (response.statusCode == "MSG27") {
+        openNotificationWithIcon("success", response.message);
+        fetchAuctionDetail(auctionID);
+        fetchParticipate(auctionID);
+      } else if (response.statusCode == "MSG28") {
+        openNotificationWithIcon("success", response.message);
+        fetchAuctionDetail(auctionID);
+        fetchParticipate(auctionID);
+      } else {
+        openNotificationWithIcon(
+          "error",
+          "Something went wrong when executing operation. Please try again!"
+        );
+      }
+    }
+  };
+
+  const handleChangeContactSuccess = async () => {
+    const response = await fetchChangeContactSuccess(reasID);
+    if (response != undefined && response) {
+      if (response.statusCode == "MSG30") {
         openNotificationWithIcon("success", response.message);
         fetchAuctionDetail(auctionID);
         fetchParticipate(auctionID);
@@ -372,29 +414,51 @@ const CompleteList: React.FC = () => {
             <FontAwesomeIcon icon={faArrowLeft} style={{ color: "#74C0FC" }} />
           </Button>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button onClick={showModal}>Change Member Win</Button>
-            <Modal
-              title="Fill information to create Auction"
-              open={isModalOpen}
-              onOk={handleOk}
-              onCancel={handleCancel}
-              footer={[
-                <Button key="submit" onClick={handleOk}>
-                  Create
-                </Button>,
-              ]}
-            >
-              <div style={{ alignContent: "center" }}>
-                <p>
-                  <strong>Note :</strong>
-                </p>
-                <InputAntd
-                  placeholder="Note reason to change winner"
-                  onChange={onChangeMember}
-                />
+            {statusReas === 5 ? (
+              <div>
+                <Button
+                  onClick={handleChangeContactSuccess}
+                  style={{ backgroundColor: "green" }}
+                >
+                  Contact Success
+                </Button>
               </div>
-              <br />
-            </Modal>
+            ) : (
+              <div>
+                <Button disabled>Contact Success</Button>
+              </div>
+            )}
+            {statusReas === 8 || statusReas === 6 ? (
+              <div>
+                <Button onClick={showModal}>Change Member Win</Button>
+                <Modal
+                  title="Fill information to create Auction"
+                  open={isModalOpen}
+                  onOk={handleOk}
+                  onCancel={handleCancel}
+                  footer={[
+                    <Button key="submit" onClick={handleOk}>
+                      Create
+                    </Button>,
+                  ]}
+                >
+                  <div style={{ alignContent: "center" }}>
+                    <p>
+                      <strong>Note :</strong>
+                    </p>
+                    <InputAntd
+                      placeholder="Note reason to change winner"
+                      onChange={onChangeMember}
+                    />
+                  </div>
+                  <br />
+                </Modal>
+              </div>
+            ) : (
+              <div>
+                <Button disabled>Contact Success</Button>
+              </div>
+            )}
           </div>
           <br />
           <br />

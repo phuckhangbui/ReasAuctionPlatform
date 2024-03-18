@@ -1,7 +1,7 @@
 ﻿using API.MessageResponse;
-using BusinessObject.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.DTOs;
 using Service.Interface;
 
 namespace API.Controllers
@@ -17,7 +17,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("/account")]
-        public async Task<ActionResult<List<Notification>>> GetAccountNotifications()
+        public async Task<ActionResult<List<NotificationDto>>> GetAccountNotifications()
         {
             int accountId = GetLoginAccountId();
 

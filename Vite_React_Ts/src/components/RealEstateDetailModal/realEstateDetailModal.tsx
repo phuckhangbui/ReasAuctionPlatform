@@ -17,6 +17,7 @@ import {
 import { DepositContext } from "../../context/depositContext";
 import { registerParticipateAuction } from "../../api/transaction";
 import LoginModal from "../LoginModal/loginModal";
+import { memberRealEstateDetail } from "../../api/memberRealEstate";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -44,7 +45,7 @@ const RealEstateDetailModal = ({
   const [userRegisterList, setUserRegisterList] = useState<
     number[] | undefined
   >();
-  const [isUserRegistered, setIsUserRegistered] = useState(false);
+  const [_isUserRegistered, setIsUserRegistered] = useState(false);
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
@@ -74,6 +75,22 @@ const RealEstateDetailModal = ({
       console.log(error);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      if (userId === realEstateDetail?.accountOwnerId) {
+        const fetchOwnerRealEstateDetail = async () => {
+          if (token) {
+            const response = await memberRealEstateDetail(realEstateId, token);
+            setRealEstateDetail(response);
+          }
+        };
+        fetchOwnerRealEstateDetail();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [realEstateDetail?.detail === null]);
 
   //get userRegisterList
   useEffect(() => {
@@ -170,21 +187,6 @@ const RealEstateDetailModal = ({
       console.log(error);
     }
   }, [realEstateDetail?.dateEnd]);
-
-  function formatVietnameseDong(price: string) {
-    // Convert the string to a number
-    const numberPrice = parseInt(price, 10);
-    // Check if the conversion was successful
-    if (isNaN(numberPrice)) {
-      // Return the original string if it's not a valid number
-      return price;
-    }
-    // Format the number
-    const formattedNumber = numberPrice
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return formattedNumber;
-  }
 
   // Change the tab index
   const toggleTab = (index: string) => {
@@ -619,7 +621,6 @@ const RealEstateDetailModal = ({
                   src={photo.reasPhotoUrl}
                   alt="Real Estate Photos"
                   className="md:h-120 sm:h-96 w-full object-fill rounded-lg"
-                  key={photo.reasPhotoId}
                 />
               ))}
             </Carousel>
@@ -687,7 +688,7 @@ const RealEstateDetailModal = ({
                 <div>
                   <div className="text-xl font-bold ">
                     {realEstateDetail?.reasPrice
-                      ? formatVietnameseDong(realEstateDetail?.reasPrice)
+                      ? NumberFormat(realEstateDetail?.reasPrice)
                       : realEstateDetail?.reasPrice}{" "}
                     VND
                   </div>
@@ -716,7 +717,7 @@ const RealEstateDetailModal = ({
                   <div className="text-xl font-bold ">
                     {realEstateDetail?.reasArea}
                   </div>
-                  <div className="text-xs text-gray-700">Sqft</div>
+                  <div className="text-xs text-gray-700">m²</div>
                 </div>
               </div>
               <div className="flex items-center">
@@ -1008,6 +1009,12 @@ const RealEstateDetailModal = ({
                 ) : (
                   <></>
                 )
+              ) : userId === realEstateDetail?.accountOwnerId ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    You Are The Owner of This Real Estate
+                  </div>
+                </div>
               ) : (
                 <div className="flex justify-center flex-col items-center py-10">
                   <div className="text-xl text-gray-500">

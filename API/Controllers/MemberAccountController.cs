@@ -32,7 +32,7 @@ namespace API.Controllers
 
         [Authorize(policy: "Member")]
         [HttpPut("profile/update")]
-        public async Task<ActionResult> UpdateUserInfomation(UserUpdateProfileInfo userProfileDto)
+        public async Task<ActionResult> UpdateUserInfomation(UserProfileDto userProfileDto)
         {
             int accountId = GetLoginAccountId();
             if (accountId == 0)

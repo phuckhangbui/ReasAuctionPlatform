@@ -12,11 +12,11 @@
             mailSetting.Passwork = "zgtj veex szof becd";
             mailSetting.DisplayName = "REAS";
             mailContext.To = toEmail;
-            mailContext.Subject = "Từ chối bất động sản của bạn lên diễn đàn điện tử của Công Ty REAS (Công ty Bất Động Sản)"; ;
-            mailContext.Body = "<h3>Lời nói đầu tiên xin cảm ơn đến bạn " + "<strong>" + name + "</strong>" + " đã quan tâm đến website của chúng tôi và muốn đăng bất động sản lên diễn đàn. Tuy nhiên, bất động sản của bạn không được tiếp nhận. Bởi vì một số lí do sau:</h3>" +
-                                "<br><p><strong>Lí do:</strong> " + message + "</p>" +
-                                "<br><br><h4>Vui lòng điền lại thông tin phù hợp để có thể sử dung tất cả dịch vụ tiện ích của website chúng tôi.</h4>" +
-                                "<br><br><h4>Reas xin cảm ơn!</h4>";
+            mailContext.Subject = "Rejection of your real estate on the electronic forum of REAS Company (Real Estate Company)";
+            mailContext.Body = "<h3>First of all, thank you " + "<strong>" + name + "</strong>" + " for your interest in our website and wanting to post real estate on the forum. However, your real estate has not been accepted due to the following reasons:</h3>" +
+                                "<br><p><strong>Reason:</strong> " + message + "</p>" +
+                                "<br><br><h4>Please provide appropriate information to be able to use all the utility services of our website.</h4>" +
+                                "<br><br><h4>Reas thank you!</h4>";
             var sendmailservice = new SendMailService(mailSetting);
             sendmailservice.SendMail(mailContext);
         }

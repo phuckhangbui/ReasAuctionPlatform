@@ -9,6 +9,7 @@ using Repository.DTOs;
 using Repository.Paging;
 using Repository.Param;
 using Service.Exceptions;
+using Service.Implement;
 using Service.Interface;
 using Service.VnPay;
 using System.Collections.Specialized;
@@ -25,10 +26,24 @@ namespace API.Controllers
         private readonly IRealEstateService _realEstateService;
         private readonly IParticipantHistoryService _participantHistoryService;
         private readonly INotificatonService _notificatonService;
+        private readonly IAccountService _accountService;
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
+        private readonly ILogger<AuctionController> _logger;
+        private readonly IBackgroundTaskService _backgroundTaskService;
 
-        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService, INotificatonService notificatonService)
+        public AuctionController(IAuctionService auctionService, 
+            IAuctionAccountingService auctionAccountingService, 
+            IDepositAmountService depositAmountService, 
+            IMoneyTransactionService moneyTransactionService, 
+            IOptions<VnPayProperties> vnPayProperties, 
+            IVnPayService vnPayService, 
+            IRealEstateService realEstateService, 
+            IParticipantHistoryService participantHistoryService, 
+            INotificatonService notificatonService, 
+            IAccountService accountService,
+            ILogger<AuctionController> logger,
+            IBackgroundTaskService backgroundTaskService)
         {
             _auctionService = auctionService;
             _auctionAccountingService = auctionAccountingService;
@@ -39,6 +54,9 @@ namespace API.Controllers
             _realEstateService = realEstateService;
             _participantHistoryService = participantHistoryService;
             _notificatonService = notificatonService;
+            _accountService = accountService;
+            _logger = logger;
+            _backgroundTaskService = backgroundTaskService;
         }
 
         [HttpGet("/auctions/{reasId}")]
@@ -78,7 +96,7 @@ namespace API.Controllers
         [HttpGet("auctions")]
         public async Task<IActionResult> GetAuctionsForMember([FromQuery] AuctionParam auctionParam)
         {
-            var auctions = await _auctionService.GetNotyetAndOnGoingAuction(auctionParam);
+            var auctions = await _auctionService.GetAuctionsNotCancel(auctionParam);
 
             Response.AddPaginationHeader(new PaginationHeader(auctions.CurrentPage, auctions.PageSize,
             auctions.TotalCount, auctions.TotalPages));
@@ -193,11 +211,11 @@ namespace API.Controllers
                 }
 
                 //get the list of all user register in auction
-                List<int> userIdRegisterInAuction = await _auctionService.GetUserInAuction(auctionAccountingDto.ReasId);
+                //List<int> userIdRegisterInAuction = await _auctionService.GetUserInAuction(auctionAccountingDto.ReasId);
 
                 List<int> userIdParticipateInAuction = auctionSuccessDto.AuctionHistory.Select(a => a.AccountId).ToList();  // include winner in here
 
-                List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
+                //List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
 
                 //update status for user participate
                 foreach (int userId in userIdParticipateInAuction)
@@ -206,10 +224,10 @@ namespace API.Controllers
                 }
 
                 //update status for user who not participate
-                foreach (int userId in userIdsRegisteredNotParticipated)
-                {
-                    await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.LostDeposit);
-                }
+                //foreach (int userId in userIdsRegisteredNotParticipated)
+                //{
+                //    await _depositAmountService.UpdateStatus(userId, auctionAccountingDto.ReasId, (int)UserDepositEnum.LostDeposit);
+                //}
 
                 // change the status of winner
                 await _depositAmountService.UpdateStatus(auctionSuccessDto.AuctionDetailDto.AccountWinId, auctionAccountingDto.ReasId, (int)UserDepositEnum.Winner);
@@ -234,32 +252,54 @@ namespace API.Controllers
                     userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
 
                     //send notification
-                    _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
+                    await _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
 
-                    _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AccountWinId);
+                    await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId, auctionAccountingDto.MaxAmount);
 
-                    _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
+                    //await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
 
-                    _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
+                    await _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
 
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(new ApiResponse(404));
+                return BadRequest(new ApiResponse(404, ex.ToString()));
             }
 
             return Ok(auctionAccountingDto);
         }
 
         [Authorize(policy: "Member")]
-        [HttpGet("start")]
-        public async Task<ActionResult> AuctionStart(int auctionId)
+        [HttpPost("start")]
+        public async Task<ActionResult> AuctionStart(AuctionSuccessDto participants)
         {
-            var result = await _auctionService.UpdateAuctionWhenStart(auctionId);
-            if (result != null)
+            var auction = await _auctionService.UpdateAuctionWhenStart(participants.AuctionDetailDto.AuctionId);
+            if (auction != null)
             {
-                return Ok(result);
+                try
+                {
+                    List<int> userIdRegisterInAuction = await _auctionService.GetUserInAuction(auction.ReasId);
+
+                    List<int> userIdParticipateInAuction = participants.AuctionHistory.Select(a => a.AccountId).ToList();
+
+                    List<int> userIdsRegisteredNotParticipated = userIdRegisterInAuction.Except(userIdParticipateInAuction).ToList();
+
+                    foreach (int userId in userIdsRegisteredNotParticipated)
+                    {
+                        await _depositAmountService.UpdateStatus(userId, auction.ReasId, (int)UserDepositEnum.LostDeposit);
+                    }
+
+                    await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auction.AuctionId);
+
+                    //Schedule background service to get new DateEnd
+                    await _backgroundTaskService.ScheduleGetAuctionResultFromFirebase(participants.AuctionDetailDto.AuctionId);
+
+                    _logger.LogInformation($"Trigger schedule process of auction id {participants.AuctionDetailDto.AuctionId} successfully at {DateTime.Now}.");
+
+                    return Ok();
+                }
+                catch (Exception ex) { BadRequest(new ApiResponse(404, ex.ToString())); }
             }
 
             return BadRequest(new ApiResponse(404));
@@ -536,7 +576,7 @@ namespace API.Controllers
             await _participantHistoryService.UpdateParticipateHistoryStatus(auctionAccounting.AuctionAccountingId, auctionAccounting.AccountWinId, (int)ParticipateAuctionHistoryEnum.Others, updateAuctionWinnerDto.message);
 
             //send noti + mail for old winner, inform loose deposit
-
+            await _notificatonService.SendNotificationWhenWinnerLoseContactUsingOldAuctionAccounting(updateAuctionWinnerDto.auctionId);
 
 
             if (nextHighestBidder != null)
@@ -558,23 +598,28 @@ namespace API.Controllers
                 await _depositAmountService.UpdateStatus(newAuctionAccounting.AccountWinId, auction.ReasId, (int)UserDepositEnum.Winner);
 
                 //send noti + mail for new winner
+                await _notificatonService.SendNotificationWhenWinAuction(updateAuctionWinnerDto.auctionId, newAuctionAccounting.MaxAmount);
 
-
-                return Ok(new { message = $"Auction now has new winner, with new winning price set at {newAuctionAccounting.MaxAmount} VND" });
+                return Ok(new ApiResponseMessage("MSG27", "", newAuctionAccounting.MaxAmount));
 
             }
             else
             {
                 //realestate now in the DeclineAfterAuction
-                await _realEstateService.UpdateRealEstateStatus(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
+                await _realEstateService.UpdateRealEstateStatus(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction, false);
+
+                //add voucher for winner
+                var realEsate = _realEstateService.GetRealEstate(auction.ReasId);
+                await _accountService.UpdateReupVoucher(realEsate.AccountOwnerId, true);
 
                 //update auction accounting to floor level
                 auctionAccounting = await _auctionAccountingService.UpdateAuctionAccountingWhenNoWinnerRemain(updateAuctionWinnerDto.auctionId);
 
+
                 //send noti + mail for owner notif ther real estate status
+                await _notificatonService.SendNotificationToOwnerWhenChangeStatusOfRealEstate(auction.ReasId, (int)RealEstateStatus.DeclineAfterAuction);
 
-
-                return Ok(new { message = "Auction has no available next bidder, process real estate to Decline After Auction" });
+                return Ok(new ApiResponseMessage("MSG28"));
 
             }
         }

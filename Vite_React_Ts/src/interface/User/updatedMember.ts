@@ -1,6 +1,6 @@
 interface updatedMember {
   accountId: number;
-  userName: string;
+  username: string;
   accountName: string;
   phoneNumber: string;
   citizenIdentification: string;

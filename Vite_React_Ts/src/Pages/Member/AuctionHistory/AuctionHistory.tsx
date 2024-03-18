@@ -61,7 +61,6 @@ const AuctionHistory: React.FC = () => {
     setCurrentPage(page);
   };
 
-
   const getColorForDepositStatus = (depositStatus: number) => {
     switch (depositStatus) {
       case 0:

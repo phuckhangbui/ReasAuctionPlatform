@@ -28,6 +28,7 @@ namespace Repository.Implement
                 accountEmail = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.AccountEmail).FirstOrDefault(),
                 accountPhone = _context.Account.Where(a => a.AccountId == x.AccountBidId).Select(b => b.PhoneNumber).FirstOrDefault(),
                 lastBid = Convert.ToDouble(x.LastBid),
+                note = x.Note
             });
             return participate;
         }

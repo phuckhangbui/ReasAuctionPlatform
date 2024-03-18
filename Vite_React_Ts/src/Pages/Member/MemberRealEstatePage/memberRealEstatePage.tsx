@@ -26,16 +26,19 @@ const MemberRealEstatePage = () => {
     }
   }, []);
 
+
+
+
   return (
     <>
       <div className="pt-20">
         <div className="container w-full mx-auto">
           <div className="text-center">
             <div className="text-gray-900  text-4xl font-bold">
-              Explore Our Real Estate Options
+              Your Real Estate
             </div>
             <div className="mt-2">
-              Take a look at our various options and find your forever home
+              View all of your real estate and their statuses
             </div>
           </div>
           <RealEstateList

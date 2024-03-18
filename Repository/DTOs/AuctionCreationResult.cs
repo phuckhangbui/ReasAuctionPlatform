@@ -1,7 +1,4 @@
-﻿
-using BusinessObject.Entity;
-
-namespace Repository.DTOs
+﻿namespace Repository.DTOs
 {
     public class AuctionCreationResult
     {

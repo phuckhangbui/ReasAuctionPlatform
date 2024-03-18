@@ -3,5 +3,6 @@
     public interface IBackgroundTaskService
     {
         Task ScheduleAuction();
+        Task ScheduleGetAuctionResultFromFirebase(int auctionId);
     }
 }

@@ -158,8 +158,26 @@ export const addAuction = async ({
           note
         }
       const fetchData = await axios.post<Message>(
-        `${baseUrl}/api/Auction/admin/????`,
+        `${baseUrl}/api/Auction/update/winner`,
         param,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const response = fetchData.data;
+      return response;
+    } catch (error) {
+      console.log("Error: " + error);
+    }
+  };
+
+  export const changeSuccessReal = async (reasId : number | undefined, token: string) => {
+    try {
+      const fetchData = await axios.get<Message>(
+        `${baseUrl}/api/admin/real-estate/sucess/${reasId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

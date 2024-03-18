@@ -13,12 +13,15 @@ namespace Service.Implement
         private readonly IAccountRepository _accountRepository;
         private readonly IRealEstateDetailRepository _realEstateDetailRepository;
         private readonly IRealEstateRepository _realEstateRepository;
+        private readonly INotificatonService _notificatonService;
 
-        public AdminRealEstateService(IAccountRepository accountRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstateRepository realEstateRepository)
+
+        public AdminRealEstateService(IAccountRepository accountRepository, IRealEstateDetailRepository realEstateDetailRepository, IRealEstateRepository realEstateRepository, INotificatonService notificatonService)
         {
             _accountRepository = accountRepository;
             _realEstateDetailRepository = realEstateDetailRepository;
             _realEstateRepository = realEstateRepository;
+            _notificatonService = notificatonService;
         }
 
         public IAccountRepository AccountRepository => _accountRepository;
@@ -70,11 +73,11 @@ namespace Service.Implement
             Account account = await _realEstateRepository.UpdateRealEstateStatusAsync(reasStatusParam);
             if (account != null)
             {
-                if (reasStatusParam.reasStatus == 3 || reasStatusParam.reasStatus == 9)
+                if (reasStatusParam.reasStatus == (int)RealEstateStatus.Cancel)
                 {
                     SendMailWhenRejectRealEstate.SendEmailWhenRejectRealEstate(account.AccountEmail, account.AccountName, reasStatusParam.messageString);
                 }
-                else if (reasStatusParam.reasStatus == 1)
+                else if (reasStatusParam.reasStatus == (int)RealEstateStatus.Approved)
                 {
                     SendMailWhenApproveRealEstate.SendEmailWhenApproveRealEstate(account.AccountEmail, account.AccountName);
 
