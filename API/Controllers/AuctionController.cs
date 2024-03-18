@@ -9,6 +9,7 @@ using Repository.DTOs;
 using Repository.Paging;
 using Repository.Param;
 using Service.Exceptions;
+using Service.Implement;
 using Service.Interface;
 using Service.VnPay;
 using System.Collections.Specialized;
@@ -28,8 +29,21 @@ namespace API.Controllers
         private readonly IAccountService _accountService;
         private readonly VnPayProperties _vnPayProperties;
         private readonly IVnPayService _vnPayService;
+        private readonly ILogger<AuctionController> _logger;
+        private readonly IBackgroundTaskService _backgroundTaskService;
 
-        public AuctionController(IAuctionService auctionService, IAuctionAccountingService auctionAccountingService, IDepositAmountService depositAmountService, IMoneyTransactionService moneyTransactionService, IOptions<VnPayProperties> vnPayProperties, IVnPayService vnPayService, IRealEstateService realEstateService, IParticipantHistoryService participantHistoryService, INotificatonService notificatonService, IAccountService accountService)
+        public AuctionController(IAuctionService auctionService, 
+            IAuctionAccountingService auctionAccountingService, 
+            IDepositAmountService depositAmountService, 
+            IMoneyTransactionService moneyTransactionService, 
+            IOptions<VnPayProperties> vnPayProperties, 
+            IVnPayService vnPayService, 
+            IRealEstateService realEstateService, 
+            IParticipantHistoryService participantHistoryService, 
+            INotificatonService notificatonService, 
+            IAccountService accountService,
+            ILogger<AuctionController> logger,
+            IBackgroundTaskService backgroundTaskService)
         {
             _auctionService = auctionService;
             _auctionAccountingService = auctionAccountingService;
@@ -41,6 +55,8 @@ namespace API.Controllers
             _participantHistoryService = participantHistoryService;
             _notificatonService = notificatonService;
             _accountService = accountService;
+            _logger = logger;
+            _backgroundTaskService = backgroundTaskService;
         }
 
         [HttpGet("/auctions/{reasId}")]
@@ -275,6 +291,11 @@ namespace API.Controllers
                     }
 
                     await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auction.AuctionId);
+
+                    //Schedule background service to get new DateEnd
+                    await _backgroundTaskService.ScheduleGetAuctionResultFromFirebase(participants.AuctionDetailDto.AuctionId);
+
+                    _logger.LogInformation($"Trigger schedule process of auction id {participants.AuctionDetailDto.AuctionId} successfully at {DateTime.Now}.");
 
                     return Ok();
                 }
