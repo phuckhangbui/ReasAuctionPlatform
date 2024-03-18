@@ -45,7 +45,7 @@ const RealEstateDetailModal = ({
   const [userRegisterList, setUserRegisterList] = useState<
     number[] | undefined
   >();
-  const [isUserRegistered, setIsUserRegistered] = useState(false);
+  const [_isUserRegistered, setIsUserRegistered] = useState(false);
   const [realEstateDetail, setRealEstateDetail] = useState<
     realEstateDetail | undefined
   >();
@@ -1009,6 +1009,12 @@ const RealEstateDetailModal = ({
                 ) : (
                   <></>
                 )
+              ) : userId === realEstateDetail?.accountOwnerId ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    You Are The Owner of This Real Estate
+                  </div>
+                </div>
               ) : (
                 <div className="flex justify-center flex-col items-center py-10">
                   <div className="text-xl text-gray-500">

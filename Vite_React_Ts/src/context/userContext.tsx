@@ -1,5 +1,4 @@
 import { ReactNode, createContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface UserProviderProps {
   children: ReactNode;
@@ -59,9 +58,9 @@ const UserProvider = ({ children }: UserProviderProps) => {
     }
   }, []);
 
-  useEffect(() => {
-    console.log("User ID: ", userId);
-  }, [userId]);
+  // useEffect(() => {
+  //   console.log("User ID: ", userId);
+  // }, [userId]);
 
   const login = (user: loginUser, token: string) => {
     const stringUser = JSON.stringify(user);

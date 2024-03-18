@@ -6,4 +6,5 @@ interface auction {
   dateEnd: Date;
   floorBid: string;
   status: number;
+  thumbnailUrl: string
 }

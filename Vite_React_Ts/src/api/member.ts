@@ -139,3 +139,18 @@ export const updateMemberProfile = async (
     console.log("Error: " + error);
   }
 };
+
+export const getNotification = async (token: string) => {
+  try {
+    const fetchData = await axios.get<notification[]>(`${baseUrl}/account`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const response = fetchData.data;
+    return response;
+  } catch (error) {
+    console.log("Error: " + error);
+  }
+};

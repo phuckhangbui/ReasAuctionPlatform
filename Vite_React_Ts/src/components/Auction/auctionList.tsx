@@ -9,7 +9,7 @@ interface AuctionListProps {
 const AuctionList = ({ auctionsList }: AuctionListProps) => {
   const [auctions, setAuctions] = useState<auction[] | undefined>([]);
   const [showModal, setShowModal] = useState(false);
-  const [realEstateId, setRealEstateId] = useState<number>(-1);
+  const [realEstateId, setRealEstateId] = useState<number>(0);
 
   const toggleModal = (realEstateId: number) => {
     setShowModal((prevShowModal) => !prevShowModal);
