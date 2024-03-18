@@ -32,7 +32,7 @@ namespace Service.Implement
             var tokenDiscriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claim),
-                Expires = DateTime.Now.AddHours(1),
+                Expires = DateTime.Now.AddHours(5),
                 SigningCredentials = creds
             };
 
