@@ -10,6 +10,7 @@ using Repository.Interface;
 using Service.Cloundinary;
 using Service.Implement;
 using Service.Interface;
+using System.Configuration;
 
 namespace API.Extensions
 {
@@ -65,15 +66,14 @@ namespace API.Extensions
 
             services.AddSingleton<IFirebaseAuctionService>(provider =>
             {
-                IFirebaseConfig config = new FirebaseConfig
+                IFirebaseConfig firebaseConfig = new FirebaseConfig
                 {
-                    AuthSecret = "BKzPJclM4rnmLoj8JXIgWKkjwP0aprY6NK266RL9",
-                    BasePath = "https://swd-reas-default-rtdb.asia-southeast1.firebasedatabase.app/"
+                    AuthSecret = config["FirebaseDatabase:AuthSecret"],
+                    BasePath = config["FirebaseDatabase:BasePath"]
                 };
 
-
-                IFirebaseClient client = new FirebaseClient(config);
-                return new FirebaseAuctionService(config);
+                IFirebaseClient client = new FirebaseClient(firebaseConfig);
+                return new FirebaseAuctionService(firebaseConfig);
             });
 
             services.AddDbContext<DataContext>(opt =>

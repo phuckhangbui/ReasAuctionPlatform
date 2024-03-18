@@ -20,7 +20,9 @@ namespace Repository.Mapper
             CreateMap<RealEstateDto, RealEstateDto>();
             CreateMap<News, NewsDto>();
             CreateMap<Rule, Rule>();
-            CreateMap<RealEstate, RealEstateDto>();
+            CreateMap<RealEstate, RealEstateDto>()
+                .ForMember(dest => dest.ReasTypeName, opt => opt.MapFrom(src => src.Type_REAS.Type_Reas_Name))
+                .ForMember(dest => dest.UriPhotoFirst, opt => opt.MapFrom(src => src.Photos.FirstOrDefault(r => r.ReasId == src.ReasId).ReasPhotoUrl));
             CreateMap<RealEstatePhoto, RealEstatePhotoDto>();
             CreateMap<MoneyTransaction, MoneyTransactionDto>()
                 .ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.Type.TypeName));
@@ -43,7 +45,8 @@ namespace Repository.Mapper
                 .ReverseMap();
             CreateMap<Account, AuctionAttenderDto>();
             CreateMap<Auction, AuctionNotCancelDto>()
-                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName));
+                .ForMember(dest => dest.ReasName, opt => opt.MapFrom(src => src.RealEstate.ReasName))
+                .ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src => src.RealEstate.Photos.FirstOrDefault(r => r.ReasId == src.ReasId).ReasPhotoUrl));
             CreateMap<Notification, NotificationDto>();
         }
     }

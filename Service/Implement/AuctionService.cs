@@ -161,7 +161,7 @@ namespace Service.Implement
             return await _auctionRepository.GetAuctionByAuctionId(auctionId);
         }
 
-        public async Task<PageList<AuctionNotCancelDto>> GetAuctionsNotCancel(AuctionParam auctionParam)
+        public async Task<PageList<AuctionNotCancelDto>> GetAuctionsNotCancel(AuctionNotCancelParam auctionParam)
         {
             return await _auctionRepository.GetAuctionNotCancelsAsync(auctionParam);
         }

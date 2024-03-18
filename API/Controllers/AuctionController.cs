@@ -93,10 +93,10 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("auctions")]
-        public async Task<IActionResult> GetAuctionsForMember([FromQuery] AuctionParam auctionParam)
+        [HttpPost("auctions")]
+        public async Task<IActionResult> GetAuctionsForMember([FromBody] AuctionNotCancelParam auctionNotCancelParam)
         {
-            var auctions = await _auctionService.GetAuctionsNotCancel(auctionParam);
+            var auctions = await _auctionService.GetAuctionsNotCancel(auctionNotCancelParam);
 
             Response.AddPaginationHeader(new PaginationHeader(auctions.CurrentPage, auctions.PageSize,
             auctions.TotalCount, auctions.TotalPages));
