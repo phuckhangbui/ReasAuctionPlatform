@@ -422,9 +422,6 @@ const RealEstateDetailModal = ({
       });
 
       setCurrentBid(currentInputBid);
-      if (auction && token) {
-        StartAuction(auction.auctionId, token);
-      }
     } catch (error) {
       console.error("Error updating bid in Firebase:", error);
     }
@@ -535,20 +532,44 @@ const RealEstateDetailModal = ({
     };
   }, [realEstateId]);
 
-  // useEffect(() => {
-  //   const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
-  //   const unsubscribe = onValue(statusRef, (snapshot) => {
-  //     const statusValue = snapshot.val();
-  //     if (statusValue == 0) {
-  //       setIsBidded(false);
-  //     } else if (statusValue == 1) {
-  //       setIsBidded(true);
-  //     }
-  //   });
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, [realEstateId]);
+  useEffect(() => {
+    const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
+    const unsubscribe = onValue(statusRef, (snapshot) => {
+      const statusValue = snapshot.val();
+      if (statusValue == 0) {
+        return;
+      } else if (statusValue == 1) {
+        const userList: userHistory[] = [];
+        const usersRef = ref(db, `auctions/${realEstateId}/users`);
+
+        // Get all users and their bids
+        const StartTheAuction = async () => {
+          const usersSnapshot = await get(usersRef);
+          const usersData = usersSnapshot.val();
+
+          if (auction && token) {
+            const auctionDetailDto = {
+              auctionId: auction.auctionId,
+              accountWinId: 0,
+              winAmount: 0,
+            };
+
+            Object.keys(usersData).forEach((userId) => {
+              userList.push({
+                accountId: parseInt(usersData[userId].userId, 10),
+                lastBidAmount: usersData[userId].currentUserBid,
+              });
+            });
+            StartAuction(auctionDetailDto, userList, token);
+          }
+        };
+        StartTheAuction();
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [realEstateId]);
 
   // const handleOnFinish = () => {
   //   if (auction) {
@@ -616,6 +637,11 @@ const RealEstateDetailModal = ({
 
   const handleCountDownStarting = () => {
     setAuctionStatus(5);
+  };
+
+  const handleOnAuctionEnd = () => {
+    setIsAuctionEnd(true);
+    setIsAuctionOpen(false);
   };
 
   return (
@@ -929,11 +955,18 @@ const RealEstateDetailModal = ({
                         {!isAuctionEnd ? (
                           <Countdown
                             value={dayjs(auction.dateEnd).toDate().toString()}
-                            format="H [hours] m [minutes] s [secs]"
+                            // format="H [hours] m [minutes] s [secs]"
+                            format="m [minutes] s [secs]"
                             prefix="Remain time"
+                            onFinish={handleOnAuctionEnd}
                           />
                         ) : (
-                          <></>
+                          <Typography variant="h5">
+                            Auction end:{" "}
+                            {dayjs(auction?.dateEnd).format(
+                              "DD/MM/YYYY HH:mm:ss"
+                            )}
+                          </Typography>
                         )}
                       </div>
 
