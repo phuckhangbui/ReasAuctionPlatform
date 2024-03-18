@@ -255,7 +255,7 @@ namespace API.Controllers
         }
 
         [Authorize(policy: "Member")]
-        [HttpGet("start")]
+        [HttpPost("start")]
         public async Task<ActionResult> AuctionStart(AuctionSuccessDto participants)
         {
             var auction = await _auctionService.UpdateAuctionWhenStart(participants.AuctionDetailDto.AuctionId);
