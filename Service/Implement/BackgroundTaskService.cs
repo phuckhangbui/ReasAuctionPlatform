@@ -222,7 +222,7 @@ namespace Service.Implement
                         //send notification
                         await _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
 
-                        await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId);
+                        await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId, (float)auctionDetailDto.WinAmount);
 
                         await _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
 
