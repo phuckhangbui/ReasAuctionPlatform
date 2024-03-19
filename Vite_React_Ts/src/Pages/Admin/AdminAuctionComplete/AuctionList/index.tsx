@@ -428,7 +428,7 @@ const CompleteList: React.FC = () => {
                 <Button disabled>Contact Success</Button>
               </div>
             )}
-            {statusReas === 8 || statusReas === 6 ? (
+            {statusReas === 5 ? (
               <div>
                 <Button onClick={showModal}>Change Member Win</Button>
                 <Modal
@@ -456,7 +456,7 @@ const CompleteList: React.FC = () => {
               </div>
             ) : (
               <div>
-                <Button disabled>Contact Success</Button>
+                <Button disabled>Change Member Win</Button>
               </div>
             )}
           </div>

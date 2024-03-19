@@ -258,7 +258,7 @@ namespace Repository.Implement
                 auction.AccountCreateId = auctionCreateParam.AccountCreateId;
                 auction.AccountCreateName = _context.Account.Where(x => x.AccountId == auctionCreateParam.AccountCreateId).Select(x => x.AccountName).FirstOrDefault();
                 auction.DateStart = auctionCreateParam.DateStart.AddHours(7);
-                auction.DateEnd = auctionCreateParam.DateStart.AddHours(8);
+                auction.DateEnd = auctionCreateParam.DateStart.AddHours(7).AddMinutes(10);
                 auction.FloorBid = _context.RealEstate.Where(x => x.ReasId == auctionCreateParam.ReasId).Select(x => x.ReasPrice).FirstOrDefault();
                 auction.Status = 0;
                 bool check = await CreateAsync(auction);
