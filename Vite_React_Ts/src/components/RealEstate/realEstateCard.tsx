@@ -67,9 +67,8 @@ const RealEstateCard = ({
   const handlePayingFee = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    e.preventDefault();
-    e.stopPropagation();
     try {
+      e.preventDefault();
       const fetchPaymentUrl = async () => {
         if (userId && token) {
           if (estate?.reasId) {
