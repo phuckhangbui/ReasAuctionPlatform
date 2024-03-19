@@ -3,6 +3,7 @@ import SearchBar from "../../../components/SearchBar/searchBar.tsx";
 import RealEstateList from "../../../components/RealEstate/realEstateList.tsx";
 import { searchRealEstate } from "../../../api/realEstate.ts";
 import realEstate from "../../../interface/RealEstate/realEstate.ts";
+import { Empty } from "antd";
 
 const priceList = [
   5000, 6000, 7000, 8000, 10000, 11000, 12000, 15000, 20000, 50000, 100000,
@@ -299,10 +300,16 @@ const RealEstatePage = () => {
               Take a look at our various options and find your forever home
             </div>
           </div>
-          <RealEstateList
-            realEstatesList={realEstateList}
-            ownRealEstates={false}
-          />
+          {realEstateList && realEstateList?.length > 0 ? (
+            <RealEstateList
+              realEstatesList={realEstateList}
+              ownRealEstates={false}
+            />
+          ) : (
+            <div className="mt-20">
+              <Empty />
+            </div>
+          )}
         </div>
       </div>
     </>
