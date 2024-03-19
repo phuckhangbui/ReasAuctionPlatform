@@ -18,13 +18,14 @@ const statusStringMap: { [key: number]: string } = {
   2: "Selling",
   4: "Auctioning",
   5: "Sold",
-  6: "",
+  6: "Winner",
 };
 
 const statusDepositColorMap: { [key: string]: string } = {
   Selling: "yellow",
   Auctioning: "green",
   Sold: "orange",
+  Winner: "green"
 };
 
 const statusDepositUserColorMap: { [key: string]: string } = {
@@ -188,8 +189,7 @@ const AllDepositsList: React.FC = () => {
           console.log(status);
           return (
             <Tag color={color} key={statusStringMap[status]}>
-              {/* {statusStringMap[status].toUpperCase()} */}
-              {statusStringMap[status]}
+              {statusStringMap[status].toUpperCase()}
             </Tag>
           );
         } else {
