@@ -12,7 +12,7 @@ interface RealEstateProps {
 }
 
 const statusAllColorMap: { [key: string]: string } = {
-  InProgress: "green",
+  InProgress: "yellow",
   Approved: "green",
   Selling: "orange",
   Cancel: "red",
