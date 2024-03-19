@@ -67,7 +67,7 @@ namespace Repository.Implement
 
         public async Task<int> GetStaffActive()
         {
-            var countUsers = _dataContext.Account.Where(x => x.RoleId == 2 || x.Account_Status == 1).Count();
+            var countUsers = _dataContext.Account.Where(x => x.RoleId == 2 && x.Account_Status == 1).Count();
             return countUsers;
         }
 
