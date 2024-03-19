@@ -32,9 +32,9 @@ const ReasProvider = ({ children }: ReasProviderProps) => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   console.log("reasId:", reasId);
-  // }, [reasId]);
+  useEffect(() => {
+    console.log("Real Estate:", reasId);
+  }, [reasId]);
 
   const getReas = (id: number) => {
     localStorage.setItem("reasId", id.toString());

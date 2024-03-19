@@ -5,6 +5,7 @@ import { payRealEstatePostingFee } from "../../api/transaction";
 import { ReasContext } from "../../context/reasContext";
 import { Tag } from "antd";
 import { Link } from "react-router-dom";
+import { DepositContext } from "../../context/depositContext";
 interface RealEstateProps {
   realEstate: realEstate;
   ownRealEstatesStatus?: boolean;
@@ -30,7 +31,8 @@ const RealEstateCard = ({
   const [formattedDateEnd, setFormattedDateEnd] = useState<string>("");
   const [showStatus, setShowStatus] = useState<boolean>();
   const { token, userId } = useContext(UserContext);
-  const { getReas } = useContext(ReasContext);
+  const { getReas, reasId, removeReas } = useContext(ReasContext);
+  const { depositId, removeDeposit } = useContext(DepositContext);
 
   useEffect(() => {
     setEstate(realEstate || undefined);
@@ -68,7 +70,10 @@ const RealEstateCard = ({
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     try {
-      e.preventDefault();
+      if (depositId || reasId) {
+        removeDeposit();
+        removeReas();
+      }
       const fetchPaymentUrl = async () => {
         if (userId && token) {
           if (estate?.reasId) {

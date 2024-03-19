@@ -8,11 +8,10 @@ import {
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { NumberFormat } from "../../../Utils/numbetFormat";
-import { Pagination } from "antd";
+import { Empty, Pagination } from "antd";
 import { useContext } from "react";
 import { UserContext } from "../../../context/userContext";
 import { GetAuctionHistory } from "../../../api/memberAuction";
-
 
 const AuctionHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -103,7 +102,7 @@ const AuctionHistory: React.FC = () => {
       <div className="pt-20">
         <div className="container w-full mx-auto">
           <div className="mt-4 grid lg:grid-cols-4 md:grid-cols-2 md:gap-3 sm:grid-cols-1">
-            {displayedAuctions &&
+            {displayedAuctions && displayedAuctions.length > 0 ? (
               displayedAuctions.map((auction) => (
                 <Card className="max-w-[24rem] overflow-hidden">
                   <CardHeader
@@ -148,7 +147,12 @@ const AuctionHistory: React.FC = () => {
                     )}
                   </CardFooter>
                 </Card>
-              ))}
+              ))
+            ) : (
+              <div className="py-40 col-span-4">
+                <Empty />
+              </div>
+            )}
           </div>
           <div className="flex justify-center mt-4">
             <Pagination

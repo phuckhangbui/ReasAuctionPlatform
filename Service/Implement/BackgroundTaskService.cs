@@ -22,6 +22,7 @@ namespace Service.Implement
         private readonly IDepositAmountService _depositAmountService;
         private readonly IParticipantHistoryService _participantHistoryService;
         private readonly IRealEstateService _realEstateService;
+        private readonly IAccountService _accountService;
 
         public BackgroundTaskService(IAuctionRepository auctionRepository,
             ILogger<BackgroundTaskService> logger,
@@ -33,7 +34,8 @@ namespace Service.Implement
             IAuctionAccountingService auctionAccountingService,
             IDepositAmountService depositAmountService,
             IParticipantHistoryService participantHistoryService,
-            IRealEstateService realEstateService)
+            IRealEstateService realEstateService,
+            IAccountService accountService)
         {
             _auctionRepository = auctionRepository;
             _logger = logger;
@@ -46,6 +48,7 @@ namespace Service.Implement
             _depositAmountService = depositAmountService;
             _participantHistoryService = participantHistoryService;
             _realEstateService = realEstateService;
+            _accountService = accountService;
         }
 
         public async Task ChangeAuctionStatusToPending(int auctionId)
@@ -135,20 +138,11 @@ namespace Service.Implement
                     //Send noti for users not attend auction
                     List<int> userNotAttendAuctionIds = await _auctionRepository.GetAuctionAttenders(auction.ReasId);
                     await _notificatonService.SendNotificationWhenNotAttendAuction(userNotAttendAuctionIds, auctionId);
+
+                    //add voucher for winner
+                    var realEsate = _realEstateRepository.GetRealEstate(auction.ReasId);
+                    await _accountService.UpdateReupVoucher(realEsate.AccountOwnerId, true);
                 }
-                //else if (auction != null && auction.Status == (int)AuctionStatus.OnGoing)
-                //{
-                //    _logger.LogInformation($"Auction id: {auction.AuctionId} is in status 'OnGoing'");
-                //    var currentDateTime = DateTime.Now;
-                //    TimeSpan delayScheduleSendMailToLoser = auction.DateEnd.AddMinutes(5) - currentDateTime;
-                //    TimeSpan delayUpdateAuctionResultFromFirebase = auction.DateEnd.AddMinutes(1) - currentDateTime;
-
-                //    BackgroundJob.Schedule(() => UpdateAuctionResultFromFirebase(auction.AuctionId), delayUpdateAuctionResultFromFirebase);
-                //    _logger.LogInformation($"UpdateAuctionResultFromFirebase in {delayUpdateAuctionResultFromFirebase}");
-
-                //    BackgroundJob.Schedule(() => ScheduleSendMailForLoserAttendees(auction), delayScheduleSendMailToLoser);
-                //    _logger.LogInformation($"Send mail for loser attendees scheduled in {delayScheduleSendMailToLoser}");
-                //}
             }
             catch (Exception ex)
             {

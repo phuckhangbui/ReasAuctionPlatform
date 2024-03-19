@@ -18,6 +18,7 @@ import { DepositContext } from "../../context/depositContext";
 import { registerParticipateAuction } from "../../api/transaction";
 import LoginModal from "../LoginModal/loginModal";
 import { memberRealEstateDetail } from "../../api/memberRealEstate";
+import { ReasContext } from "../../context/reasContext";
 
 interface RealEstateDetailModalProps {
   realEstateId: number;
@@ -59,8 +60,9 @@ const RealEstateDetailModal = ({
   // 5: Reas is auctioning
 
   const [isAuctionEnd, setIsAuctionEnd] = useState(false);
-  const { getDeposit } = useContext(DepositContext);
+  const { getDeposit, depositId, removeDeposit } = useContext(DepositContext);
   const { token, userId } = useContext(UserContext);
+  const { reasId, removeReas } = useContext(ReasContext);
 
   //get reasDetail
   useEffect(() => {
@@ -558,6 +560,10 @@ const RealEstateDetailModal = ({
   const handleRegister = () => {
     try {
       const fetchPaymentUrl = async () => {
+        if (depositId || reasId) {
+          removeDeposit();
+          removeReas();
+        }
         if (userId && token) {
           if (realEstateDetail?.reasId) {
             const response = await registerParticipateAuction(
@@ -568,6 +574,7 @@ const RealEstateDetailModal = ({
             if (response) {
               const depositId = response?.depositAmountDto.depositId;
               console.log(depositId);
+
               getDeposit(depositId);
               window.location.href = response?.paymentUrl;
             }

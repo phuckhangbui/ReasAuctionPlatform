@@ -19,6 +19,7 @@ const SuccessPage = () => {
       const queryString = url.substring(url.indexOf("?") + 1);
       console.log(queryString);
       if (queryString.includes("vnp_TransactionStatus=00")) {
+        console.log("Transaction is in");
         setTransactionStatus(true);
         const postPayment = async () => {
           if (token) {
@@ -28,17 +29,21 @@ const SuccessPage = () => {
             } else if (reasId && depositId === undefined) {
               response = await payRealEstate(queryString, reasId, token);
             }
+            removeDeposit();
+            removeReas();
             console.log(response);
             if (response) {
-              removeDeposit();
-              removeReas();
               homeTimeout = setTimeout(() => navigate("/"), 2000);
             }
           }
         };
         postPayment();
       } else {
+        console.log("Transaction is off");
         setTransactionStatus(false);
+        removeDeposit();
+        removeReas();
+        homeTimeout = setTimeout(() => navigate("/"), 2000);
       }
     } catch (error) {
       console.log("Error:", error);

@@ -1,5 +1,4 @@
-﻿using Repository.DTOs;
-using static Repository.DTOs.AuctionResultDto;
+﻿using static Repository.DTOs.AuctionResultDto;
 
 namespace Service.Interface
 {

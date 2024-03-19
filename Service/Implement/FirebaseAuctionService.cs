@@ -2,7 +2,6 @@
 using FireSharp.Interfaces;
 using FireSharp.Response;
 using Newtonsoft.Json;
-using Repository.DTOs;
 using Service.Interface;
 using static Repository.DTOs.AuctionResultDto;
 
