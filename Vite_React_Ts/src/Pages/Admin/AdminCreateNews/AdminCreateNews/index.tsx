@@ -16,7 +16,7 @@ const AdminAddNews: React.FC = () => {
     newsTitle: "",
     thumbnailUri: "",
   });
-  const [_uploadedImage, setUploadedImage] = useState<string>("");
+  const [uploadedImage, setUploadedImage] = useState<string>("");
   const [_publicId, setPublicId] = useState<string>("");
   const [uwConfig] = useState<CloudinaryConfig>({
     cloudName: "dqpsvl3nu",
@@ -93,15 +93,19 @@ const AdminAddNews: React.FC = () => {
         children: "",
         span: 3,
         render: (_url: string) => (
-          <div className="grid grid-cols-4">
-            <div className="col-span-1">
-              <CloudinaryUploadWidget
-                uwConfig={uwConfig}
-                setPublicId={setPublicId}
-                setUploadedUrl={handleImageUpload}
-                notList={true}
-              />
-            </div>
+          <div>
+            <img
+              className="h-96 w-full object-cover object-center"
+              src={uploadedImage}
+              alt="Uploaded"
+              style={{ maxWidth: "200px", maxHeight: "200px" }}
+            />
+            <CloudinaryUploadWidget
+              uwConfig={uwConfig}
+              setPublicId={setPublicId}
+              setUploadedUrl={handleImageUpload}
+              notList={true}
+            />
           </div>
         ),
       },
@@ -152,7 +156,7 @@ const AdminAddNews: React.FC = () => {
   };
   return (
     <>
-      <Descriptions bordered title="Add News" className="mt-5 text-4xl">
+      <Descriptions bordered title="Add News">
         {renderBorderedItems()}
       </Descriptions>
       <br />

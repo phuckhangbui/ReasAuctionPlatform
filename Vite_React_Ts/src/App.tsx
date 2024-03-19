@@ -20,6 +20,9 @@ import RequiredAuth from "./components/RequiredAuth/requiredAuth";
 import SellPage from "./Pages/Member/SellPage/sellPage";
 import AllTransaction from "./Pages/Admin/AdminTransaction";
 import AllDeposit from "./Pages/Admin/AdminDeposit";
+import Task from "./Pages/Admin/AdminTask";
+import TaskCreate from "./Pages/Admin/AdminTaskCreate";
+import AdminAddNews from "./Pages/Admin/AdminCreateNews/AdminCreateNews";
 import AdminNewsList from "./Pages/Admin/AdminNews/AdminNews";
 import { useContext, useEffect } from "react";
 import { onMessage } from "firebase/messaging";
@@ -28,6 +31,7 @@ import toast from "react-hot-toast";
 import SuccessPage from "./Pages/Member/SuccessPage/successPage";
 import MemberRealEstatePage from "./Pages/Member/MemberRealEstatePage/memberRealEstatePage";
 import AdminCreateNews from "./Pages/Admin/AdminCreateNews";
+import NewsList from "./components/News/newsList";
 import DepositList from "./Pages/Admin/AdminCreateAuction";
 import AddRule from "./Pages/Admin/AdminAddRule";
 import AdminRule from "./Pages/Admin/AdminRule";
@@ -272,7 +276,7 @@ function App() {
         const { title, body } = payload.notification;
         let status: string;
         let accountId: number;
-        console.log("Got in 1");
+        console.log("Got in 1")
         if (payload.data) {
           status = payload.data.type;
           accountId = parseInt(payload.data.accountId);
@@ -334,24 +338,29 @@ function App() {
             element={<RequiredAuth allowedRoles={[roles.Admin, roles.Staff]} />}
           >
             <Route path="/admin" element={<AdminLayout />}>
-              <Route element={<RequiredAuth allowedRoles={[roles.Admin]} />}>
-                <Route index element={<AdminDashboard />} />
+              <Route index element={<AdminDashboard />} />
 
+              <Route element={<RequiredAuth allowedRoles={[roles.Admin]} />}>
                 <Route path="term" element={<AdminRule />} />
                 <Route path="term/create" element={<AddRule />} />
 
-                <Route path="user/staff" element={<AdminStaffList />} />
-                <Route path="user/create" element={<AdminAddStaff />} />
+                <Route path="task" element={<Task />} />
+                <Route path="task/create" element={<TaskCreate />} />
               </Route>
 
-              <Route path="news" element={<AdminNewsList />} />
+              <Route path="news" element={<NewsList />} />
               <Route path="news/create" element={<AdminCreateNews />} />
 
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
               <Route path="auction/complete" element={<AuctionComplete />} />
               <Route path="auction/create" element={<DepositList />} />
 
+              <Route path="user/staff" element={<AdminStaffList />} />
               <Route path="user/member" element={<AdminMemberList />} />
+              <Route path="user/create" element={<AdminAddStaff />} />
+
+              <Route path="news" element={<AdminNewsList />} />
+              <Route path="news/create" element={<AdminAddNews />} />
 
               <Route path="real-estate/pending" element={<PendingList />} />
               <Route path="real-estate/all" element={<AllList />} />

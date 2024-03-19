@@ -158,7 +158,7 @@ const UpdateRealEstatePage = () => {
       },
     } as createRealEstate,
     validate,
-    onSubmit: async (values: any) => {
+    onSubmit: async (values) => {
       try {
         console.log(values);
         const response = await createRealEstate(token, values);
@@ -364,16 +364,10 @@ const UpdateRealEstatePage = () => {
                       }
                     }}
                   />
-                  {formik.errors.reasPrice ? (
-                    typeof formik.errors.reasPrice === "string" ? (
-                      <div className="text-red-700">
-                        {formik.errors.reasPrice}
-                      </div>
-                    ) : (
-                      <div className="text-red-700">
-                        {(formik.errors.reasPrice as string[])[0]}
-                      </div>
-                    )
+                  {formik.touched.reasPrice && formik.errors.reasPrice ? (
+                    <div className="text-red-700">
+                      {formik.errors.reasPrice}
+                    </div>
                   ) : (
                     <div>{formattedReasPrice}</div>
                   )}
@@ -466,7 +460,7 @@ const UpdateRealEstatePage = () => {
                     Real Estate Pictures
                   </div>
                   {formik.values.photos ? (
-                    formik.values.photos.map((photo: any, index: any) => (
+                    formik.values.photos.map((photo, index) => (
                       <div className="col-span-1 h-64 rounded-lg">
                         <img
                           key={index}
