@@ -533,6 +533,7 @@ const RealEstateDetailModal = ({
     });
     setIsAuctionOpen(false);
     setIsAuctionEnd(true);
+    identifyWinner();
   };
 
   const handleOnFinishWaiting10Mins = () => {
@@ -865,6 +866,12 @@ const RealEstateDetailModal = ({
                     <div className="text-4xl text-blue-700">
                       Register auction success
                     </div>
+                    <div>
+                      <Countdown
+                        value={auction.dateStart.toString()}
+                        onFinish={handleCountDownStarting}
+                      />
+                    </div>
                   </div>
                 ) : auctionStatus === 4 ? (
                   <div className="flex justify-center p-10">
@@ -969,7 +976,7 @@ const RealEstateDetailModal = ({
                             <>
                               <Countdown
                                 value={dayjs(auction.dateStart)
-                                  .add(10, "minutes")
+                                  .add(5, "minutes")
                                   .toString()}
                                 format=" m [minutes] s [secs]"
                                 onFinish={() => handleOnFinishWaiting10Mins()}
@@ -982,7 +989,7 @@ const RealEstateDetailModal = ({
                         <>
                           <Countdown
                             value={dayjs(auction.dateStart)
-                              .add(10, "minutes")
+                              .add(5, "minutes")
                               .toString()}
                             format=" m [minutes] s [secs]"
                             onFinish={() => handleOnFinishWaiting10Mins()}
