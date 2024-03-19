@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { UserContext } from "../../context/userContext";
+import { useContext } from "react";
 
 const PageNotFound: React.FC = () => {
+  const { userRole } = useContext(UserContext);
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="text-center">
@@ -9,8 +12,17 @@ const PageNotFound: React.FC = () => {
         <p className="mt-4 text-gray-600">
           The page you're looking for does not seem to exist
         </p>
+
         <Link
-          to="/home"
+          to={
+            userRole === 1
+              ? "/admin"
+              : userRole === 2
+              ? "/admin/auction/ongoing"
+              : userRole === 3
+              ? "/"
+              : "/"
+          }
           className="block mx-auto my-8 px-4 py-2 bg-primary rounded hover:bg-red-700"
         >
           Go Home

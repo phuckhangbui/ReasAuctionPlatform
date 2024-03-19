@@ -212,7 +212,7 @@ const RealEstateDetailModal = ({
     }
 
     get(child(auctionRef, "auction"))
-      .then((snapshot) => {
+      .then((snapshot: any) => {
         const auctionData = snapshot.exists() ? snapshot.val() : null;
         const status = 0;
 
@@ -231,7 +231,7 @@ const RealEstateDetailModal = ({
 
         if (!userAlreadyRegistered) return;
 
-        get(statusRef).then((statusSnapshot) => {
+        get(statusRef).then((statusSnapshot: any) => {
           if (statusSnapshot.exists()) {
             if (statusSnapshot.val() == 4) {
               return;
@@ -240,7 +240,7 @@ const RealEstateDetailModal = ({
         });
 
         get(usersRef)
-          .then((usersSnapshot) => {
+          .then((usersSnapshot: any) => {
             if (!usersSnapshot.hasChild(userId)) {
               update(usersRef, {
                 [userId]: {
@@ -266,7 +266,7 @@ const RealEstateDetailModal = ({
               setIsUserRegistered(true);
             }
           })
-          .catch((error) => {
+          .catch((error: any) => {
             console.error(
               "Error checking user existence in the auction:",
               error
@@ -274,18 +274,18 @@ const RealEstateDetailModal = ({
           });
 
         get(currentBidRef)
-          .then((currentBidValue) => {
+          .then((currentBidValue: any) => {
             if (currentBidValue.exists()) {
               const value = currentBidValue.val();
               setCurrentBid(value);
               setCurrentInputBid(value);
             }
           })
-          .catch((error) => {
+          .catch((error: any) => {
             console.error("Error checking current bid in the auction:", error);
           });
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.error("Error checking auction existence:", error);
       });
   };
@@ -425,7 +425,7 @@ const RealEstateDetailModal = ({
   //subcribe for the new bid
   useEffect(() => {
     const currentBidRef = ref(db, `auctions/${realEstateId}/currentBid`);
-    const unsubscribe = onValue(currentBidRef, (snapshot) => {
+    const unsubscribe = onValue(currentBidRef, (snapshot: any) => {
       const newBid = snapshot.val();
       setCurrentBid(newBid);
       setCurrentInputBid(newBid);
@@ -439,7 +439,7 @@ const RealEstateDetailModal = ({
   //subcribe the user registered join the auction
   useEffect(() => {
     const usersRef = ref(db, `auctions/${realEstateId}/users`);
-    const unsubscribe = onValue(usersRef, (snapshot) => {
+    const unsubscribe = onValue(usersRef, (snapshot: any) => {
       let usersList = 0;
       snapshot.forEach(() => {
         usersList++;
@@ -454,7 +454,7 @@ const RealEstateDetailModal = ({
   //subcribe the status of the auction
   useEffect(() => {
     const statusRef = ref(db, `auctions/${realEstateId}/status`);
-    const unsubscribe = onValue(statusRef, (snapshot) => {
+    const unsubscribe = onValue(statusRef, (snapshot: any) => {
       const statusValue = snapshot.val();
       if (statusValue == 0) {
         setIsUserRegistered(false);
@@ -489,7 +489,7 @@ const RealEstateDetailModal = ({
 
   useEffect(() => {
     const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
-    const unsubscribe = onValue(statusRef, (snapshot) => {
+    const unsubscribe = onValue(statusRef, (snapshot: any) => {
       const statusValue = snapshot.val();
       if (statusValue == 0) {
         return;
@@ -851,7 +851,7 @@ const RealEstateDetailModal = ({
                 ) : auctionStatus === 2 ? (
                   <div className="flex justify-center flex-col items-center py-10">
                     <div className="text-xl text-gray-500">
-                      You have not register to take part in auction yet
+                      Auction register is pending
                     </div>
                     <button
                       onClick={() => handleRegister()}
@@ -1015,10 +1015,58 @@ const RealEstateDetailModal = ({
                     You Are The Owner of This Real Estate
                   </div>
                 </div>
+              ) : auctionStatus === 0 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    Real Estate Is Currently Not Available For Selling
+                  </div>
+                </div>
+              ) : auctionStatus === 1 ? (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    You have not register to take part in auction yet
+                  </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 2 ? (
+                <div className="flex justify-center flex-col items-center py-10">
+                  <div className="text-xl text-gray-500">
+                    Auction register is pending
+                  </div>
+                  <button
+                    onClick={() => handleRegister()}
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : auctionStatus === 3 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-blue-700">
+                    Register auction success
+                  </div>
+                </div>
+              ) : auctionStatus === 4 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    You Are The Owner of This Real Estate
+                  </div>
+                </div>
+              ) : auctionStatus === 7 ? (
+                <div className="flex justify-center p-10">
+                  <div className="text-4xl text-red-700">
+                    Lost Deposit, You was late to the auction
+                  </div>
+                </div>
               ) : (
                 <div className="flex justify-center flex-col items-center py-10">
                   <div className="text-xl text-gray-500">
-                    This real estate is currently not created
+                    This auction is currently not created
                   </div>
                   <button
                     onClick={() => handleRegister()}

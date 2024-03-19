@@ -2,10 +2,10 @@ import { useContext, useEffect, useState } from "react";
 import realEstate from "../../interface/RealEstate/realEstate";
 import { UserContext } from "../../context/userContext";
 import { payRealEstatePostingFee } from "../../api/transaction";
-import { NumberFormat } from "../../Utils/numbetFormat";
 import { ReasContext } from "../../context/reasContext";
 import { Tag } from "antd";
 import { Link } from "react-router-dom";
+import { NumberFormat } from "../../Utils/numberFormat";
 interface RealEstateProps {
   realEstate: realEstate;
   ownRealEstatesStatus?: boolean;
@@ -50,12 +50,12 @@ const RealEstateCard = ({
     setShowStatus(ownRealEstatesStatus);
   }, [ownRealEstatesStatus]);
 
-
   const handlePayingFee = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
-      e.preventDefault();
       const fetchPaymentUrl = async () => {
         if (userId && token) {
           if (estate?.reasId) {
@@ -77,6 +77,12 @@ const RealEstateCard = ({
     }
   };
 
+  const handleUpdateButtonClick = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) => {
+    e.stopPropagation(); // Stop event propagation here
+  };
+
   return (
     <div className="max-w-2lg bg-white border border-gray-200 rounded-lg shadow mx-auto sm:my-2 md:my-0">
       {showStatus && (
@@ -89,28 +95,29 @@ const RealEstateCard = ({
             </Tag>
           )}
         </div>
-        )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 md:gap-3">
-          <div className="lg:col-span-1">
-            <img
-              className="rounded-t-lg lg:h-52 lg:w-96 lg:pl-4 lg:pr-4 md:pt-4 md:w-full md:pl-20 md:pr-20 md:h-69"
-              src={estate?.uriPhotoFirst}
-              alt=""
-            />
-          </div>
-          <div className="lg:col-span-2 p-5">
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 md:gap-3">
+        <div className="lg:col-span-1">
+          <img
+            className="rounded-t-lg lg:h-52 lg:w-96 lg:pl-4 lg:pr-4 md:pt-4 md:w-full md:pl-20 md:pr-20 md:h-69"
+            src={estate?.uriPhotoFirst}
+            alt=""
+          />
+        </div>
+        <div className="lg:col-span-2 p-5">
           <div>
             <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900 xl:line-clamp-2 md:line-clamp-3">
               {estate?.reasName}
             </h5>
-          </div><div className="mb-3 font-normal text-gray-700">
+          </div>
+          <div className="mb-3 font-normal text-gray-700">
             <span className="text-gray-900 font-semibold">
               {estate?.reasTypeName}
             </span>
             <span className="sm:inline md:hidden xl:inline"> | </span>
             <br className="sm:hidden md:block xl:hidden" />
             <span className="text-gray-900 font-semibold">
-            {estate?.reasArea}
+              {estate?.reasArea}
             </span>
             <span> sqrt</span>
           </div>
@@ -121,7 +128,7 @@ const RealEstateCard = ({
                 : estate?.reasPrice}
               <span className="pl-1">VNĐ</span>
             </div>
-            </div>
+          </div>
           <div className="flex justify-end text-gray-700">
             <div className="tracking-tight">
               Due:{" "}
@@ -141,20 +148,22 @@ const RealEstateCard = ({
                 </button>
               )}
               {(estate?.reasStatus === "Rollback" ||
-              estate?.reasStatus === "DeclineAfterAuction") && estate?.flag === false  && (
-              <button
-                className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-              >
-                <Link to={`/update/${estate?.reasId}`}>Update</Link>
-              </button>
-            )}
+                estate?.reasStatus === "DeclineAfterAuction") &&
+                estate?.flag === false && (
+                  <button
+                    className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
+                    onClick={() => handleUpdateButtonClick}
+                  >
+                    <Link to={`/update/${estate?.reasId}`}>Update</Link>
+                  </button>
+                )}
             </div>
-            )}
-            </div>
-          </div>
-          <div className="flex justify-end pb-6"></div>
+          )}
         </div>
-      );
-    };
+      </div>
+      <div className="flex justify-end pb-6"></div>
+    </div>
+  );
+};
 
 export default RealEstateCard;
