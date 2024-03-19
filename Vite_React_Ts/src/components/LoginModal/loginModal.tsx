@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import GoogleLogIn from "../GoogleLogIn/googleLogIn";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { staffLogin } from "../../api/login";
+import { notification } from "antd";
 import { UserContext } from "../../context/userContext";
 import { useNavigate } from "react-router-dom";
 
@@ -51,25 +52,41 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
   // };
   const onSubmit: SubmitHandler<loginStaff> = (data) => {
     try {
+      let check : boolean = true;
       const loginStaff = async () => {
         const response = await staffLogin(data);
         const responseData = response?.data;
-        const user = {
-          id: responseData?.id,
-          accountName: responseData?.accountName,
-          email: responseData?.email,
-          roleId: responseData?.roleId,
-          username: responseData?.username,
-        } as loginUser;
-        if (responseData?.token) {
-          login(user, responseData?.token);
+        if(responseData?.id == null){
+          check = false;
+          openNotificationWithIcon("error", "Password or Username is not correct. Try again!");
+        }else{
+          const user = {
+            id: responseData?.id,
+            accountName: responseData?.accountName,
+            email: responseData?.email,
+            roleId: responseData?.roleId,
+            username: responseData?.username,
+          } as loginUser;
+          if (responseData?.token) {
+            login(user, responseData?.token);
+          }
+          navigate("/admin");
         }
       };
-      loginStaff();
-      navigate("/admin");
+        loginStaff();
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const openNotificationWithIcon = (
+    type: "success" | "error",
+    description: string
+  ) => {
+    notification[type]({
+      message: "Notification Title",
+      description: description,
+    });
   };
 
   return (
