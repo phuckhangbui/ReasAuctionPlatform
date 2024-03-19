@@ -53,6 +53,7 @@ namespace Repository.Implement
                 ReasName = _context.RealEstate.Where(y => y.ReasId == x.ReasId).Select(z => z.ReasName).FirstOrDefault(),
                 FloorBid = Convert.ToDouble(x.FloorBid),
                 DateStart = x.DateStart,
+                DateEnd = x.DateEnd,
                 Status = getName.GetStatusAuctionName(x.Status),
             });
             return await query.ToListAsync();
