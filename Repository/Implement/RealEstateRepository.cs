@@ -287,7 +287,18 @@ namespace Repository.Implement
 
         public RealEstate GetRealEstate(int id)
         {
-            return _context.RealEstate.Find(id);
+            try
+            {
+
+                RealEstate realEstate = _context.RealEstate.FirstOrDefault(r => r.ReasId == id);
+                return realEstate;
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
         }
 
         public async Task<string> GetRealEstateName(int id)
@@ -366,15 +377,15 @@ namespace Repository.Implement
                 query = query.Where(r => r.ReasName.ToLower().Contains(searchRealEstateParam.ReasName.ToLower()));
             }
 
-            if(searchRealEstateParam.ReasPriceFrom >= 0 && 
-                searchRealEstateParam.ReasPriceTo >= 0 && 
+            if (searchRealEstateParam.ReasPriceFrom >= 0 &&
+                searchRealEstateParam.ReasPriceTo >= 0 &&
                 searchRealEstateParam.ReasPriceFrom < searchRealEstateParam.ReasPriceTo)
             {
-                query = query.Where(r => r.ReasPrice >= searchRealEstateParam.ReasPriceFrom && 
+                query = query.Where(r => r.ReasPrice >= searchRealEstateParam.ReasPriceFrom &&
                 r.ReasPrice <= searchRealEstateParam.ReasPriceTo);
             }
 
-            if(searchRealEstateParam.ReasStatus != -1)
+            if (searchRealEstateParam.ReasStatus != -1)
             {
                 query = query.Where(r => r.ReasStatus == searchRealEstateParam.ReasStatus);
             }

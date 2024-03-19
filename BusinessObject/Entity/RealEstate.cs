@@ -11,10 +11,10 @@ public class RealEstate
     public int ReasStatus { get; set; }
     public DateTime DateStart { get; set; }
     public DateTime DateEnd { get; set; }
-    public string Message { get; set; }
+    public string? Message { get; set; }
     public int Type_Reas { get; set; }
-    public Type_REAS Type_REAS { get; set; }
-    public Account AccountOwner { get; set; }
+    public Type_REAS? Type_REAS { get; set; }
+    public Account? AccountOwner { get; set; }
     public int AccountOwnerId { get; set; }
     public string AccountOwnerName { get; set; }
     public DateTime DateCreated { get; set; }
