@@ -285,7 +285,7 @@ namespace Service.Implement
                     }
                 }
 
-                await SendNotificationWhenNotWinAuction(accounts, auctionId, false);
+                SendNotificationWhenNotWinAuction(accounts, auctionId, false);
 
             }
 
@@ -304,8 +304,6 @@ namespace Service.Implement
                         accounts.Add(account);
                     }
                 }
-
-                await SendNotificationWhenNotWinAuction(accounts, auctionId, true);
             }
 
         }
