@@ -238,28 +238,27 @@ namespace API.Controllers
 
                 //update auction status
                 int statusFinish = (int)AuctionStatus.Finish;
-                bool result = await _auctionService.ToggleAuctionStatus(auctionSuccessDto.AuctionDetailDto.AuctionId.ToString(), statusFinish.ToString());
+                await _auctionService.ToggleAuctionStatus(auctionSuccessDto.AuctionDetailDto.AuctionId.ToString(), statusFinish.ToString());
 
                 //update real estate status
                 await _realEstateService.UpdateRealEstateStatus(auctionAccountingDto.ReasId, (int)RealEstateStatus.Sold);
 
-                if (result)
-                {
-                    //send email
-                    await _auctionAccountingService.SendWinnerEmail(auctionAccountingDto);
 
-                    userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
+                //send email
+                await _auctionAccountingService.SendWinnerEmail(auctionAccountingDto);
 
-                    //send notification
-                    await _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
+                userIdParticipateInAuction.Remove(auctionSuccessDto.AuctionDetailDto.AccountWinId);
 
-                    await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId, auctionAccountingDto.MaxAmount);
+                //send notification
+                await _notificatonService.SendNotificationToStaffandAdminWhenAuctionFinish(auctionAccountingDto.AuctionId);
 
-                    //await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
+                await _notificatonService.SendNotificationWhenWinAuction(auctionAccountingDto.AuctionId, auctionAccountingDto.MaxAmount);
 
-                    await _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
+                //await _notificatonService.SendNotificationWhenNotAttendAuction(userIdsRegisteredNotParticipated, auctionAccountingDto.AuctionId);
 
-                }
+                await _notificatonService.SendNotificationWhenLoseAuction(userIdParticipateInAuction, auctionAccountingDto.AuctionId);
+
+
             }
             catch (Exception ex)
             {
