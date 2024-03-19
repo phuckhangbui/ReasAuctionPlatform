@@ -364,10 +364,16 @@ const UpdateRealEstatePage = () => {
                       }
                     }}
                   />
-                  {formik.touched.reasPrice && formik.errors.reasPrice ? (
-                    <div className="text-red-700">
-                      {formik.errors.reasPrice}
-                    </div>
+                  {formik.errors.reasPrice ? (
+                    typeof formik.errors.reasPrice === "string" ? (
+                      <div className="text-red-700">
+                        {formik.errors.reasPrice}
+                      </div>
+                    ) : (
+                      <div className="text-red-700">
+                        {(formik.errors.reasPrice as string[])[0]}
+                      </div>
+                    )
                   ) : (
                     <div>{formattedReasPrice}</div>
                   )}
