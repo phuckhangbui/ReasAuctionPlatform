@@ -80,15 +80,19 @@ const NewsDetailModal = ({ closeModal, newsId }: NewsDetailModalProps) => {
           </div>
 
           <div className="flex items-center justify-center w-full mx-auto py-2 max-w-3xl ">
-            <img className="md:h-120 sm:h-96 w-full object-fill" src={newsDetail?.thumbnail} alt="" />
+            <img
+              className="object-contain"
+              src={newsDetail?.thumbnail}
+              alt=""
+            />
           </div>
+
           <div className="">
             <div>
-              <div
+            <div
                 dangerouslySetInnerHTML={{
                   __html: newsDetail?.newsContent || "",
-                }}
-                className="mt-4"
+                }} className="mt-1"
               ></div>
             </div>
           </div>

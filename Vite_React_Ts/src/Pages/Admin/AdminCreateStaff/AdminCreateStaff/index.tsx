@@ -105,7 +105,7 @@ const AdminAddStaff: React.FC = () => {
       key: "3",
       label: "Password",
       children: (
-        <Input type="password"
+        <Input
           placeholder="Enter your password"
           onChange={(e) => handleChange("passwordHash", e.target.value)}
         />
