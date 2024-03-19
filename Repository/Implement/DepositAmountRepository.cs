@@ -23,11 +23,12 @@ namespace Repository.Implement
 
         public async Task<IEnumerable<DepositDto>> GetRealEstateForDepositAsync()
         {
-            var query = _context.RealEstate.OrderByDescending(q => q.DateStart).Where(x => x.ReasStatus.Equals((int)RealEstateStatus.Auctioning) || x.ReasStatus.Equals((int)RealEstateStatus.Selling) || x.ReasStatus.Equals((int)RealEstateStatus.Sold)).Select(x => new DepositDto
+            var query = _context.RealEstate.OrderByDescending(q => q.DateStart).Select(x => new DepositDto
             {
                 reasId = x.ReasId,
                 reasName = x.ReasName,
                 dateEnd = x.DateEnd,
+                dateStart = x.DateStart,
                 status = x.ReasStatus,
             });
 
