@@ -1,10 +1,8 @@
-﻿using API.DTOs;
-using API.Errors;
-using API.Interface.Service;
-using API.MessageResponse;
-using API.Param;
+﻿using API.MessageResponse;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.DTOs;
+using Service.Interface;
 
 namespace API.Controllers
 {

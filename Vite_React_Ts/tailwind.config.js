@@ -16,15 +16,19 @@ module.exports = withMT({
       colors: {
         mainBlue: "#2482c2",
         darkerMainBlue: "#2075ae",
-        secondaryYellow: '#fda720'
+        secondaryYellow: "#fda720",
+        greenSuccess: "#16c60c",
+        redFailed: "#f03a17",
+        yellowWinner: "#ffc83d",
       },
       spacing: {
-        '17': '4.25rem',
-        '86': '21.5rem',
-        '30': '7.5rem',
-        '69': '17.25rem',
-        '120': '30rem',
-      }
+        17: "4.25rem",
+        86: "21.5rem",
+        30: "7.5rem",
+        69: "17.25rem",
+        120: "30rem",
+        "75vh": "75vh",
+      },
     },
   },
   plugins: [require("@tailwindcss/line-clamp")],

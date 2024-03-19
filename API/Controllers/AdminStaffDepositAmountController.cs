@@ -1,12 +1,9 @@
-﻿using API.Errors;
-using API.Exceptions;
-using API.Extension;
-using API.Helper;
-using API.Interface.Service;
-using API.MessageResponse;
-using API.Param;
+﻿using API.MessageResponse;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Param;
+using Service.Exceptions;
+using Service.Interface;
 
 namespace API.Controllers
 {

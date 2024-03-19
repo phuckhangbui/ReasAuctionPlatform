@@ -1,10 +1,8 @@
-import React from "react";
-
 const Banner = () => {
   return (
     <div className="w-full relative">
       <img
-        src="../../public/Banner.jpg"
+        src="./Banner.jpg"
         alt=""
         className="w-full md:h-96 sm:h-72 object-cover"
       />

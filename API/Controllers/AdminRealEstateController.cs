@@ -1,11 +1,11 @@
-﻿using API.Errors;
-using API.Helper;
-using API.Interface.Service;
-using API.MessageResponse;
-using API.Param;
-using API.Param.Enums;
+﻿using API.MessageResponse;
+using BusinessObject.Entity;
+using BusinessObject.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Paging;
+using Repository.Param;
+using Service.Interface;
 
 namespace API.Controllers
 {
@@ -150,6 +150,27 @@ namespace API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             return Ok(reasName);
+        }
+
+        [Authorize(policy: "AdminAndStaff")]
+        [HttpGet(BaseUri + "real-estate/success/{reasId}")]
+        public async Task<IActionResult> UpdateToRealEstateSuccess(int reasId)
+        {
+            RealEstate realEstate = _realEstateService.GetRealEstate(reasId);
+
+            if (realEstate == null)
+            {
+                return BadRequest(new ApiResponse(400, "No matching real estate"));
+            }
+
+            bool result = await _realEstateService.UpdateRealEstateStatus(reasId, (int)RealEstateStatus.Success);
+
+            if (!result)
+            {
+                return BadRequest(new ApiResponse(400, "Fail to update real estate status"));
+            }
+
+            return Ok(new ApiResponseMessage("MSG30"));
         }
     }
 }

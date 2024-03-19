@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import GoogleLogIn from "../GoogleLogIn/googleLogIn";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { staffLogin } from "../../api/login";
+import { notification } from "antd";
 import { UserContext } from "../../context/userContext";
 import { useNavigate } from "react-router-dom";
 
@@ -12,7 +13,6 @@ interface LoginModalProps {
 const LoginModal = ({ closeModal }: LoginModalProps) => {
   const [tabStatus, setTabStatus] = useState("user");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { register, handleSubmit } = useForm<loginStaff>();
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
@@ -55,22 +55,36 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
       const loginStaff = async () => {
         const response = await staffLogin(data);
         const responseData = response?.data;
-        const user = {
-          id: responseData?.id,
-          accountName: responseData?.accountName,
-          email: responseData?.email,
-          roleId: responseData?.roleId,
-          username: responseData?.username,
-        } as loginUser;
-        if (responseData?.token) {
-          login(user, responseData?.token, responseData?.id);
+        if(responseData?.id == null){
+          openNotificationWithIcon("error", "Password or Username is not correct. Try again!");
+        }else{
+          const user = {
+            id: responseData?.id,
+            accountName: responseData?.accountName,
+            email: responseData?.email,
+            roleId: responseData?.roleId,
+            username: responseData?.username,
+          } as loginUser;
+          if (responseData?.token) {
+            login(user, responseData?.token);
+          }
+          navigate("/admin");
         }
       };
-      loginStaff();
-      navigate("/admin");
+        loginStaff();
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const openNotificationWithIcon = (
+    type: "success" | "error",
+    description: string
+  ) => {
+    notification[type]({
+      message: "Notification Title",
+      description: description,
+    });
   };
 
   return (

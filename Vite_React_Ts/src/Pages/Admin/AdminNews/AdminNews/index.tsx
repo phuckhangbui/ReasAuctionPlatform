@@ -6,7 +6,6 @@ import CloudinaryUploadWidget, {
   CloudinaryConfig,
   SetPublicIdFunction,
 } from "../../../../Config/cloudinary";
-import { Cloudinary } from "@cloudinary/url-gen";
 import { Table, TableProps, Descriptions, Button, notification } from "antd";
 import { useState, useEffect } from "react";
 import {
@@ -37,7 +36,7 @@ const AdminNewsList: React.FC = () => {
   const [initialThumbnail, setInitialThumbnail] = useState<string>("");
   const { token } = useContext(UserContext);
 
-  const [publicId, setPublicId] = useState<string>("");
+  const [_publicId, setPublicId] = useState<string>("");
   const [cloudName] = useState<string>("dqpsvl3nu");
   const [uploadPreset] = useState<string>("i0yxovxe");
 
@@ -55,12 +54,6 @@ const AdminNewsList: React.FC = () => {
     // maxImageFileSize: 2000000,
     // maxImageWidth: 2000,
     // theme: "purple",
-  });
-
-  const cld = new Cloudinary({
-    cloud: {
-      cloudName,
-    },
   });
 
   const formatDate = (dateString: Date): string => {
@@ -207,7 +200,7 @@ const AdminNewsList: React.FC = () => {
                     uwConfig={uwConfig}
                     setPublicId={setPublicId as SetPublicIdFunction}
                     setUploadedUrl={setUploadedImage}
-                    notList
+                    notList= {true}
                   />
                 ) : (
                   <div></div>
@@ -258,7 +251,7 @@ const AdminNewsList: React.FC = () => {
           <CKEditor
             editor={ClassicEditor}
             data={initialContent}
-            onChange={(e, editor) => setUpdatedContent(editor.getData())}
+            onChange={(_e, editor) => setUpdatedContent(editor.getData())}
           />
         ) : (
           <div dangerouslySetInnerHTML={{ __html: initialContent }}></div>

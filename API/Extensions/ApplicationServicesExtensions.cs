@@ -1,13 +1,15 @@
-﻿using API.Data;
-using API.Errors;
-using API.Helper;
-using API.Interface.Repository;
-using API.Interface.Service;
-using API.Interfaces;
-using API.Repository;
-using API.Services;
+﻿using API.MessageResponse;
+using FireSharp;
+using FireSharp.Config;
+using FireSharp.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Repository.Data;
+using Repository.Implement;
+using Repository.Interface;
+using Service.Cloundinary;
+using Service.Implement;
+using Service.Interface;
 
 namespace API.Extensions
 {
@@ -27,7 +29,6 @@ namespace API.Extensions
             services.AddScoped<IMoneyTransactionRepository, MoneyTransactionRepository>();
             services.AddScoped<IDepositAmountRepository, DepositAmountRepository>();
             services.AddScoped<ITypeReasRepository, TypeReasRepository>();
-            services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<IAuctionAccountingRepository, AuctionAccountingRepository>();
             services.AddScoped<IParticipantHistoryRepository, ParticipantHistoryRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
@@ -44,7 +45,6 @@ namespace API.Extensions
             services.AddScoped<IMemberRealEstateService, MemberRealEstateService>();
             services.AddScoped<IMemberRuleService, MemberRuleService>();
             services.AddScoped<IStaffRealEstateService, StaffRealEstateService>();
-            services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IMoneyTransactionService, MoneyTransactionService>();
             services.AddScoped<IDepositAmountService, DepositAmountService>();
             services.AddScoped<IParticipantHistoryService, ParticipantHistoryService>();
@@ -61,6 +61,18 @@ namespace API.Extensions
                 // Assuming jsonCredentialsPath is configured elsewhere, possibly in appsettings.json
                 var jsonCredentialsPath = config["Firebase:CredentialsPath"];
                 return new FirebaseMessagingService(jsonCredentialsPath);
+            });
+
+            services.AddSingleton<IFirebaseAuctionService>(provider =>
+            {
+                IFirebaseConfig firebaseConfig = new FirebaseConfig
+                {
+                    AuthSecret = config["FirebaseDatabase:AuthSecret"],
+                    BasePath = config["FirebaseDatabase:BasePath"]
+                };
+
+                IFirebaseClient client = new FirebaseClient(firebaseConfig);
+                return new FirebaseAuctionService(firebaseConfig);
             });
 
             services.AddDbContext<DataContext>(opt =>

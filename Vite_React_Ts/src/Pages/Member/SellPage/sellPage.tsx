@@ -1,4 +1,4 @@
-import { Formik, useFormik } from "formik";
+import { useFormik } from "formik";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { UserContext } from "../../../context/userContext";
@@ -9,12 +9,14 @@ import { DatePicker } from "antd";
 import CloudinaryUploadWidget, {
   CloudinaryConfig,
 } from "../../../Config/cloudinary";
+import toast from "react-hot-toast";
+import dayjs from "dayjs";
 
 const validate = (values: createRealEstate) => {
   const errors: Partial<validateRealEstate> = {};
   if (!values.reasName) {
     errors.reasName = "Required";
-  } else if (values.reasName.length < 10) {
+  } else if (values.reasName.length < 30) {
     errors.reasName = "Title is too short!";
   }
 
@@ -24,6 +26,8 @@ const validate = (values: createRealEstate) => {
     errors.reasArea = "Required";
   } else if (isNaN(values.reasArea)) {
     errors.reasArea = "Area must be a number";
+  } else if (values.reasArea < 10) {
+    errors.reasArea = "Are of land must be more than 10";
   }
 
   if (values.reasPrice < 0) {
@@ -32,6 +36,12 @@ const validate = (values: createRealEstate) => {
     errors.reasPrice = "Required";
   } else if (isNaN(values.reasPrice)) {
     errors.reasPrice = "Price must be a number";
+  } else if (values.reasPrice < 100000000) {
+    errors.reasPrice = "Price must be more than 100.000.000";
+  } else if (values.reasPrice > 100000000000) {
+    errors.reasPrice = "Price must be less than 100.000.000.000 đ";
+  } else if (!values.reasPrice.toString().endsWith("000")) {
+    errors.reasPrice = "Price must end with 000 at the end";
   }
 
   if (!values.reasAddress) {
@@ -46,12 +56,8 @@ const validate = (values: createRealEstate) => {
     errors.type_Reas = "Required";
   }
 
-  if (!values.dateStart) {
-    errors.dateStart = "Required";
-  }
-
   if (!values.dateEnd) {
-    errors.reasName = "Required";
+    errors.dateEnd = "Required";
   }
 
   return errors;
@@ -61,19 +67,17 @@ const SellPage = () => {
   const { token, userId, userAccountName } = useContext(UserContext);
   const [realEstateTypes, setRealEstateTypes] = useState<realEstateType[]>();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [lastUploadedImage, setLastUploadedImage] = useState<string>();
-  const [publicId, setPublicId] = useState<string>("");
-  const [photoFront, setPhotoFront] = useState<string>("");
-  const [photoBack, setPhotoBack] = useState<string>("");
-  const [photoOwnership, setPhotoOwnership] = useState<string>("");
-  const [photoBook, setPhotoBook] = useState<string>("");
-  const [photoDocu, setPhotoDocu] = useState<string>("");
-  const [photoContract, setPhotoContract] = useState<string>("");
+  const [_publicId, setPublicId] = useState<string>("");
+  const [_photoFront, setPhotoFront] = useState<string>("");
+  const [_photoBack, setPhotoBack] = useState<string>("");
+  const [_photoOwnership, setPhotoOwnership] = useState<string>("");
+  const [_photoBook, setPhotoBook] = useState<string>("");
+  const [_photoDocu, setPhotoDocu] = useState<string>("");
+  const [_photoContract, setPhotoContract] = useState<string>("");
   const [tabStatus, setTabStatus] = useState<string>("information");
   const [noPhotoMessage, setNoPhotoMessage] = useState<boolean>(false);
   const [noInputMessage, setNoInputMessage] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { RangePicker } = DatePicker;
 
   useEffect(() => {
     try {
@@ -111,8 +115,8 @@ const SellPage = () => {
     initialValues: {
       reasName: "",
       reasAddress: "",
-      reasPrice: 0,
-      reasArea: 0,
+      reasPrice: 100000000,
+      reasArea: 100000,
       reasDescription: "",
       dateStart: new Date(),
       dateEnd: new Date(),
@@ -144,11 +148,13 @@ const SellPage = () => {
           !values.detail.sales_Authorization_Contract ||
           !values.photos.length
         ) {
-          setNoPhotoMessage(true);
+          toast.error("Photos of Real Estate Are Required");
         } else {
           const response = await createRealEstate(token, values);
-          formik.resetForm();
-          navigate("/");
+          if (response) {
+            formik.resetForm();
+            navigate("/memberReas");
+          }
         }
       } catch (error) {
         console.log("Error: ", error);
@@ -230,128 +236,23 @@ const SellPage = () => {
       !formik.values.reasPrice ||
       !formik.values.reasArea ||
       !formik.values.reasDescription ||
-      !formik.values.dateStart ||
       !formik.values.dateEnd ||
       !formik.values.type_Reas
     ) {
-      setNoInputMessage(true);
+      toast.error("You Are Missing Some Inputs");
     } else {
       toggleTab("reasPhoto");
     }
   };
 
+  const formattedReasPrice = formik.values.reasPrice.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 3,
+  });
+
   return (
     <div className="pt-20">
-      {noPhotoMessage && (
-        <div className={`fixed flex justify-end w-full z-40 `}>
-          <div
-            id="toast-danger"
-            className={`flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow ${
-              noPhotoMessage
-                ? "opacity-100 translate-y-0 transition-all duration-300"
-                : "opacity-0 translate-y-full"
-            }`}
-            role="alert"
-          >
-            <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" />
-              </svg>
-              <span className="sr-only">Error icon</span>
-            </div>
-            <div className="ms-3 text-sm font-normal">
-              Some of the photos are missing
-            </div>
-            <button
-              type="button"
-              className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-              data-dismiss-target="#toast-danger"
-              aria-label="Close"
-              onClick={() => {
-                setNoPhotoMessage(false);
-              }}
-            >
-              <span className="sr-only">Close</span>
-              <svg
-                className="w-3 h-3"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 14"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-      {noInputMessage && (
-        <div className={`fixed flex justify-end w-full z-40 `}>
-          <div
-            id="toast-danger"
-            className={`flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow ${
-              noInputMessage
-                ? "opacity-100 translate-y-0 transition-all duration-300"
-                : "opacity-0 translate-y-full"
-            }`}
-            role="alert"
-          >
-            <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
-              <svg
-                className="w-5 h-5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" />
-              </svg>
-              <span className="sr-only">Error icon</span>
-            </div>
-            <div className="ms-3 text-sm font-normal">
-              You are missing some inputs
-            </div>
-            <button
-              type="button"
-              className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-              data-dismiss-target="#toast-danger"
-              aria-label="Close"
-              onClick={() => {
-                setNoInputMessage(false);
-              }}
-            >
-              <span className="sr-only">Close</span>
-              <svg
-                className="w-3 h-3"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 14"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <div className="bg-white border border-gray-200 rounded-lg shadow mx-auto w-full px-10 py-5">
           <div className="text-center">
@@ -448,7 +349,7 @@ const SellPage = () => {
                   {formik.touched.reasName && formik.errors.reasName ? (
                     <div className="text-red-700">{formik.errors.reasName}</div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="col-span-2">
@@ -477,7 +378,7 @@ const SellPage = () => {
                       {formik.errors.reasAddress}
                     </div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="col-span-1">
@@ -509,7 +410,7 @@ const SellPage = () => {
                   {formik.touched.reasArea && formik.errors.reasArea ? (
                     <div className="text-red-700">{formik.errors.reasArea}</div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="col-span-1">
@@ -517,7 +418,7 @@ const SellPage = () => {
                     htmlFor="reasPrice"
                     className="block mb-1 text-md font-medium text-gray-900 dark:text-white "
                   >
-                    Price
+                    Price <span className="text-sm text-gray-500">(VND)</span>
                   </label>
                   <input
                     type="number"
@@ -533,9 +434,12 @@ const SellPage = () => {
                     onBlur={formik.handleBlur}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value.length <= 10) {
+                      if (value.length <= 12) {
                         formik.handleChange(e);
                       }
+                      // if (value.length >= 9) {
+                      //   formik.handleChange(e);
+                      // }
                     }}
                   />
                   {formik.touched.reasPrice && formik.errors.reasPrice ? (
@@ -543,44 +447,38 @@ const SellPage = () => {
                       {formik.errors.reasPrice}
                     </div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div>{formattedReasPrice}</div>
                   )}
                 </div>
                 <div className="col-span-2">
                   <label
                     htmlFor="dateRange"
-                    className=" mb-1 text-md font-medium text-gray-900 dark:text-white grid grid-cols-2"
+                    className=" mb-1 text-md font-medium text-gray-900 grid grid-cols-2"
                   >
-                    <div>Start Date</div>
                     <div>End Date</div>
                   </label>
-                  <RangePicker
-                    id="dateRange"
-                    className=" w-full p-2.5 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue "
-                    onChange={(dates, dateStrings) => {
-                      formik.setFieldValue("dateStart", dateStrings[0]);
-                      formik.setFieldValue("dateEnd", dateStrings[1]);
+                  <DatePicker
+                    className="w-full p-2.5 outline-none text-sm rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-mainBlue/30 focus:border-mainBlue"
+                    value={
+                      formik.values.dateEnd
+                        ? dayjs(formik.values.dateEnd)
+                        : null
+                    }
+                    disabledDate={(current) =>
+                      current && current < dayjs().startOf("day")
+                    }
+                    onChange={(_date, dateString) => {
+                      formik.setFieldValue("dateEnd", dateString);
                     }}
-                    required
+                    format="YYYY-MM-DD"
                   />
-                  <div className="grid grid-cols-2">
-                    {formik.touched.reasDescription &&
-                    formik.errors.reasDescription ? (
-                      <div className="text-red-700">
-                        {formik.errors.reasDescription}
-                      </div>
-                    ) : (
-                      <div className="text-white">Error Holder</div>
-                    )}
-                    {formik.touched.reasDescription &&
-                    formik.errors.reasDescription ? (
-                      <div className="text-red-700">
-                        {formik.errors.reasDescription}
-                      </div>
-                    ) : (
-                      <div className="text-white">Error Holder</div>
-                    )}
-                  </div>
+                  {/* {formik.touched.dateEnd && formik.errors.dateEnd !== undefined ? (
+                    <div className="text-red-700">
+                      {formik.errors.dateEnd.toLocaleString()}
+                    </div>
+                  ) : (
+                    <div className="text-white pointer-events-none ">'</div>
+                  )} */}
                 </div>
                 <div className="col-span-2">
                   <label
@@ -617,7 +515,7 @@ const SellPage = () => {
                   <CKEditor
                     id="reasDescription"
                     editor={ClassicEditor}
-                    onChange={(event, editor) => {
+                    onChange={(_event: any, editor: any) => {
                       const data = editor.getData();
                       formik.setFieldValue("reasDescription", data);
                     }}
@@ -641,7 +539,7 @@ const SellPage = () => {
                       {formik.errors.reasDescription}
                     </div>
                   ) : (
-                    <div className="text-white">Error Holder</div>
+                    <div className="text-white pointer-events-none ">'</div>
                   )}
                 </div>
                 <div className="block mb-1 text-md font-medium text-gray-900 col-span-3">

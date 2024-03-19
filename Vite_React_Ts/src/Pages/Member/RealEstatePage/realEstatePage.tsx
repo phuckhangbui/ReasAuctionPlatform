@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import SearchBar from "../../../components/SearchBar/searchBar.tsx";
 import RealEstateList from "../../../components/RealEstate/realEstateList.tsx";
 import { searchRealEstate } from "../../../api/realEstate.ts";
+import realEstate from "../../../interface/RealEstate/realEstate.ts";
 
 const priceList = [
   5000, 6000, 7000, 8000, 10000, 11000, 12000, 15000, 20000, 50000, 100000,
@@ -19,7 +20,7 @@ const RealEstatePage = () => {
   >([]);
   const [searchParams, setSearchParams] = useState<searchRealEstate | null>({
     pageNumber: 1,
-    pageSize: 10,
+    pageSize: 100,
     reasName: "",
     reasPriceFrom: 0,
     reasPriceTo: 0,
@@ -114,7 +115,7 @@ const RealEstatePage = () => {
         <form action="" onSubmit={handleSubmit}>
           <div className="w-full relative">
             <img
-              src="../../public/Search-bar-bg.jpg"
+              src="./Search-bar-bg.jpg"
               alt=""
               className="w-full md:h-96 sm:h-72 object-cover"
             />
@@ -298,7 +299,10 @@ const RealEstatePage = () => {
               Take a look at our various options and find your forever home
             </div>
           </div>
-          <RealEstateList realEstatesList={realEstateList} />
+          <RealEstateList
+            realEstatesList={realEstateList}
+            ownRealEstates={false}
+          />
         </div>
       </div>
     </>

@@ -25,25 +25,31 @@ export const UserContext = createContext<UserContextType>({
 });
 
 const UserProvider = ({ children }: UserProviderProps) => {
-  const [userRole, setUserRole] = useState<number | undefined>(undefined);
-  const [userAccountName, setUserAccountName] = useState<string | undefined>(
-    undefined
-  );
-  const [userId, setUserId] = useState<number | undefined>(undefined);
-  const [token, setToken] = useState<string | undefined>(undefined);
+  const [userRole, setUserRole] = useState<number | undefined>();
+  const [userAccountName, setUserAccountName] = useState<string | undefined>();
+  const [userId, setUserId] = useState<number | undefined>();
+  const [token, setToken] = useState<string | undefined>();
 
   useEffect(() => {
     try {
       const getLocalData = async () => {
         const storageToken = localStorage.getItem("token");
         const storageUser = localStorage.getItem("user");
-
-        if (storageToken && storageUser) {
-          const parseStorageUser = JSON.parse(storageUser as string);
-          setUserAccountName(parseStorageUser.accountName);
-          setUserRole(parseStorageUser.roleId);
-          setUserId(parseStorageUser.id);
-          setToken(storageToken);
+        const storageExpiration = localStorage.getItem("expiration");
+        if (storageExpiration) {
+          const expirationDate = parseInt(storageExpiration);
+          const currentDate = new Date().getTime();
+          if (expirationDate - currentDate <= 0) {
+            logout();
+          } else {
+            if (storageToken && storageUser) {
+              const parseStorageUser = JSON.parse(storageUser as string);
+              setUserAccountName(parseStorageUser.accountName);
+              setUserRole(parseStorageUser.roleId);
+              setUserId(parseStorageUser.id);
+              setToken(storageToken);
+            }
+          }
         }
       };
       getLocalData();
@@ -53,13 +59,20 @@ const UserProvider = ({ children }: UserProviderProps) => {
   }, []);
 
   // useEffect(() => {
-  //   console.log("User Role: ", userRole);
-  // }, [userRole]);
+  //   console.log("User ID: ", userId);
+  // }, [userId]);
 
   const login = (user: loginUser, token: string) => {
     const stringUser = JSON.stringify(user);
+    let currentDate = new Date();
     localStorage.setItem("user", stringUser);
     localStorage.setItem("token", token);
+    localStorage.setItem(
+      "expiration",
+      currentDate.setHours(currentDate.getHours() + 1).toString()
+    );
+    localStorage.setItem("userId", user.id.toString());
+    console.log(currentDate.setHours(currentDate.getHours() + 1).toString());
     setUserAccountName(user?.accountName);
     setUserRole(user?.roleId);
     setUserId(user?.id);

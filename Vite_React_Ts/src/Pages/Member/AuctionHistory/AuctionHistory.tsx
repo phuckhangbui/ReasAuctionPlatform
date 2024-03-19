@@ -7,36 +7,36 @@ import {
   Chip,
 } from "@material-tailwind/react";
 import { useEffect, useState } from "react";
-import { NumberFormat } from "../../../utils/numbetFormat";
-import { DatePicker, Pagination, Select } from "antd";
+import { NumberFormat } from "../../../Utils/numbetFormat";
+import { Empty, Pagination } from "antd";
+import { useContext } from "react";
+import { UserContext } from "../../../context/userContext";
+import { GetAuctionHistory } from "../../../api/memberAuction";
 
 const AuctionHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [displayedAuctions, setDisplayedAuctions] = useState<
-    AuctionAccounting[]
+  const [displayedAuctions, setDisplayedAuctions] = useState<auctionHistory[]>(
+    []
+  );
+  const [auctionHistory, setAuctionHistory] = useState<
+    auctionHistory[] | undefined
   >([]);
-  const [auctionAccounting, setAuctionAccounting] = useState<
-    AuctionAccounting[] | undefined
-  >([]);
-  useEffect(() => {
-    const fetchedAuctions: AuctionAccounting[] = [];
-    for (let i = 1; i <= 10; i++) {
-      fetchedAuctions.push({
-        AuctionAccountingId: i,
-        AuctionId: i,
-        ReasId: i,
-        ReasName: `Reas No. ${i}`,
-        AccountWinId: 10 - i,
-        uriPhotoFirst:
-          "https://res.cloudinary.com/dqpsvl3nu/image/upload/v1708523932/3_CH%E1%BB%A6%20C%E1%BA%A6N%20B%C3%81N%20L%C3%94%20%C4%90%E1%BA%A4T%20%C3%94M%20SU%E1%BB%90I%20L%C3%8AN%20%C4%90%C6%AF%E1%BB%A2C%20TH%E1%BB%94%20C%C6%AF_L%C3%A2m%20Nh%E1%BA%ADt%20Anh/nv7oorerx0nxqb7a4afg.jpg",
-        MaxAmount: 100000 + i,
-        AuctionType: "Department",
-        Area: 100,
-        EstimatedPaymentDate: new Date(),
-        Status: 1,
-      });
+  const { token } = useContext(UserContext);
+  const { userId } = useContext(UserContext);
+
+  const fetchAuctionHistory = async () => {
+    if (userId && token) {
+      let response = await GetAuctionHistory(userId, token);
+      setAuctionHistory(response);
     }
-    setAuctionAccounting(fetchedAuctions);
+  };
+
+  useEffect(() => {
+    try {
+      fetchAuctionHistory();
+    } catch (error) {
+      console.log(error);
+    }
   }, []);
 
   // Update displayed auctions when currentPage or auctionAccounting changes
@@ -46,80 +46,63 @@ const AuctionHistory: React.FC = () => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = Math.min(
       startIndex + pageSize,
-      auctionAccounting?.length || 0
+      auctionHistory?.length || 0
     );
 
     // Extract the auctions to be displayed for the current page
-    const auctionsToDisplay =
-      auctionAccounting?.slice(startIndex, endIndex) || [];
+    const auctionsToDisplay = auctionHistory?.slice(startIndex, endIndex) || [];
 
     setDisplayedAuctions(auctionsToDisplay);
-  }, [currentPage, auctionAccounting]);
+  }, [currentPage, auctionHistory]);
 
   // Function to handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const options = [
-    {
-      value: "department",
-      label: "Department",
-    },
-  ];
-  const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
+  const getColorForDepositStatus = (depositStatus: number) => {
+    switch (depositStatus) {
+      case 0:
+        return "gray"; // Pending
+      case 1:
+        return "blue"; // Deposited
+      case 2:
+        return "yellow"; // Waiting for refund
+      case 3:
+        return "green"; // Refunded
+      case 4:
+        return "red"; // Lost deposit
+      case 5:
+        return "blue"; // Win auction
+      default:
+        return "gray";
+    }
   };
-  const { RangePicker } = DatePicker;
-  const optionsOrderBy = [
-    {
-      value: "name_acs",
-      label: "Name from A-Z",
-    },
-    {
-      value: "decs",
-      label: "Name from Z-A",
-    },
-    {
-      value: "price_asc",
-      label: "Price gradually increase",
-    },
-    {
-      value: "price_decs",
-      label: "Price gradually decrease",
-    },
-  ];
+
+  const getValueForDepositStatus = (depositStatus: number) => {
+    switch (depositStatus) {
+      case 0:
+        return "Pending";
+      case 1:
+        return "Deposited";
+      case 2:
+        return "Waiting for refund";
+      case 3:
+        return "Refunded";
+      case 4:
+        return "Lost deposit";
+      case 5:
+        return "Win auction";
+      default:
+        return "Unknown Status";
+    }
+  };
   return (
     <>
       <div className="pt-20">
         <div className="container w-full mx-auto">
-          <div className="flex justify-between">
-            <div className="w-1/2">
-              <Select
-                style={{ width: "30%" }}
-                placeholder="Type"
-                onChange={handleChange}
-                options={options}
-                defaultValue={options[0].label}
-              />
-              <RangePicker />
-            </div>
-            <div className="w-1/2 flex justify-end">
-              <Select
-                style={{ width: "30%" }}
-                placeholder="Order by"
-                onChange={handleChange}
-                options={optionsOrderBy}
-                defaultValue={optionsOrderBy[0].label}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="pt-8">
-        <div className="container w-full mx-auto">
           <div className="mt-4 grid lg:grid-cols-4 md:grid-cols-2 md:gap-3 sm:grid-cols-1">
-            {displayedAuctions &&
+            {displayedAuctions && displayedAuctions.length > 0 ? (
               displayedAuctions.map((auction) => (
                 <Card className="max-w-[24rem] overflow-hidden">
                   <CardHeader
@@ -128,23 +111,24 @@ const AuctionHistory: React.FC = () => {
                     color="transparent"
                     className="m-0 rounded-none"
                   >
-                    <img src={auction.uriPhotoFirst} alt="ui/ux review check" />
+                    <img src={auction.thumbnailUrl} alt="ui/ux review check" />
                   </CardHeader>
                   <CardBody>
                     <Typography variant="h4" color="blue-gray">
-                      {auction.ReasName}
+                      {auction.reasName}
                     </Typography>
                     <Typography className="font-normal">
-                      {auction.EstimatedPaymentDate.toDateString()}
+                      {/* {auction.EstimatedPaymentDate.toDateString()} */}
+                      payment date
                     </Typography>
                     <div className="mb-3 font-normal text-gray-700">
                       <span className="text-gray-900 font-semibold">
-                        {auction.AuctionType}
+                        {auction.typeName}
                       </span>
                       <span className="sm:inline md:hidden xl:inline"> | </span>
                       <br className="sm:hidden md:block xl:hidden" />
                       <span className="text-gray-900 font-semibold">
-                        {auction.Area}
+                        {auction.reasArea}
                       </span>
                       <span> sqrt</span>
                     </div>
@@ -152,19 +136,29 @@ const AuctionHistory: React.FC = () => {
                   <CardFooter className="flex items-center justify-between">
                     <div className="flex items-center -space-x-3">
                       <Typography variant="h6" color="blue-gray">
-                        {NumberFormat(auction.MaxAmount)}
+                        {NumberFormat(auction.lastBid)}
                       </Typography>
                     </div>
-                    <Chip color="blue" value="finish" />
+                    {auction.depositStatus !== undefined && (
+                      <Chip
+                        color={getColorForDepositStatus(auction.depositStatus)}
+                        value={getValueForDepositStatus(auction.depositStatus)}
+                      />
+                    )}
                   </CardFooter>
                 </Card>
-              ))}
+              ))
+            ) : (
+              <div className="py-40 col-span-4">
+                <Empty />
+              </div>
+            )}
           </div>
           <div className="flex justify-center mt-4">
             <Pagination
               defaultCurrent={1}
-              total={auctionAccounting?.length || 0}
-              pageSize={8} // Change this value according to your requirement
+              total={auctionHistory?.length || 0}
+              pageSize={8}
               onChange={handlePageChange}
             />
           </div>

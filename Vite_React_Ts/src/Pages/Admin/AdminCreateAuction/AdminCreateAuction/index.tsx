@@ -2,16 +2,8 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { Input } from "@material-tailwind/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import {
-  Table,
-  TableProps,
-  Tag,
-  Button,
-  Modal,
-  DatePicker,
-  notification
-} from "antd";
-import {NumberFormat} from "../../../../Utils/numberFormat";
+import { Table, TableProps, Tag, Button, Modal, DatePicker ,notification} from "antd";
+import { NumberFormat } from "../../../../Utils/numberFormat";
 import { useState, useEffect } from "react";
 import {
   getRealForDeposit,
@@ -30,8 +22,6 @@ const RealDepositList: React.FC = () => {
   const [reasName, setReasName] = useState<string>();
   const [reasID, setRealID] = useState<number | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(false);
-  let dateStart: Date = new Date();
-
 
   const formatDate = (dateString: Date): string => {
     const dateObject = new Date(dateString);
@@ -110,7 +100,7 @@ const RealDepositList: React.FC = () => {
         return data;
       }
     } catch (error) {
-      console.error("Error fetching add news:", error);
+      console.error("Error fetching add auction:", error);
     }
   };
 
@@ -123,7 +113,7 @@ const RealDepositList: React.FC = () => {
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (_text: any, _record: any, index: number) => index + 1,
     },
     {
       title: "Reas Name",
@@ -170,9 +160,9 @@ const RealDepositList: React.FC = () => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
-
-  const onChangeDate = (date: any, dateString: any) => {
-    dateStart = date;
+let dateStart : Date = new Date();
+  const onChangeDate = (date: any) => {
+     dateStart = date;
   };
 
   const openNotificationWithIcon = (
@@ -209,7 +199,7 @@ ReasId : reasID,
     {
       title: "No",
       width: "5%",
-      render: (text: any, record: any, index: number) => index + 1,
+      render: (_text: any, _record: any, index: number) => index + 1,
     },
     {
       title: "Account Name",
@@ -230,7 +220,7 @@ ReasId : reasID,
       title: "Deposit Amount",
       dataIndex: "amount",
       width: "10%",
-      render: (depositAmount: number) => NumberFormat(depositAmount)
+      render: (depositAmount: number) => NumberFormat(depositAmount),
     },
     {
       title: "Deposit Date",
@@ -284,12 +274,12 @@ ReasId : reasID,
                 </Button>,
               ]}
             >
-              <div style={{alignContent: "center"}}>
-              <DatePicker
-                onChange={onChangeDate}
-                showTime
-                needConfirm={false}
-              />
+              <div style={{ alignContent: "center" }}>
+                <DatePicker
+                  onChange={onChangeDate}
+                  showTime
+                  needConfirm={false}
+                />
               </div>
               <br />
             </Modal>

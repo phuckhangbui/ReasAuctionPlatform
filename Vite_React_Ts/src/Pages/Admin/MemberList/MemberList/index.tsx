@@ -159,6 +159,16 @@ const AdminMemberList: React.FC = () => {
       },
       {
         key: "7",
+        label: "Banking Code",
+        children: memberDetailData?.bank_Code || "",
+      },
+      {
+        key: "8",
+        label: "Banking Account",
+        children: memberDetailData?.bank_Account || "",
+      },
+      {
+        key: "9",
         label: "Account Status",
         children: memberDetailData?.account_Status || "",
         render: (account_Status: string) => {
@@ -171,14 +181,14 @@ const AdminMemberList: React.FC = () => {
         },
       },
       {
-        key: "8",
+        key: "10",
         label: "Date Created",
         children: memberDetailData
           ? formatDate(memberDetailData.date_Created)
           : "",
       },
       {
-        key: "9",
+        key: "11",
         label: "Date End",
         children: memberDetailData ? formatDate(memberDetailData.date_End) : "",
       },

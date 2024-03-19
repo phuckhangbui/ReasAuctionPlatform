@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState, FC } from "react";
+import { createContext, useEffect, useState, FC } from "react";
 
 // Define types for Cloudinary configuration and the setPublicId function
 type CloudinaryConfig = {
@@ -90,15 +90,9 @@ const CloudinaryUploadWidget: FC<CloudinaryUploadWidgetProps> = ({
         <div
           className="flex items-center justify-center w-full h-64"
           onClick={() => {
-            // Ensure cloudinary is defined before calling createUploadWidget
             initializeCloudinary();
           }}
           id="upload_widget"
-          // style={{
-          //   backgroundImage: `url(${backgroundImage})`, // Set the background image dynamically
-          //   backgroundSize: "fill",
-          //   backgroundPosition: "center",
-          // }}
         >
           {backgroundImage && notList === true ? (
             <img

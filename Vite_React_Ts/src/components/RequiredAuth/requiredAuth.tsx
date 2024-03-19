@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { UserContext } from "../../context/userContext";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 interface RequiredAuthProps {

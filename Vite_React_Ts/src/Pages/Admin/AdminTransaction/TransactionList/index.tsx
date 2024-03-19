@@ -21,7 +21,7 @@ const statusTransactionColorMap: { [key: string]: string } = {
 };
 
 const TransactionList: React.FC = () => {
-  const [search, setSearch] = useState<searchTransaction>({
+  const [search, _setSearch] = useState<searchTransaction>({
     dateExecutionFrom: "",
     dateExecutionTo: "",
   });
@@ -64,10 +64,13 @@ const TransactionList: React.FC = () => {
   };
 
   const FormSearch = () => {
-    const [dateExecutionFrom, setDateExecutionFrom] = useState<string | undefined>();
-    const [dateExecutionTo, setDateExecutionTo] = useState<string | undefined>();
+    const [dateExecutionFrom, setDateExecutionFrom] = useState<
+      string | undefined
+    >();
+    const [dateExecutionTo, setDateExecutionTo] = useState<
+      string | undefined
+    >();
     const { RangePicker } = DatePicker;
-    const dateFormat = "YYYY-MM-DD";
 
     const handleDateRange = (
       dates: [dayjs.Dayjs | null, dayjs.Dayjs | null],
@@ -113,13 +116,13 @@ const TransactionList: React.FC = () => {
       dataIndex: "transactionStatus",
       width: "5%",
       render: (transactionStatus: number) => {
-          const color =
-            statusTransactionColorMap[statusStringMap[transactionStatus]];
-          return (
-            <Tag color={color} key={statusStringMap[transactionStatus]}>
-              {statusStringMap[transactionStatus]}
-            </Tag>
-          );
+        const color =
+          statusTransactionColorMap[statusStringMap[transactionStatus]];
+        return (
+          <Tag color={color} key={statusStringMap[transactionStatus]}>
+            {statusStringMap[transactionStatus].toUpperCase()}
+          </Tag>
+        );
       },
     },
     {
@@ -185,44 +188,62 @@ const TransactionList: React.FC = () => {
       },
       {
         key: "3",
+        label: "Sender Banking Code",
+        children: transactionDetail?.accountSendBankingCode || "",
+      },
+      {
+        key: "4",
+        label: "Sender Banking Account",
+        children: transactionDetail?.accountSendBankingNumber || "",
+      },
+      {
+        key: "5",
         label: "Receiver Name",
         children: transactionDetail?.accountReceiveName || "",
       },
       {
-        key: "4",
+        key: "6",
+        label: "Receiver Banking Code",
+        children: transactionDetail?.accountReceiveBankingCode || "",
+      },
+      {
+        key: "7",
+        label: "Receiver Banking Account",
+        children: transactionDetail?.accountReceiveBankingNumber || "",
+      },
+      {
+        key: "8",
         label: "Real Estate Name",
         children: transactionDetail?.reasName || "",
       },
       {
-        key: "5",
+        key: "9",
         label: "Status",
-        children: transactionDetail?.transactionStatus || "",
-        render: (transactionStatus: string | number) => {
-          if (typeof transactionStatus === "number") {
-            const color =
-              statusTransactionColorMap[statusStringMap[transactionStatus]];
-            return (
-              <Tag color={color} key={statusStringMap[transactionStatus]}>
-                {statusStringMap[transactionStatus]}
-              </Tag>
-            );
-          } else {
-            return null;
-          }
+        children: transactionDetail?.transactionStatus || 0,
+        render: (transactionStatus: number) => {
+          const color =
+            statusTransactionColorMap[statusStringMap[transactionStatus]];
+          return (
+            <Tag color={color} key={statusStringMap[transactionStatus]}>
+              {statusStringMap[transactionStatus].toUpperCase()}
+            </Tag>
+          );
         },
       },
       {
-        key: "6",
+        key: "10",
         label: "Money",
-        children: transactionDetail?.money ? NumberFormat(transactionDetail?.money) : "",
+        children: transactionDetail?.money
+          ? NumberFormat(transactionDetail?.money)
+          : "",
       },
       {
-        key: "7",
+        key: "11",
         label: "Type",
         children: transactionDetail?.transactionType || "",
       },
       {
-        key: "8",
+        key: "12",
         label: "Date Executed",
         children: transactionDetail?.dateExecution
           ? formatDate(transactionDetail?.dateExecution)
@@ -231,7 +252,9 @@ const TransactionList: React.FC = () => {
     ];
     return items.map((item) => (
       <Descriptions.Item key={item.key} label={item.label}>
-        {item.children}
+        {typeof item.children === "number" && item.render
+          ? item.render(item.children)
+          : item.children}
       </Descriptions.Item>
     ));
   };

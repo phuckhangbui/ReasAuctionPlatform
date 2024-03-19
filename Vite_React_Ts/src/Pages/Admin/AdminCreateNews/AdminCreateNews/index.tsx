@@ -1,13 +1,11 @@
 import { Descriptions, Button, Input, notification } from "antd";
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { addNews } from "../../../../api/news";
 import { useContext } from "react";
 import { UserContext } from "../../../../context/userContext";
 import CloudinaryUploadWidget, {
   CloudinaryConfig,
-  SetPublicIdFunction,
 } from "../../../../Config/cloudinary";
-import { Cloudinary } from "@cloudinary/url-gen";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 
@@ -19,7 +17,7 @@ const AdminAddNews: React.FC = () => {
     thumbnailUri: "",
   });
   const [uploadedImage, setUploadedImage] = useState<string>("");
-  const [publicId, setPublicId] = useState<string>("");
+  const [_publicId, setPublicId] = useState<string>("");
   const [uwConfig] = useState<CloudinaryConfig>({
     cloudName: "dqpsvl3nu",
     uploadPreset: "i0yxovxe",
@@ -94,7 +92,7 @@ const AdminAddNews: React.FC = () => {
         label: "Thumbnail",
         children: "",
         span: 3,
-        render: (url: string) => (
+        render: (_url: string) => (
           <div>
             <img
               className="h-96 w-full object-cover object-center"
@@ -106,7 +104,7 @@ const AdminAddNews: React.FC = () => {
               uwConfig={uwConfig}
               setPublicId={setPublicId}
               setUploadedUrl={handleImageUpload}
-              notList
+              notList={true}
             />
           </div>
         ),
@@ -141,7 +139,7 @@ const AdminAddNews: React.FC = () => {
         children: (
           <CKEditor
             editor={ClassicEditor}
-            onChange={(event, editor) => {
+            onChange={(_event, editor) => {
               const data = editor.getData();
               handleChange("newsContent", data);
             }}
