@@ -1,7 +1,4 @@
-﻿
-using BusinessObject.Entity;
-
-namespace Service.Mail
+﻿namespace Service.Mail
 {
     public class SendMailWhenChangeWinner
     {

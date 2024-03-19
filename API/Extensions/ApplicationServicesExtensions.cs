@@ -10,7 +10,6 @@ using Repository.Interface;
 using Service.Cloundinary;
 using Service.Implement;
 using Service.Interface;
-using System.Configuration;
 
 namespace API.Extensions
 {

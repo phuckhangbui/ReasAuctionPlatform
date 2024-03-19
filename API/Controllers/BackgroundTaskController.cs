@@ -5,7 +5,6 @@ using FireSharp.Interfaces;
 using FireSharp.Response;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Repository.DTOs;
 using Repository.Interface;
 using Service.Interface;
 using static Repository.DTOs.AuctionResultDto;
