@@ -20,7 +20,6 @@ import RequiredAuth from "./components/RequiredAuth/requiredAuth";
 import SellPage from "./Pages/Member/SellPage/sellPage";
 import AllTransaction from "./Pages/Admin/AdminTransaction";
 import AllDeposit from "./Pages/Admin/AdminDeposit";
-import AdminAddNews from "./Pages/Admin/AdminCreateNews/AdminCreateNews";
 import AdminNewsList from "./Pages/Admin/AdminNews/AdminNews";
 import { useContext, useEffect } from "react";
 import { onMessage } from "firebase/messaging";
@@ -29,7 +28,6 @@ import toast from "react-hot-toast";
 import SuccessPage from "./Pages/Member/SuccessPage/successPage";
 import MemberRealEstatePage from "./Pages/Member/MemberRealEstatePage/memberRealEstatePage";
 import AdminCreateNews from "./Pages/Admin/AdminCreateNews";
-import NewsList from "./components/News/newsList";
 import DepositList from "./Pages/Admin/AdminCreateAuction";
 import AddRule from "./Pages/Admin/AdminAddRule";
 import AdminRule from "./Pages/Admin/AdminRule";
@@ -354,9 +352,6 @@ function App() {
               <Route path="auction/create" element={<DepositList />} />
 
               <Route path="user/member" element={<AdminMemberList />} />
-
-              <Route path="news" element={<AdminNewsList />} />
-              <Route path="news/create" element={<AdminAddNews />} />
 
               <Route path="real-estate/pending" element={<PendingList />} />
               <Route path="real-estate/all" element={<AllList />} />
