@@ -46,7 +46,7 @@ namespace Repository.Implement
         public async Task<IEnumerable<AuctionDto>> GetAuctionsNotYetAndOnGoing()
         {
             var getName = new GetStatusName();
-            var query = _context.Auction.OrderByDescending(a => a.DateStart).Where(b => b.Status.Equals((int)AuctionStatus.NotYet) || b.Status.Equals((int)AuctionStatus.OnGoing) || b.Status.Equals((int)AuctionStatus.Cancel)).Select(x => new AuctionDto
+            var query = _context.Auction.OrderByDescending(a => a.DateStart).Where(b => b.Status.Equals((int)AuctionStatus.NotYet) || b.Status.Equals((int)AuctionStatus.OnGoing) || b.Status.Equals((int)AuctionStatus.Cancel) || b.Status.Equals((int)AuctionStatus.Pending)).Select(x => new AuctionDto
             {
                 AuctionId = x.AuctionId,
                 ReasId = x.ReasId,
