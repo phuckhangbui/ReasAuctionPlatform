@@ -67,7 +67,7 @@ const RealEstateCard = ({
   }
 
   const handlePayingFee = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    _e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     try {
       if (depositId || reasId) {

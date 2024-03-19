@@ -52,12 +52,10 @@ const LoginModal = ({ closeModal }: LoginModalProps) => {
   // };
   const onSubmit: SubmitHandler<loginStaff> = (data) => {
     try {
-      let check : boolean = true;
       const loginStaff = async () => {
         const response = await staffLogin(data);
         const responseData = response?.data;
         if(responseData?.id == null){
-          check = false;
           openNotificationWithIcon("error", "Password or Username is not correct. Try again!");
         }else{
           const user = {

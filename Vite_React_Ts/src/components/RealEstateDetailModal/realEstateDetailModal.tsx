@@ -42,7 +42,7 @@ const RealEstateDetailModal = ({
   const [totalUsers, setTotalUsers] = useState(0);
   const [isUsersAttend, setIsUserAttend] = useState(false);
   const [isOneParticipant, setIsOneParticipant] = useState(true);
-  const [countDownWaiting, setCountDownWaiting] = useState<Dayjs | undefined>();
+  const [_countDownWaiting, setCountDownWaiting] = useState<Dayjs | undefined>();
   const [userRegisterList, setUserRegisterList] = useState<
     number[] | undefined
   >();
