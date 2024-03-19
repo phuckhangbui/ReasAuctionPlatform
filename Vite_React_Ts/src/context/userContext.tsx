@@ -71,7 +71,8 @@ const UserProvider = ({ children }: UserProviderProps) => {
       "expiration",
       currentDate.setHours(currentDate.getHours() + 1).toString()
     );
-    console.log(currentDate.setHours(currentDate.getHours() + 1).toString())
+    localStorage.setItem("userId", user.id.toString());
+    console.log(currentDate.setHours(currentDate.getHours() + 1).toString());
     setUserAccountName(user?.accountName);
     setUserRole(user?.roleId);
     setUserId(user?.id);

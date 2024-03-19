@@ -975,7 +975,9 @@ const RealEstateDetailModal = ({
                           ) : (
                             <>
                               <Countdown
-                                value={countDownWaiting?.toString()}
+                                value={dayjs(auction.dateStart)
+                                  .add(10, "minutes")
+                                  .toString()}
                                 format=" m [minutes] s [secs]"
                                 onFinish={() => handleOnFinishWaiting10Mins()}
                                 prefix={<>Auction will start in </>}
@@ -986,7 +988,9 @@ const RealEstateDetailModal = ({
                       ) : (
                         <>
                           <Countdown
-                            value={countDownWaiting?.toString()}
+                            value={dayjs(auction.dateStart)
+                              .add(10, "minutes")
+                              .toString()}
                             format=" m [minutes] s [secs]"
                             onFinish={() => handleOnFinishWaiting10Mins()}
                             prefix={<>Waiting for users in </>}
