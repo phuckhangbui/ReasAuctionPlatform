@@ -26,8 +26,8 @@ const validate = (values: createRealEstate) => {
     errors.reasArea = "Required";
   } else if (isNaN(values.reasArea)) {
     errors.reasArea = "Area must be a number";
-  } else if (values.reasArea < 100) {
-    errors.reasArea = "Are of land must be more than 100";
+  } else if (values.reasArea < 10) {
+    errors.reasArea = "Are of land must be more than 10";
   }
 
   if (values.reasPrice < 0) {

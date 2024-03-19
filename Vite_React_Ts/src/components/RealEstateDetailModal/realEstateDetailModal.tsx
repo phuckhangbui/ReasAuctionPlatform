@@ -214,7 +214,7 @@ const RealEstateDetailModal = ({
     }
 
     get(child(auctionRef, "auction"))
-      .then((snapshot: any) => {
+      .then((snapshot) => {
         const auctionData = snapshot.exists() ? snapshot.val() : null;
         const status = 0;
 
@@ -233,7 +233,7 @@ const RealEstateDetailModal = ({
 
         if (!userAlreadyRegistered) return;
 
-        get(statusRef).then((statusSnapshot: any) => {
+        get(statusRef).then((statusSnapshot) => {
           if (statusSnapshot.exists()) {
             if (statusSnapshot.val() == 4) {
               return;
@@ -242,7 +242,7 @@ const RealEstateDetailModal = ({
         });
 
         get(usersRef)
-          .then((usersSnapshot: any) => {
+          .then((usersSnapshot) => {
             if (!usersSnapshot.hasChild(userId)) {
               update(usersRef, {
                 [userId]: {
@@ -268,7 +268,7 @@ const RealEstateDetailModal = ({
               setIsUserRegistered(true);
             }
           })
-          .catch((error: any) => {
+          .catch((error) => {
             console.error(
               "Error checking user existence in the auction:",
               error
@@ -276,18 +276,18 @@ const RealEstateDetailModal = ({
           });
 
         get(currentBidRef)
-          .then((currentBidValue: any) => {
+          .then((currentBidValue) => {
             if (currentBidValue.exists()) {
               const value = currentBidValue.val();
               setCurrentBid(value);
               setCurrentInputBid(value);
             }
           })
-          .catch((error: any) => {
+          .catch((error) => {
             console.error("Error checking current bid in the auction:", error);
           });
       })
-      .catch((error: any) => {
+      .catch((error) => {
         console.error("Error checking auction existence:", error);
       });
   };
@@ -427,7 +427,7 @@ const RealEstateDetailModal = ({
   //subcribe for the new bid
   useEffect(() => {
     const currentBidRef = ref(db, `auctions/${realEstateId}/currentBid`);
-    const unsubscribe = onValue(currentBidRef, (snapshot: any) => {
+    const unsubscribe = onValue(currentBidRef, (snapshot) => {
       const newBid = snapshot.val();
       setCurrentBid(newBid);
       setCurrentInputBid(newBid);
@@ -441,7 +441,7 @@ const RealEstateDetailModal = ({
   //subcribe the user registered join the auction
   useEffect(() => {
     const usersRef = ref(db, `auctions/${realEstateId}/users`);
-    const unsubscribe = onValue(usersRef, (snapshot: any) => {
+    const unsubscribe = onValue(usersRef, (snapshot) => {
       let usersList = 0;
       snapshot.forEach(() => {
         usersList++;
@@ -456,7 +456,7 @@ const RealEstateDetailModal = ({
   //subcribe the status of the auction
   useEffect(() => {
     const statusRef = ref(db, `auctions/${realEstateId}/status`);
-    const unsubscribe = onValue(statusRef, (snapshot: any) => {
+    const unsubscribe = onValue(statusRef, (snapshot) => {
       const statusValue = snapshot.val();
       if (statusValue == 0) {
         setIsUserRegistered(false);
@@ -491,7 +491,7 @@ const RealEstateDetailModal = ({
 
   useEffect(() => {
     const statusRef = ref(db, `auctions/${realEstateId}/isBidded`);
-    const unsubscribe = onValue(statusRef, (snapshot: any) => {
+    const unsubscribe = onValue(statusRef, (snapshot) => {
       const statusValue = snapshot.val();
       if (statusValue == 0) {
         return;

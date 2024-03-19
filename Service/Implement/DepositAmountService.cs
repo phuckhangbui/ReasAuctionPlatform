@@ -62,6 +62,7 @@ namespace Service.Implement
             depositAmount.ReasId = reasId;
             depositAmount.Amount = (long)(realEstate.ReasPrice * DEPOSIT_PERCENT);
             depositAmount.Status = (int)UserDepositEnum.Pending;
+            depositAmount.DepositDate = DateTime.Now;
             depositAmount.CreateDepositDate = DateTime.Now;
 
 

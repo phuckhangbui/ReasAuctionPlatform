@@ -12,7 +12,7 @@ interface RealEstateProps {
 }
 
 const statusAllColorMap: { [key: string]: string } = {
-  InProgress: "green",
+  InProgress: "yellow",
   Approved: "green",
   Selling: "orange",
   Cancel: "red",
@@ -69,8 +69,6 @@ const RealEstateCard = ({
   const handlePayingFee = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    e.preventDefault();
-    e.stopPropagation();
     try {
       if (depositId || reasId) {
         removeDeposit();
