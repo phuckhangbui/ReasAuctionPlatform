@@ -9,7 +9,6 @@ using Repository.DTOs;
 using Repository.Paging;
 using Repository.Param;
 using Service.Exceptions;
-using Service.Implement;
 using Service.Interface;
 using Service.VnPay;
 using System.Collections.Specialized;
@@ -32,15 +31,15 @@ namespace API.Controllers
         private readonly ILogger<AuctionController> _logger;
         private readonly IBackgroundTaskService _backgroundTaskService;
 
-        public AuctionController(IAuctionService auctionService, 
-            IAuctionAccountingService auctionAccountingService, 
-            IDepositAmountService depositAmountService, 
-            IMoneyTransactionService moneyTransactionService, 
-            IOptions<VnPayProperties> vnPayProperties, 
-            IVnPayService vnPayService, 
-            IRealEstateService realEstateService, 
-            IParticipantHistoryService participantHistoryService, 
-            INotificatonService notificatonService, 
+        public AuctionController(IAuctionService auctionService,
+            IAuctionAccountingService auctionAccountingService,
+            IDepositAmountService depositAmountService,
+            IMoneyTransactionService moneyTransactionService,
+            IOptions<VnPayProperties> vnPayProperties,
+            IVnPayService vnPayService,
+            IRealEstateService realEstateService,
+            IParticipantHistoryService participantHistoryService,
+            INotificatonService notificatonService,
             IAccountService accountService,
             ILogger<AuctionController> logger,
             IBackgroundTaskService backgroundTaskService)
