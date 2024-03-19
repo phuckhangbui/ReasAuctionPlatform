@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import RealEstateCard from "./realEstateCard";
 import RealEstateDetailModal from "../RealEstateDetailModal/realEstateDetailModal";
 import realEstate from "../../interface/RealEstate/realEstate";
-import { Pagination } from "antd";
 
 interface RealEstateListProps {
   realEstatesList?: realEstate[];
@@ -17,8 +16,6 @@ const RealEstateList = ({
   const [showModal, setShowModal] = useState(false);
   const [realEstateId, setRealEstateId] = useState<number>(0);
   const [ownRealEstatesStatus, setOwnRealEstatesStatus] = useState<boolean>();
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [displayedReas, setDisplayedReas] = useState<realEstate[]>([]);
 
   const toggleModal = (realEstate: realEstate) => {
     setShowModal((prevShowModal) => !prevShowModal);
@@ -59,49 +56,21 @@ const RealEstateList = ({
     }
   };
 
-  // Update displayed auctions when currentPage or auctionAccounting changes
-  useEffect(() => {
-    // Calculate the start index and end index of auctions to display based on currentPage
-    const pageSize = 8; // Change this value according to your requirement
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize, realEstates?.length || 0);
-
-    // Extract the auctions to be displayed for the current page
-    const reasToDisplay = realEstates?.slice(startIndex, endIndex) || [];
-
-    setDisplayedReas(reasToDisplay);
-  }, [currentPage, realEstates]);
-
-  // Function to handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   return (
     <div>
-      <div>
-        <div className="mt-4 grid lg:grid-cols-2 md:grid-cols-1 md:gap-3 sm:grid-cols-1">
-          {displayedReas &&
-            displayedReas.map((realEstate) => (
-              <div
-                key={realEstate.reasId}
-                onClick={() => toggleModal(realEstate)}
-              >
-                <RealEstateCard
-                  realEstate={realEstate}
-                  ownRealEstatesStatus={ownRealEstatesStatus}
-                />
-              </div>
-            ))}
-        </div>
-        <div className="flex justify-center mt-4">
-          <Pagination
-            defaultCurrent={1}
-            total={realEstates?.length || 0}
-            pageSize={8}
-            onChange={handlePageChange}
-          />
-        </div>
+      <div className="mt-4 grid lg:grid-cols-4 md:grid-cols-2 md:gap-3 sm:grid-cols-1">
+        {realEstates &&
+          realEstates.map((realEstate) => (
+            <div
+              key={realEstate.reasId}
+              onClick={() => toggleModal(realEstate)}
+            >
+              <RealEstateCard
+                realEstate={realEstate}
+                ownRealEstatesStatus={ownRealEstatesStatus}
+              />
+            </div>
+          ))}
       </div>
       {showModal && (
         <div

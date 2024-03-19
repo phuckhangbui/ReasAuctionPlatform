@@ -263,7 +263,9 @@ const NotificationList = ({ notificationList }: NotificationList) => {
       </div>
       {notifications && notifications?.length >= 1 ? (
         notifications?.map((notification) => (
-          <div className="divide-y divide-gray-100 dark:divide-gray-700">
+          <div
+            className="divide-y divide-gray-100 dark:divide-gray-700"
+          >
             <div className="flex px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700">
               <div className="flex-shrink-0">
                 {iconChooser(notification.notificationType)}

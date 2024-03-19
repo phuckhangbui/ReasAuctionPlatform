@@ -3,6 +3,7 @@ import RealEstateList from "../../../components/RealEstate/realEstateList";
 import { getMemberRealEstates } from "../../../api/memberRealEstate";
 import { UserContext } from "../../../context/userContext";
 import realEstate from "../../../interface/RealEstate/realEstate";
+import { Empty } from "antd";
 
 const MemberRealEstatePage = () => {
   const { token } = useContext(UserContext);
@@ -26,9 +27,6 @@ const MemberRealEstatePage = () => {
     }
   }, []);
 
-
-
-
   return (
     <>
       <div className="pt-20">
@@ -41,10 +39,16 @@ const MemberRealEstatePage = () => {
               View all of your real estate and their statuses
             </div>
           </div>
-          <RealEstateList
-            realEstatesList={realEstateList}
-            ownRealEstates={true}
-          />
+          {realEstateList && realEstateList.length > 0 ? (
+            <RealEstateList
+              realEstatesList={realEstateList}
+              ownRealEstates={true}
+            />
+          ) : (
+            <div className="py-36">
+              <Empty />
+            </div>
+          )}
         </div>
       </div>
     </>
