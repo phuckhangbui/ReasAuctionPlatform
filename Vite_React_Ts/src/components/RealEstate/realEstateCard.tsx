@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import realEstate from "../../interface/RealEstate/realEstate";
 import { UserContext } from "../../context/userContext";
 import { payRealEstatePostingFee } from "../../api/transaction";
-import { NumberFormat } from "../../Utils/numbetFormat";
 import { ReasContext } from "../../context/reasContext";
 import { Tag } from "antd";
 import { Link } from "react-router-dom";
@@ -50,6 +49,20 @@ const RealEstateCard = ({
     setShowStatus(ownRealEstatesStatus);
   }, [ownRealEstatesStatus]);
 
+  function formatVietnameseDong(price: string) {
+    // Convert the string to a number
+    const numberPrice = parseInt(price, 10);
+    // Check if the conversion was successful
+    if (isNaN(numberPrice)) {
+      // Return the original string if it's not a valid number
+      return price;
+    }
+    // Format the number
+    const formattedNumber = numberPrice
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return formattedNumber;
+  }
 
   const handlePayingFee = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -77,84 +90,89 @@ const RealEstateCard = ({
     }
   };
 
+  const handleUpdateButtonClick = (
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) => {
+    e.stopPropagation(); // Stop event propagation here
+  };
+
   return (
-    <div className="max-w-2lg bg-white border border-gray-200 rounded-lg shadow mx-auto sm:my-2 md:my-0">
-      {showStatus && (
-        <div className="flex justify-end pt-2 pr-2">
-          {estate?.reasStatus === "Approved" ? (
-            <Tag color="green">Approved</Tag>
-          ) : (
+    <div className="max-w-sm bg-white border border-gray-200 rounded-lg mx-auto sm:my-2 md:my-0 shadow-lg hover:shadow-xl transition-all delay-100">
+      <div className="">
+        <img
+          className="rounded-t-lg h-52 w-full"
+          src={estate?.uriPhotoFirst}
+          alt=""
+        />
+      </div>
+      <div className="p-5">
+        <div>
+          <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900 xl:line-clamp-2 md:line-clamp-3 break-all">
+            {estate?.reasName}
+          </h5>
+        </div>
+        <div className="mb-3 font-normal text-gray-700">
+          <span className="text-gray-900 font-semibold">
+            {estate?.reasTypeName}
+          </span>
+          <span className="sm:inline md:hidden xl:inline"> | </span>
+          <br className="sm:hidden md:block xl:hidden" />
+          <span className="text-gray-900 font-semibold">
+            {estate?.reasArea}
+          </span>
+          <span> (m²)</span>
+        </div>
+
+        <div className="flex text-gray-700">
+          <div className="text-xl font-bold tracking-tight text-gray-900 ">
+            {estate?.reasPrice
+              ? formatVietnameseDong(estate?.reasPrice.toString())
+              : estate?.reasPrice}
+            <span className="pl-1">VND</span>
+          </div>
+        </div>
+        <div className="justify-between flex text-gray-700">
+          <div>
             <Tag color={statusAllColorMap[estate?.reasStatus || ""]}>
               {estate?.reasStatus}
             </Tag>
-          )}
+          </div>
+          <div className=" tracking-tight">
+            Due:{" "}
+            <span className="text-gray-900 font-semibold">
+              {formattedDateEnd}
+            </span>
+          </div>
         </div>
-        )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 md:gap-3">
-          <div className="lg:col-span-1">
-            <img
-              className="rounded-t-lg lg:h-52 lg:w-96 lg:pl-4 lg:pr-4 md:pt-4 md:w-full md:pl-20 md:pr-20 md:h-69"
-              src={estate?.uriPhotoFirst}
-              alt=""
-            />
-          </div>
-          <div className="lg:col-span-2 p-5">
-          <div>
-            <h5 className="mb-2 text-xl font-bold tracking-tight text-gray-900 xl:line-clamp-2 md:line-clamp-3">
-              {estate?.reasName}
-            </h5>
-          </div><div className="mb-3 font-normal text-gray-700">
-            <span className="text-gray-900 font-semibold">
-              {estate?.reasTypeName}
-            </span>
-            <span className="sm:inline md:hidden xl:inline"> | </span>
-            <br className="sm:hidden md:block xl:hidden" />
-            <span className="text-gray-900 font-semibold">
-            {estate?.reasArea}
-            </span>
-            <span> sqrt</span>
-          </div>
-          <div className="flex text-gray-700">
-            <div className="text-xl font-bold tracking-tight text-gray-900 ">
-              {estate?.reasPrice
-                ? NumberFormat(estate?.reasPrice)
-                : estate?.reasPrice}
-              <span className="pl-1">VNĐ</span>
-            </div>
-            </div>
-          <div className="flex justify-end text-gray-700">
-            <div className="tracking-tight">
-              Due:{" "}
-              <span className="text-gray-900 font-semibold">
-                {formattedDateEnd}
-              </span>
-            </div>
-          </div>
-          {showStatus && (
-            <div className="flex justify-end">
-              {estate?.reasStatus === "Approved" && (
-                <button
-                  onClick={handlePayingFee}
-                  className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ml-2"
-                >
-                  Pay Posting Fee
-                </button>
-              )}
-              {(estate?.reasStatus === "Rollback" ||
-              estate?.reasStatus === "DeclineAfterAuction") && estate?.flag === false  && (
+        <div className="flex justify-center mt-1">
+          {showStatus ? (
+            estate?.reasStatus === "Approved" ? (
               <button
+                onClick={handlePayingFee}
                 className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Pay Posting Fee
+              </button>
+            ) : estate?.reasStatus === "Rollback" ||
+              estate?.reasStatus === "DeclineAfterAuction" ? (
+              <button
+                className="text-white bg-mainBlue hover:bg-darkerMainBlue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
+                onClick={() => handleUpdateButtonClick}
               >
                 <Link to={`/update/${estate?.reasId}`}>Update</Link>
               </button>
-            )}
-            </div>
-            )}
-            </div>
-          </div>
-          <div className="flex justify-end pb-6"></div>
+            ) : (
+              <div className="text-transparent bg-transparent text-sm px-4 py-2 ">
+                .
+              </div>
+            )
+          ) : (
+            <></>
+          )}
         </div>
-      );
-    };
+      </div>
+    </div>
+  );
+};
 
 export default RealEstateCard;
