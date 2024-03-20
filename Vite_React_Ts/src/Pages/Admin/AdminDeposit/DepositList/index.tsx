@@ -14,15 +14,18 @@ import { Input } from "@material-tailwind/react";
 import { NumberFormat } from "../../../../Utils/numberFormat";
 
 const statusStringMap: { [key: number]: string } = {
+  0: "Pending",
   2: "Selling",
   4: "Auctioning",
   5: "Sold",
+  6: "Winner",
 };
 
 const statusDepositColorMap: { [key: string]: string } = {
   Selling: "yellow",
   Auctioning: "green",
   Sold: "orange",
+  Winner: "green"
 };
 
 const statusDepositUserColorMap: { [key: string]: string } = {
@@ -183,7 +186,7 @@ const AllDepositsList: React.FC = () => {
       render: (status: number) => {
         if (status !== undefined) {
           const color = statusDepositColorMap[statusStringMap[status]];
-
+          console.log(status);
           return (
             <Tag color={color} key={statusStringMap[status]}>
               {statusStringMap[status].toUpperCase()}

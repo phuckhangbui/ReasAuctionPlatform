@@ -30,8 +30,6 @@ import { generateToken, messaging } from "./Config/firebase-config";
 import toast from "react-hot-toast";
 import SuccessPage from "./Pages/Member/SuccessPage/successPage";
 import MemberRealEstatePage from "./Pages/Member/MemberRealEstatePage/memberRealEstatePage";
-import AdminCreateNews from "./Pages/Admin/AdminCreateNews";
-import NewsList from "./components/News/newsList";
 import DepositList from "./Pages/Admin/AdminCreateAuction";
 import AddRule from "./Pages/Admin/AdminAddRule";
 import AdminRule from "./Pages/Admin/AdminRule";
@@ -347,9 +345,6 @@ function App() {
                 <Route path="task" element={<Task />} />
                 <Route path="task/create" element={<TaskCreate />} />
               </Route>
-
-              <Route path="news" element={<NewsList />} />
-              <Route path="news/create" element={<AdminCreateNews />} />
 
               <Route path="auction/ongoing" element={<AuctionOngoing />} />
               <Route path="auction/complete" element={<AuctionComplete />} />
